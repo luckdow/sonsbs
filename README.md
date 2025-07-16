@@ -1,4 +1,6 @@
-# sonsbs**Proje Adı:** SBS  Transfer Rezervasyon Platformu
+# SBS Transfer Rezervasyon Platformu
+
+**Proje Adı:** SBS Transfer Rezervasyon Platformu
 
 **Proje Hedefi:** Bu talimatlara dayanarak, "Premium Transfer Rezervasyon Platformu" için kapsamlı bir sistem mimarisi, veritabanı şeması, kullanıcı arayüzü (UI) ve kullanıcı deneyimi (UX) tasarımı oluşturulması beklenmektedir. Platform; müşteri, admin ve şoför olmak üzere üç temel kullanıcı rolü için web tabanlı paneller içerecektir.
 
@@ -159,4 +161,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
+<<<<<<< HEAD
 google apı AIzaSyDa66vbuMgm_L4wdOgPutliu_PLzI3xqEw
+=======
+google apı AIzaSyDa66vbuMgm_L4wdOgPutliu_PLzI3xqEw
+>>>>>>> 25b78fc79400e5ddf1e6af98c95bc0bc51cf0d91
