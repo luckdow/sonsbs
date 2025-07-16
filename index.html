@@ -10,15 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Google Maps API -->
-    <script>
-      function initGoogleMaps() {
-        // Google Maps yüklendiğinde global olarak bildir
-        window.googleMapsLoaded = true;
-        window.dispatchEvent(new Event('google-maps-loaded'));
-      }
-    </script>
     <script async defer 
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDa66vbuMgm_L4wdOgPutliu_PLzI3xqEw&libraries=places,geometry&language=tr&region=TR&loading=async&callback=initGoogleMaps">
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDa66vbuMgm_L4wdOgPutliu_PLzI3xqEw&libraries=places,geometry,drawing&language=tr&region=TR">
     </script>
   </head>
   <body>

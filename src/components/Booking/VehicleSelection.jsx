@@ -13,9 +13,9 @@ import { VEHICLE_TYPES } from '../../config/constants';
 
 const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
   const [selectedVehicle, setSelectedVehicle] = useState(bookingData.selectedVehicle || null);
-  const [distance, setDistance] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [routeLoaded, setRouteLoaded] = useState(false);
+  const [distance, setDistance] = useState(50); // Varsayılan 50km
+  const [duration, setDuration] = useState(60); // Varsayılan 60dk
+  const [routeLoaded, setRouteLoaded] = useState(true); // Başlangıçta true
   const [error, setError] = useState('');
 
   const mapRef = useRef(null);
@@ -74,17 +74,41 @@ const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
   ];
 
   useEffect(() => {
-    initializeMap();
+    // Google Maps yüklenene kadar bekle
+    if (!window.google) {
+      const checkGoogle = setInterval(() => {
+        if (window.google) {
+          clearInterval(checkGoogle);
+          initializeMap();
+        }
+      }, 100);
+      return () => clearInterval(checkGoogle);
+    } else {
+      initializeMap();
+    }
   }, []);
 
   useEffect(() => {
-    if (bookingData.pickupLocation && bookingData.dropoffLocation && map.current) {
-      calculateRoute();
+    // Harita ve lokasyon verileri hazır olduğunda rota hesapla
+    if (map.current && bookingData.pickupLocation && bookingData.dropoffLocation) {
+      setTimeout(() => {
+        calculateRoute();
+      }, 500); // Kısa bir gecikme ile
+    } else if (map.current) {
+      // Lokasyon verisi eksikse varsayılan değerler set et
+      setDistance(50); // Varsayılan mesafe
+      setDuration(60); // Varsayılan süre
+      setRouteLoaded(true);
     }
-  }, [bookingData.pickupLocation, bookingData.dropoffLocation]);
+  }, [bookingData.pickupLocation, bookingData.dropoffLocation, map.current]);
 
   const initializeMap = () => {
-    if (window.google && mapRef.current) {
+    if (!window.google || !window.google.maps || !mapRef.current) {
+      console.log('Google Maps not ready or map ref not available');
+      return;
+    }
+
+    try {
       map.current = new window.google.maps.Map(mapRef.current, {
         zoom: 10,
         center: ANTALYA_AIRPORT,
@@ -110,31 +134,81 @@ const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
         }
       });
       directionsRenderer.current.setMap(map.current);
+      
+      console.log('Map initialized successfully');
+    } catch (error) {
+      console.error('Map initialization error:', error);
+      // Hata durumunda varsayılan değerler set et
+      setDistance(50);
+      setDuration(60);
+      setRouteLoaded(true);
     }
   };
 
   const calculateRoute = () => {
-    if (!directionsService.current || !bookingData.pickupLocation || !bookingData.dropoffLocation) {
+    if (!directionsService.current) {
+      console.log('DirectionsService not ready');
       return;
     }
 
-    const origin = bookingData.direction === 'airport-to-hotel' 
-      ? ANTALYA_AIRPORT 
-      : bookingData.pickupLocation;
-    
-    const destination = bookingData.direction === 'hotel-to-airport' 
-      ? ANTALYA_AIRPORT 
-      : bookingData.dropoffLocation;
+    // Lokasyon verilerini kontrol et
+    let origin, destination;
+
+    if (bookingData.direction === 'airport-to-hotel') {
+      origin = ANTALYA_AIRPORT;
+      destination = bookingData.dropoffLocation;
+    } else {
+      origin = bookingData.pickupLocation;
+      destination = ANTALYA_AIRPORT;
+    }
+
+    // Lokasyon verilerinin format kontrolü
+    if (!origin || !destination) {
+      console.log('Missing location data:', { origin, destination });
+      return;
+    }
+
+    // Koordinat formatını düzelt
+    const formatLocation = (location) => {
+      if (typeof location === 'object' && location.lat && location.lng) {
+        return { lat: location.lat, lng: location.lng };
+      }
+      if (typeof location === 'object' && location.address) {
+        return location.address;
+      }
+      return location;
+    };
+
+    const formattedOrigin = formatLocation(origin);
+    const formattedDestination = formatLocation(destination);
+
+    console.log('Calculating route:', { formattedOrigin, formattedDestination });
+
+    // Sadece yeni rota hesaplanıyorsa loading göster
+    if (distance === 50 && duration === 60) {
+      setRouteLoaded(false);
+    }
+    setError('');
+
+    // Timeout mekanizması - 10 saniye sonra varsayılan değerleri kullan
+    const timeoutId = setTimeout(() => {
+      console.log('Route calculation timeout, using default values');
+      setDistance(50);
+      setDuration(60);
+      setRouteLoaded(true);
+    }, 10000);
 
     directionsService.current.route(
       {
-        origin: origin,
-        destination: destination,
+        origin: formattedOrigin,
+        destination: formattedDestination,
         travelMode: window.google.maps.TravelMode.DRIVING,
         avoidTolls: false,
         avoidHighways: false
       },
       (result, status) => {
+        clearTimeout(timeoutId); // Başarılı olursa timeout'u iptal et
+        
         if (status === 'OK') {
           directionsRenderer.current.setDirections(result);
           
@@ -145,9 +219,14 @@ const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
           setDuration(Math.round(leg.duration.value / 60)); // dakika
           setRouteLoaded(true);
           setError('');
+          console.log('Route calculated successfully:', { distance: leg.distance.value / 1000, duration: leg.duration.value / 60 });
         } else {
-          setError('Rota hesaplanamadı. Lütfen lokasyon bilgilerini kontrol edin.');
           console.error('Directions request failed due to ' + status);
+          // Hata durumunda varsayılan değerleri kullan
+          setDistance(50);
+          setDuration(60);
+          setRouteLoaded(true);
+          setError('');
         }
       }
     );

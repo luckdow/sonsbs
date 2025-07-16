@@ -1,252 +1,505 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { 
+  MapPin, 
+  Calendar, 
+  Clock, 
+  ArrowRightLeft,
+  Plane,
+  Building,
+  AlertCircle,
+  Users,
+  Package,
+  Plus,
+  Minus
+} from 'lucide-react';
 
 const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
-  const [selectedAddress, setSelectedAddress] = useState('');
-  const [autocompleteInstance, setAutocompleteInstance] = useState(null);
-  const inputRef = useRef(null);
-
-  // Bugünün tarihini al ve 4 saat sonrasını hesapla
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
+  const [direction, setDirection] = useState(bookingData.direction || 'airport-to-hotel');
+  const [pickupLocation, setPickupLocation] = useState(bookingData.pickupLocation || '');
+  const [dropoffLocation, setDropoffLocation] = useState(bookingData.dropoffLocation || '');
   
-  // 4 saat sonrasını hesapla
-  const minHour = currentHour + 4;
-  const minTime = minHour < 24 ? 
-    String(minHour).padStart(2, '0') + ':' + String(currentMinute).padStart(2, '0') :
-    '00:00';
+  // Tarih ve saat için default değerler
+  const getDefaultDate = () => {
+    const now = new Date();
+    return now.toISOString().slice(0, 10);
+  };
+  
+  const getDefaultTime = () => {
+    const now = new Date();
+    now.setHours(now.getHours() + 4); // 4 saat sonra
+    return now.toTimeString().slice(0, 5);
+  };
 
-  // Default değerleri ayarla
+  const [date, setDate] = useState(bookingData.date || getDefaultDate());
+  const [time, setTime] = useState(bookingData.time || getDefaultTime());
+  const [passengerCount, setPassengerCount] = useState(bookingData.passengerCount || 1);
+  const [baggageCount, setBaggageCount] = useState(bookingData.baggageCount || 1);
+  const [errors, setErrors] = useState({});
+
+  const pickupRef = useRef(null);
+  const dropoffRef = useRef(null);
+  const autocompletePickup = useRef(null);
+  const autocompleteDropoff = useRef(null);
+
+  // Antalya Havalimanı koordinatları
+  const ANTALYA_AIRPORT = {
+    address: 'Antalya Havalimanı, Antalya, Türkiye',
+    lat: 36.8987,
+    lng: 30.8005
+  };
+
   useEffect(() => {
-    if (!bookingData.date) {
-      setBookingData(prev => ({
-        ...prev,
-        date: today,
-        time: minTime
-      }));
-    }
-  }, [bookingData.date, setBookingData, today, minTime]);
-
-  // Google Places Autocomplete
-  useEffect(() => {
-    const initGoogleMaps = () => {
-      if (!window.google || !window.google.maps || !window.google.maps.places) {
-        console.error('Google Maps Places API bulunamadı');
-        return;
-      }
-
-      const inputElement = inputRef.current;
-      if (!inputElement) {
-        console.error('Input element bulunamadı');
-        return;
-      }
-
-      try {
-        const autocomplete = new window.google.maps.places.Autocomplete(inputElement, {
-          types: ['lodging'],
-          componentRestrictions: { country: 'tr' },
-          language: 'tr'
-        });
-        
-        autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace();
-          if (place && place.formatted_address) {
-            setSelectedAddress(place.formatted_address);
-            setBookingData(prev => ({
-              ...prev,
-              [bookingData.direction === 'airport-to-hotel' ? 'dropoffLocation' : 'pickupLocation']: place.formatted_address
-            }));
+    // Google Places Autocomplete'i başlat
+    const initPlaces = () => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        setTimeout(() => {
+          initializeAutocomplete();
+        }, 100);
+      } else {
+        // Google Maps API yüklenene kadar bekle
+        const checkGoogleMaps = setInterval(() => {
+          if (window.google && window.google.maps && window.google.maps.places) {
+            initializeAutocomplete();
+            clearInterval(checkGoogleMaps);
           }
-        });
+        }, 500);
         
-        setAutocompleteInstance(autocomplete);
-      } catch (error) {
-        console.error('Autocomplete oluşturulurken hata:', error);
+        setTimeout(() => {
+          clearInterval(checkGoogleMaps);
+        }, 10000);
+        
+        return () => clearInterval(checkGoogleMaps);
       }
     };
 
-    if (window.googleMapsLoaded) {
-      initGoogleMaps();
-    } else {
-      const handleGoogleMapsLoaded = () => {
-        initGoogleMaps();
-      };
-      
-      window.addEventListener('google-maps-loaded', handleGoogleMapsLoaded);
-      
-      return () => {
-        window.removeEventListener('google-maps-loaded', handleGoogleMapsLoaded);
-      };
+    initPlaces();
+  }, [direction]);
+
+  const initializeAutocomplete = () => {
+    try {
+      if (!window.google || !window.google.maps || !window.google.maps.places) {
+        return;
+      }
+
+      // Önceki autocomplete'leri temizle
+      if (autocompletePickup.current) {
+        window.google.maps.event.clearInstanceListeners(autocompletePickup.current);
+        autocompletePickup.current = null;
+      }
+      if (autocompleteDropoff.current) {
+        window.google.maps.event.clearInstanceListeners(autocompleteDropoff.current);
+        autocompleteDropoff.current = null;
+      }
+
+      // Pickup için autocomplete (sadece hotel-to-airport için)
+      if (direction === 'hotel-to-airport' && pickupRef.current) {
+        autocompletePickup.current = new window.google.maps.places.Autocomplete(
+          pickupRef.current,
+          {
+            types: ['lodging'],
+            componentRestrictions: { country: 'tr' },
+            fields: ['place_id', 'formatted_address', 'geometry', 'name']
+          }
+        );
+
+        autocompletePickup.current.addListener('place_changed', () => {
+          const place = autocompletePickup.current.getPlace();
+          if (place && place.geometry) {
+            const locationData = {
+              address: place.formatted_address || place.name,
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng()
+            };
+            setPickupLocation(locationData);
+          }
+        });
+      }
+
+      // Dropoff için autocomplete (sadece airport-to-hotel için)
+      if (direction === 'airport-to-hotel' && dropoffRef.current) {
+        autocompleteDropoff.current = new window.google.maps.places.Autocomplete(
+          dropoffRef.current,
+          {
+            types: ['lodging'],
+            componentRestrictions: { country: 'tr' },
+            fields: ['place_id', 'formatted_address', 'geometry', 'name']
+          }
+        );
+
+        autocompleteDropoff.current.addListener('place_changed', () => {
+          const place = autocompleteDropoff.current.getPlace();
+          if (place && place.geometry) {
+            const locationData = {
+              address: place.formatted_address || place.name,
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng()
+            };
+            setDropoffLocation(locationData);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Google Places initialization error:', error);
     }
-  }, [bookingData.direction, setBookingData]);
-
-  // Transfer yönü değiştiğinde selectedAddress'i temizle
-  useEffect(() => {
-    setSelectedAddress('');
-  }, [bookingData.direction]);
-
-  const handleDateTimeChange = (field, value) => {
-    setBookingData(prev => ({
-      ...prev,
-      [field]: value
-    }));
   };
 
-  const validateAndNext = () => {
-    const hotelLocation = bookingData.direction === 'airport-to-hotel' 
-      ? bookingData.dropoffLocation 
-      : bookingData.pickupLocation;
-    
-    if (!hotelLocation || !bookingData.date || !bookingData.time) {
-      alert('Lütfen tüm alanları doldurun');
-      return;
+  // Transfer yönü değişince lokasyonları güncelle
+  useEffect(() => {
+    if (direction === 'airport-to-hotel') {
+      setPickupLocation(ANTALYA_AIRPORT);
+      setDropoffLocation('');
+    } else {
+      setPickupLocation('');
+      setDropoffLocation(ANTALYA_AIRPORT);
+    }
+  }, [direction]);
+
+  // Bugünün tarihi
+  const getTodayDate = () => {
+    const now = new Date();
+    return now.toISOString().slice(0, 10);
+  };
+
+  // Yolcu sayısı kontrol fonksiyonları
+  const handlePassengerChange = (increment) => {
+    setPassengerCount(prev => {
+      if (increment) {
+        return prev < 50 ? prev + 1 : prev; // Maksimum 50 kişi
+      } else {
+        return prev > 1 ? prev - 1 : prev; // Minimum 1 kişi
+      }
+    });
+  };
+
+  // Bagaj sayısı kontrol fonksiyonları
+  const handleBaggageChange = (increment) => {
+    setBaggageCount(prev => {
+      if (increment) {
+        return prev < 20 ? prev + 1 : prev; // Maksimum 20 bagaj
+      } else {
+        return prev > 0 ? prev - 1 : prev; // Minimum 0 bagaj
+      }
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!direction) {
+      newErrors.direction = 'Transfer yönünü seçiniz';
     }
 
-    // 4 saat kuralı kontrolü
-    const selectedDateTime = new Date(`${bookingData.date}T${bookingData.time}`);
-    const minDateTime = new Date(now.getTime() + 4 * 60 * 60 * 1000);
-    
-    if (selectedDateTime < minDateTime) {
-      alert('Transfer tarihi en az 4 saat sonrası olmalıdır');
-      return;
+    // Lokasyon kontrolü
+    if (direction === 'airport-to-hotel') {
+      if (!dropoffLocation || (typeof dropoffLocation === 'string' && dropoffLocation.trim() === '')) {
+        newErrors.dropoffLocation = 'Otel/Konaklama yeri seçiniz';
+      }
     }
 
-    onNext();
+    if (direction === 'hotel-to-airport') {
+      if (!pickupLocation || (typeof pickupLocation === 'string' && pickupLocation.trim() === '')) {
+        newErrors.pickupLocation = 'Otel/Konaklama yeri seçiniz';
+      }
+    }
+
+    if (!date) {
+      newErrors.date = 'Tarih seçiniz';
+    } else {
+      const selectedDateTime = new Date(`${date}T${time || '00:00'}`);
+      const minDateTime = new Date();
+      minDateTime.setHours(minDateTime.getHours() + 4);
+
+      if (selectedDateTime < minDateTime) {
+        newErrors.date = 'Rezervasyon en az 4 saat önceden yapılmalıdır';
+      }
+    }
+
+    if (!time) {
+      newErrors.time = 'Saat seçiniz';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateForm()) {
+      const updatedData = {
+        ...bookingData,
+        direction,
+        pickupLocation,
+        dropoffLocation,
+        date,
+        time,
+        passengerCount,
+        baggageCount
+      };
+      setBookingData(updatedData);
+      onNext();
+    }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-8"
-    >
-      {/* Transfer Yönü */}
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <MapPin className="w-5 h-5 mr-2 text-blue-500" />
-          Transfer Yönü
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setBookingData(prev => ({ ...prev, direction: 'airport-to-hotel' }))}
-            className={`p-4 rounded-lg border-2 transition-all ${
-              bookingData.direction === 'airport-to-hotel'
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <div className="text-center">
-              <div className="font-semibold">Havalimanından Otele</div>
-              <div className="text-sm mt-1 opacity-80">Antalya Havalimanı → Otel</div>
-            </div>
-          </motion.button>
+    <div className="max-w-2xl mx-auto p-4 sm:p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
+        {/* Transfer Yönü Seçimi */}
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-gray-700">
+            Transfer Yönü
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => setDirection('airport-to-hotel')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                direction === 'airport-to-hotel'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <Plane className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="font-medium text-sm">Havalimanı → Otel</div>
+                  <div className="text-xs text-gray-500">Karşılama servisi</div>
+                </div>
+              </div>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setBookingData(prev => ({ ...prev, direction: 'hotel-to-airport' }))}
-            className={`p-4 rounded-lg border-2 transition-all ${
-              bookingData.direction === 'hotel-to-airport'
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <div className="text-center">
-              <div className="font-semibold">Otelden Havalimanına</div>
-              <div className="text-sm mt-1 opacity-80">Otel → Antalya Havalimanı</div>
-            </div>
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Otel Seçimi */}
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <MapPin className="w-5 h-5 mr-2 text-blue-500" />
-          Otel Bilgileri
-        </h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {bookingData.direction === 'airport-to-hotel' ? 'Gideceğiniz Otel' : 'Kaldığınız Otel'}
-            </label>
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Otel adı yazın..."
-              value={selectedAddress}
-              onChange={(e) => setSelectedAddress(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Otel adını yazmaya başladığınızda öneriler görünecektir
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => setDirection('hotel-to-airport')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                direction === 'hotel-to-airport'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <Building className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="font-medium text-sm">Otel → Havalimanı</div>
+                  <div className="text-xs text-gray-500">Uğurlama servisi</div>
+                </div>
+              </div>
+            </motion.button>
+          </div>
+          {errors.direction && (
+            <p className="text-red-500 text-xs flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.direction}
             </p>
-          </div>
+          )}
         </div>
-      </div>
 
-      {/* Tarih ve Saat */}
-      <div className="bg-gray-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <Calendar className="w-5 h-5 mr-2 text-blue-500" />
-          Tarih ve Saat
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Transfer Tarihi
-            </label>
-            <input
-              type="date"
-              min={today}
-              value={bookingData.date}
-              onChange={(e) => handleDateTimeChange('date', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Transfer Saati
-            </label>
-            <input
-              type="time"
-              value={bookingData.time}
-              onChange={(e) => handleDateTimeChange('time', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+        {/* Lokasyon Bilgileri */}
+        <div className="space-y-4">
+          {/* Hotel Location Input */}
+          {direction === 'airport-to-hotel' ? (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Otel/Konaklama Yeri
+              </label>
+              <div className="relative">
+                <input
+                  ref={dropoffRef}
+                  type="text"
+                  placeholder="Otel adını yazmaya başlayın..."
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  value={typeof dropoffLocation === 'string' ? dropoffLocation : dropoffLocation?.address || ''}
+                  onChange={(e) => setDropoffLocation(e.target.value)}
+                  autoComplete="off"
+                  spellCheck="false"
+                />
+                <MapPin className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
+              </div>
+              {errors.dropoffLocation && (
+                <p className="text-red-500 text-xs flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.dropoffLocation}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Otel/Konaklama Yeri
+              </label>
+              <div className="relative">
+                <input
+                  ref={pickupRef}
+                  type="text"
+                  placeholder="Otel adını yazmaya başlayın..."
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  value={typeof pickupLocation === 'string' ? pickupLocation : pickupLocation?.address || ''}
+                  onChange={(e) => setPickupLocation(e.target.value)}
+                  autoComplete="off"
+                  spellCheck="false"
+                />
+                <MapPin className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
+              </div>
+              {errors.pickupLocation && (
+                <p className="text-red-500 text-xs flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.pickupLocation}
+                </p>
+              )}
+            </div>
+          )}
         </div>
-        
-        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-700 flex items-center">
-            <Clock className="w-4 h-4 mr-1" />
-            En az 4 saat öncesinden rezervasyon yapabilirsiniz
-          </p>
-        </div>
-      </div>
 
-      {/* İleri Butonu */}
-      <div className="flex justify-end">
+        {/* Yolcu ve Bagaj Sayısı */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Yolcu Sayısı */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Yolcu Sayısı
+            </label>
+            <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg">
+              <Users className="w-4 h-4 text-gray-500" />
+              <div className="flex items-center space-x-3 flex-1">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={() => handlePassengerChange(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                  disabled={passengerCount <= 1}
+                >
+                  <Minus className="w-4 h-4 text-gray-600" />
+                </motion.button>
+                <span className="text-lg font-medium text-gray-800 min-w-[2rem] text-center">
+                  {passengerCount}
+                </span>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={() => handlePassengerChange(true)}
+                  className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors"
+                  disabled={passengerCount >= 50}
+                >
+                  <Plus className="w-4 h-4 text-blue-600" />
+                </motion.button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bagaj Sayısı */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Bagaj Sayısı
+            </label>
+            <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg">
+              <Package className="w-4 h-4 text-gray-500" />
+              <div className="flex items-center space-x-3 flex-1">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={() => handleBaggageChange(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                  disabled={baggageCount <= 0}
+                >
+                  <Minus className="w-4 h-4 text-gray-600" />
+                </motion.button>
+                <span className="text-lg font-medium text-gray-800 min-w-[2rem] text-center">
+                  {baggageCount}
+                </span>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={() => handleBaggageChange(true)}
+                  className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors"
+                  disabled={baggageCount >= 20}
+                >
+                  <Plus className="w-4 h-4 text-blue-600" />
+                </motion.button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tarih ve Saat */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Tarih
+            </label>
+            <div className="relative">
+              <input
+                type="date"
+                value={date}
+                min={getTodayDate()}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+              <Calendar className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
+            {errors.date && (
+              <p className="text-red-500 text-xs flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {errors.date}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Saat
+            </label>
+            <div className="relative">
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+              <Clock className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
+            {errors.time && (
+              <p className="text-red-500 text-xs flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {errors.time}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Bilgilendirme */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div className="text-sm text-blue-800">
+              <p className="font-medium mb-1">Önemli Bilgiler:</p>
+              <ul className="space-y-1 text-xs">
+                <li>• Rezervasyon en az 4 saat önceden yapılmalıdır</li>
+                <li>• Havalimanı transferleri 7/24 hizmet verir</li>
+                <li>• Uçuş bilgilerinizi bir sonraki adımda girebilirsiniz</li>
+                <li>• Otel adını yazmaya başladığınızda öneriler görünecek</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* İleri Butonu */}
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={validateAndNext}
-          className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleNext}
+          className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
         >
-          Devam Et
-          <ArrowRight className="w-4 h-4 ml-2" />
+          <span>Devam Et</span>
+          <ArrowRightLeft className="w-4 h-4" />
         </motion.button>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

@@ -65,17 +65,20 @@ const BookingWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     // Transfer details
-    direction: 'airport-to-hotel',
+    direction: '', // 'airport-to-hotel' or 'hotel-to-airport'
     pickupLocation: '',
     dropoffLocation: '',
     date: '',
     time: '',
+    passengerCount: 1,
+    baggageCount: 1,
     
     // Route calculation
     routeInfo: null,
     
     // Vehicle selection
     selectedVehicle: null,
+    selectedServices: [],
     totalPrice: 0,
     
     // Personal info
@@ -84,15 +87,23 @@ const BookingWizard = () => {
       lastName: '',
       email: '',
       phone: '',
-      passengerCount: 1,
       flightNumber: '',
-      flightTime: '',
+      arrivalTime: '',
+      departureTime: '',
       specialRequests: '',
-      acceptTerms: false
+      agreeToTerms: false,
+      marketingConsent: false
     },
     
     // Payment
-    paymentMethod: 'credit_card'
+    paymentMethod: 'credit_card',
+    cardData: {
+      cardNumber: '',
+      expiryDate: '',
+      cvv: '',
+      cardholderName: '',
+      saveCard: false
+    }
   });
 
   // Initialize user data if logged in
@@ -139,18 +150,23 @@ const BookingWizard = () => {
           toast.error('Lütfen transfer yönü seçin');
           return false;
         }
-        // Otel kontrolü
-        const hotelLocation = bookingData.direction === 'airport-to-hotel' 
-          ? bookingData.dropoffLocation 
-          : bookingData.pickupLocation;
-        if (!hotelLocation || (typeof hotelLocation === 'string' && !hotelLocation.trim())) {
-          toast.error('Lütfen otel seçin');
+        
+        // Lokasyon kontrolü
+        if (bookingData.direction === 'airport-to-hotel' && !bookingData.dropoffLocation) {
+          toast.error('Lütfen otel/konaklama yeri seçin');
           return false;
         }
+        
+        if (bookingData.direction === 'hotel-to-airport' && !bookingData.pickupLocation) {
+          toast.error('Lütfen otel/konaklama yeri seçin');
+          return false;
+        }
+        
         if (!bookingData.date || !bookingData.time) {
           toast.error('Lütfen tarih ve saat seçin');
           return false;
         }
+        
         return true;
       
       case 2: // Vehicle Selection
@@ -170,7 +186,7 @@ const BookingWizard = () => {
           toast.error('Lütfen iletişim bilgilerini girin');
           return false;
         }
-        if (!personalInfo.acceptTerms) {
+        if (!personalInfo.agreeToTerms) {
           toast.error('Lütfen kullanım şartlarını kabul edin');
           return false;
         }
@@ -180,6 +196,13 @@ const BookingWizard = () => {
         if (!bookingData.paymentMethod) {
           toast.error('Lütfen ödeme yöntemi seçin');
           return false;
+        }
+        if (bookingData.paymentMethod === 'credit_card') {
+          const { cardData } = bookingData;
+          if (!cardData.cardNumber || !cardData.expiryDate || !cardData.cvv || !cardData.cardholderName) {
+            toast.error('Lütfen kart bilgilerini tamamlayın');
+            return false;
+          }
         }
         return true;
       
