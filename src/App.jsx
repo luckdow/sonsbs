@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AppProvider } from './context/AppContext'
+import { Toaster } from 'react-hot-toast'
+import { AuthProvider } from './contexts/AuthContext'
 
 // Layout Components
 import Layout from './components/Layout/Layout'
@@ -37,11 +38,11 @@ import CustomerDashboard from './pages/Customer/CustomerDashboard'
 import MyReservations from './pages/Customer/MyReservations'
 import CustomerProfile from './pages/Customer/CustomerProfile'
 
+// Booking Components
+import BookingWizard from './components/Booking/BookingWizard'
+
 // Components
-import NotificationSystem from './components/UI/NotificationSystem'
-import Modal from './components/UI/Modal'
-import LoadingScreen from './components/UI/LoadingScreen'
-import ProtectedRoute from './components/Auth/ProtectedRoute'
+import { ProtectedRoute, PublicRoute, AdminRoute, DriverRoute, CustomerRoute } from './components/Auth/ProtectedRoute'
 
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
@@ -49,13 +50,14 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 function App() {
   return (
     <ErrorBoundary>
-      <AppProvider>
+      <AuthProvider>
         <Router>
           <div className="App">
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
+                <Route path="rezervasyon" element={<BookingWizard />} />
                 <Route path="araç-seçimi" element={<VehicleSelectionPage />} />
                 <Route path="müşteri-bilgileri" element={<CustomerInfoPage />} />
                 <Route path="ödeme" element={<PaymentPage />} />
@@ -63,16 +65,25 @@ function App() {
               </Route>
 
               {/* Auth Routes */}
-              <Route path="/giriş" element={<LoginPage />} />
-              <Route path="/kayıt" element={<RegisterPage />} />
+              <Route path="/giriş" element={
+                <PublicRoute redirectTo="auto">
+                  <LoginPage />
+                </PublicRoute>
+              } />
+              <Route path="/kayıt" element={
+                <PublicRoute redirectTo="auto">
+                  <RegisterPage />
+                </PublicRoute>
+              } />
 
               {/* Admin Routes */}
               <Route path="/admin" element={
-                <ProtectedRoute requiredRole="admin">
+                <AdminRoute>
                   <AdminLayout />
-                </ProtectedRoute>
+                </AdminRoute>
               }>
                 <Route index element={<AdminDashboard />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="araçlar" element={<VehicleManagement />} />
                 <Route path="şoförler" element={<DriverManagement />} />
                 <Route path="rezervasyonlar" element={<ReservationManagement />} />
@@ -82,22 +93,24 @@ function App() {
 
               {/* Driver Routes */}
               <Route path="/şoför" element={
-                <ProtectedRoute requiredRole="driver">
+                <DriverRoute>
                   <DriverLayout />
-                </ProtectedRoute>
+                </DriverRoute>
               }>
                 <Route index element={<DriverDashboard />} />
+                <Route path="dashboard" element={<DriverDashboard />} />
                 <Route path="seferlerim" element={<MyTrips />} />
                 <Route path="profil" element={<DriverProfile />} />
               </Route>
 
               {/* Customer Routes */}
               <Route path="/müşteri" element={
-                <ProtectedRoute requiredRole="customer">
+                <CustomerRoute>
                   <CustomerLayout />
-                </ProtectedRoute>
+                </CustomerRoute>
               }>
                 <Route index element={<CustomerDashboard />} />
+                <Route path="dashboard" element={<CustomerDashboard />} />
                 <Route path="rezervasyonlar" element={<MyReservations />} />
                 <Route path="profil" element={<CustomerProfile />} />
               </Route>
@@ -120,12 +133,33 @@ function App() {
             </Routes>
 
             {/* Global Components */}
-            <NotificationSystem />
-            <Modal />
-            <LoadingScreen />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: '#22c55e',
+                    secondary: '#fff',
+                  },
+                },
+                error: {
+                  duration: 5000,
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
+                  },
+                },
+              }}
+            />
           </div>
         </Router>
-      </AppProvider>
+      </AuthProvider>
     </ErrorBoundary>
   )
 }

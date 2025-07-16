@@ -148,7 +148,7 @@ const HomePage = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <Link 
-                to="/book-transfer" 
+                to="/rezervasyon" 
                 className="btn btn-primary btn-lg group relative overflow-hidden"
               >
                 <motion.span
@@ -356,7 +356,7 @@ const HomePage = () => {
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Link 
-                to="/book-transfer" 
+                to="/rezervasyon" 
                 className="btn btn-lg bg-white text-gray-900 hover:bg-gray-100 font-bold px-8 py-4 rounded-2xl shadow-2xl hover:scale-105 transition-all duration-300"
               >
                 <motion.span

@@ -2,15 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Car, Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../../config/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { actions } = useApp();
+  const { login } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -61,70 +59,28 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      // Firebase Authentication
-      const userCredential = await signInWithEmailAndPassword(
-        auth, 
-        formData.email, 
-        formData.password
-      );
+      await login(formData.email, formData.password);
+      toast.success('Başarıyla giriş yaptınız!');
       
-      const user = userCredential.user;
-
-      // Get user role from Firestore
-      let userRole = 'customer'; // default role
-      
-      try {
-        // Check in different collections for user role
-        const adminDoc = await getDoc(doc(db, 'admins', user.uid));
-        const driverDoc = await getDoc(doc(db, 'drivers', user.uid));
-        
-        if (adminDoc.exists()) {
-          userRole = 'admin';
-        } else if (driverDoc.exists()) {
-          userRole = 'driver';
-        }
-      } catch (error) {
-        console.log('Role check error:', error);
-        // Continue with default customer role
-      }
-
-      // Set user in context
-      actions.setUser(user);
-      actions.setUserRole(userRole);
-
-      actions.showNotification('success', 'Başarıyla giriş yaptınız', 'Hoş Geldiniz');
-
-      // Redirect based on role
-      const redirectPath = userRole === 'admin' ? '/admin' :
-                          userRole === 'driver' ? '/şoför' :
-                          userRole === 'customer' ? '/müşteri' : from;
-      
-      navigate(redirectPath, { replace: true });
-
+      // Redirect will be handled by AuthContext based on user role
+      navigate(from, { replace: true });
     } catch (error) {
       console.error('Login error:', error);
       
-      let errorMessage = 'Giriş sırasında bir hata oluştu';
+      let errorMessage = 'Giriş yapılırken bir hata oluştu';
       
-      switch (error.code) {
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-          errorMessage = 'E-posta veya şifre hatalı';
-          break;
-        case 'auth/invalid-email':
-          errorMessage = 'Geçersiz e-posta adresi';
-          break;
-        case 'auth/user-disabled':
-          errorMessage = 'Bu hesap devre dışı bırakılmış';
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Çok fazla deneme. Lütfen daha sonra tekrar deneyin';
-          break;
-        default:
-          errorMessage = error.message;
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Hatalı şifre';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Geçersiz e-posta adresi';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin';
       }
       
-      actions.showNotification('error', errorMessage, 'Giriş Hatası');
+      toast.error(errorMessage);
+      setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
     }
