@@ -169,13 +169,8 @@ const SettingsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sistem Ayarları</h1>
-          <p className="text-gray-600">Platform ayarlarını yönetin</p>
-        </div>
-        {hasChanges && (
+      {hasChanges && (
+        <div className="flex justify-end">
           <button
             onClick={handleSaveSettings}
             className="btn btn-primary"
@@ -183,8 +178,8 @@ const SettingsPage = () => {
             <Save className="w-4 h-4 mr-2" />
             Değişiklikleri Kaydet
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar Navigation */}

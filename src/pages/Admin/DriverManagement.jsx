@@ -237,12 +237,7 @@ const DriverManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Şoför Yönetimi</h1>
-          <p className="text-gray-600">Şoför ekibinizi yönetin</p>
-        </div>
+      <div className="flex justify-end">
         <button
           onClick={() => setShowModal(true)}
           className="btn btn-primary"

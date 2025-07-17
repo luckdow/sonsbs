@@ -176,43 +176,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-8 p-6">
-      {/* Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row lg:items-center lg:justify-between"
-      >
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Admin Dashboard 👑
-          </h1>
-          <p className="text-gray-600 mt-2">
-            SBS Transfer yönetim merkezine hoş geldiniz
-          </p>
-        </div>
-        
-        <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Yeni Rezervasyon</span>
-          </motion.button>
-          
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl transition-colors"
-          >
-            <BarChart3 className="w-4 h-4" />
-            <span>Raporlar</span>
-          </motion.button>
-        </div>
-      </motion.div>
-
-      {/* Stats Cards */}
       {/* Stats Cards */}
       <motion.div 
         initial={{ opacity: 0 }}
