@@ -8,7 +8,16 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Plus,
+  Eye,
+  Edit,
+  BarChart3,
+  Activity,
+  MapPin,
+  Star,
+  Shield,
+  Zap
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -22,7 +31,9 @@ const AdminDashboard = () => {
     totalRevenue: 0,
     activeDrivers: 0,
     pendingReservations: 0,
-    completedReservations: 0
+    completedReservations: 0,
+    monthlyGrowth: 0,
+    customerSatisfaction: 0
   });
 
   useEffect(() => {
@@ -49,13 +60,23 @@ const AdminDashboard = () => {
       driver => driver.status === 'active'
     ).length;
 
+    // Calculate monthly growth (mock calculation)
+    const monthlyGrowth = reservations.length > 0 ? 
+      Math.round((completedReservations / reservations.length) * 100) : 0;
+
+    // Calculate customer satisfaction (mock calculation based on completed reservations)
+    const customerSatisfaction = completedReservations > 0 ? 
+      Math.min(95, 85 + Math.round(completedReservations / 10)) : 0;
+
     setStats({
       totalReservations: reservations.length,
       todayReservations,
       totalRevenue,
       activeDrivers,
       pendingReservations,
-      completedReservations
+      completedReservations,
+      monthlyGrowth,
+      customerSatisfaction
     });
   }, [reservations, drivers]);
 
@@ -65,28 +86,64 @@ const AdminDashboard = () => {
       value: stats.totalReservations,
       icon: Calendar,
       color: 'blue',
-      change: '+12%'
+      change: '+12%',
+      trend: 'up'
     },
     {
       title: 'Bugünkü Rezervasyonlar',
       value: stats.todayReservations,
       icon: Clock,
-      color: 'orange',
-      change: '+8%'
+      color: 'green',
+      change: '+8%',
+      trend: 'up'
     },
     {
       title: 'Toplam Gelir',
-      value: `₺${stats.totalRevenue.toLocaleString('tr-TR')}`,
+      value: `₺${stats.totalRevenue.toLocaleString()}`,
       icon: DollarSign,
-      color: 'green',
-      change: '+15%'
+      color: 'purple',
+      change: '+25%',
+      trend: 'up'
     },
     {
       title: 'Aktif Şoförler',
       value: stats.activeDrivers,
       icon: Users,
-      color: 'purple',
-      change: '+3%'
+      color: 'orange',
+      change: '+5%',
+      trend: 'up'
+    },
+    {
+      title: 'Bekleyen Rezervasyonlar',
+      value: stats.pendingReservations,
+      icon: AlertTriangle,
+      color: 'yellow',
+      change: '-3%',
+      trend: 'down'
+    },
+    {
+      title: 'Tamamlanan İşler',
+      value: stats.completedReservations,
+      icon: CheckCircle,
+      color: 'emerald',
+      change: '+18%',
+      trend: 'up'
+    },
+    {
+      title: 'Aylık Büyüme',
+      value: `%${stats.monthlyGrowth}`,
+      icon: TrendingUp,
+      color: 'indigo',
+      change: '+7%',
+      trend: 'up'
+    },
+    {
+      title: 'Müşteri Memnuniyeti',
+      value: `%${stats.customerSatisfaction}`,
+      icon: Star,
+      color: 'pink',
+      change: '+2%',
+      trend: 'up'
     }
   ];
 
@@ -100,56 +157,103 @@ const AdminDashboard = () => {
         return 'bg-green-500 text-green-100';
       case 'purple':
         return 'bg-purple-500 text-purple-100';
+      case 'yellow':
+        return 'bg-yellow-500 text-yellow-100';
+      case 'emerald':
+        return 'bg-emerald-500 text-emerald-100';
+      case 'indigo':
+        return 'bg-indigo-500 text-indigo-100';
+      case 'pink':
+        return 'bg-pink-500 text-pink-100';
       default:
         return 'bg-gray-500 text-gray-100';
     }
   };
 
+  const getTrendColor = (trend) => {
+    return trend === 'up' ? 'text-green-600' : 'text-red-600';
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">SBS Transfer yönetim paneline hoş geldiniz</p>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col lg:flex-row lg:items-center lg:justify-between"
+      >
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            Admin Dashboard 👑
+          </h1>
+          <p className="text-gray-600 mt-2">
+            SBS Transfer yönetim merkezine hoş geldiniz
+          </p>
+        </div>
+        
+        <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Yeni Rezervasyon</span>
+          </motion.button>
+          
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl transition-colors"
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>Raporlar</span>
+          </motion.button>
+        </div>
+      </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Cards */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
         {statCards.map((stat, index) => (
           <motion.div
             key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
-            className="card"
+            whileHover={{ y: -5, transition: { duration: 0.2 } }}
+            className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300"
           >
-            <div className="card-body">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    {stat.title}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stat.value}
-                  </p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                    <span className="text-sm text-green-500 font-medium">
-                      {stat.change}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-1">
-                      bu ay
-                    </span>
-                  </div>
-                </div>
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getColorClasses(stat.color)}`}>
-                  <stat.icon className="w-6 h-6" />
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${getColorClasses(stat.color)}`}>
+                <stat.icon className="w-6 h-6" />
               </div>
+              <div className={`text-sm font-medium ${getTrendColor(stat.trend)} flex items-center space-x-1`}>
+                {stat.trend === 'up' ? (
+                  <TrendingUp className="w-3 h-3" />
+                ) : (
+                  <TrendingUp className="w-3 h-3 rotate-180" />
+                )}
+                <span>{stat.change}</span>
+              </div>
+            </div>
+            
+            <div>
+              <p className="text-2xl font-bold text-gray-900 mb-1">
+                {stat.value}
+              </p>
+              <p className="text-sm text-gray-600">
+                {stat.title}
+              </p>
             </div>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -3,9 +3,12 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut,
   updateProfile,
-  sendPasswordResetEmail 
+  sendPasswordResetEmail,
+  sendEmailVerification 
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
@@ -37,6 +40,59 @@ export const AuthProvider = ({ children }) => {
       const userDoc = await getDoc(doc(db, FIREBASE_COLLECTIONS.USERS, result.user.uid));
       if (userDoc.exists()) {
         setUserProfile(userDoc.data());
+      }
+      
+      return result;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    }
+  };
+
+  // Google OAuth Login
+  const signInWithGoogle = async () => {
+    try {
+      setError(null);
+      const provider = new GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+      
+      const result = await signInWithPopup(auth, provider);
+      
+      // Check if user profile exists in Firestore
+      const userDoc = await getDoc(doc(db, FIREBASE_COLLECTIONS.USERS, result.user.uid));
+      
+      if (!userDoc.exists()) {
+        // Create new user profile for Google OAuth users
+        const userProfile = {
+          uid: result.user.uid,
+          email: result.user.email,
+          firstName: result.user.displayName?.split(' ')[0] || '',
+          lastName: result.user.displayName?.split(' ').slice(1).join(' ') || '',
+          phone: result.user.phoneNumber || '',
+          role: USER_ROLES.CUSTOMER, // Default role for Google OAuth users
+          profilePhoto: result.user.photoURL || '',
+          authProvider: 'google',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isActive: true,
+          emailVerified: result.user.emailVerified
+        };
+
+        await setDoc(doc(db, FIREBASE_COLLECTIONS.USERS, result.user.uid), userProfile);
+        setUserProfile(userProfile);
+      } else {
+        // Update existing profile if needed
+        const existingProfile = userDoc.data();
+        const updatedProfile = {
+          ...existingProfile,
+          profilePhoto: result.user.photoURL || existingProfile.profilePhoto,
+          emailVerified: result.user.emailVerified,
+          updatedAt: new Date().toISOString()
+        };
+        
+        await updateDoc(doc(db, FIREBASE_COLLECTIONS.USERS, result.user.uid), updatedProfile);
+        setUserProfile(updatedProfile);
       }
       
       return result;
@@ -141,6 +197,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Send email verification
+  const sendVerificationEmail = async () => {
+    try {
+      setError(null);
+      if (user && !user.emailVerified) {
+        await sendEmailVerification(user);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    }
+  };
+
   // Update user profile
   const updateUserProfile = async (updates) => {
     try {
@@ -221,10 +292,12 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    signInWithGoogle,
     register,
     createCustomerAccount,
     logout,
     resetPassword,
+    sendVerificationEmail,
     updateUserProfile,
     hasRole,
     isAdmin,

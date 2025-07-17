@@ -20,15 +20,22 @@ import {
   Route,
   Package,
   Home,
-  ArrowRight
+  ArrowRight,
+  Info
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useNavigate } from 'react-router-dom';
+import { collection, addDoc } from 'firebase/firestore';
+import { db, auth } from '../../config/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { FIREBASE_COLLECTIONS, RESERVATION_STATUS, USER_ROLES } from '../../config/constants';
+import toast from 'react-hot-toast';
 
 const BookingConfirmation = ({ bookingData, onComplete }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [isGeneratingQR, setIsGeneratingQR] = useState(true);
   const [membershipCreated, setMembershipCreated] = useState(false);
+  const [membershipPassword, setMembershipPassword] = useState('');
   const [reservationId, setReservationId] = useState('');
   const navigate = useNavigate();
 
@@ -42,6 +49,57 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
     const newReservationId = `SBS${timestamp.toString().slice(-6)}${randomStr}`;
     setReservationId(newReservationId);
+
+    // Create reservation data for Firebase
+    const reservationData = {
+      id: newReservationId,
+      status: RESERVATION_STATUS.PENDING,
+      createdAt: new Date(),
+      
+      // Transfer details
+      direction: bookingData.direction,
+      pickupLocation: bookingData.pickupLocation,
+      dropoffLocation: bookingData.dropoffLocation,
+      date: bookingData.date,
+      time: bookingData.time,
+      passengerCount: bookingData.passengerCount,
+      baggageCount: bookingData.baggageCount,
+      
+      // Route info
+      distance: bookingData.distance,
+      duration: bookingData.duration,
+      
+      // Vehicle and services
+      selectedVehicle: bookingData.selectedVehicle,
+      selectedServices: bookingData.selectedServices || [],
+      
+      // Personal info
+      personalInfo: bookingData.personalInfo,
+      
+      // Payment info
+      paymentMethod: bookingData.paymentMethod,
+      totalPrice: bookingData.totalPrice,
+      
+      // Additional fields
+      driverAssigned: null,
+      specialRequests: bookingData.personalInfo?.specialRequests || '',
+      flightNumber: bookingData.personalInfo?.flightNumber || '',
+      flightTime: bookingData.personalInfo?.flightTime || ''
+    };
+
+    try {
+      // Save reservation to Firebase
+      const docRef = await addDoc(collection(db, FIREBASE_COLLECTIONS.RESERVATIONS), reservationData);
+      console.log('Reservation saved with ID:', docRef.id);
+      toast.success('Rezervasyon başarıyla kaydedildi!');
+      
+      // Create automatic membership if not logged in
+      await createAutomaticMembership();
+      
+    } catch (error) {
+      console.error('Error saving reservation:', error);
+      toast.error('Rezervasyon kaydedilemedi. Lütfen tekrar deneyin.');
+    }
 
     // Create QR code data
     const qrData = {
@@ -79,6 +137,53 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
     } catch (error) {
       console.error('Error generating QR code:', error);
       setIsGeneratingQR(false);
+    }
+  };
+
+  const createAutomaticMembership = async () => {
+    // Eğer kullanıcı zaten giriş yapmışsa üyelik oluşturma
+    if (auth.currentUser) {
+      setMembershipCreated(true);
+      return;
+    }
+
+    try {
+      const personalInfo = bookingData.personalInfo;
+      
+      // Geçici şifre oluştur
+      const tempPassword = Math.random().toString(36).slice(-8) + '123';
+      setMembershipPassword(tempPassword);
+      
+      // Firebase Auth ile kullanıcı oluştur
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, 
+        personalInfo.email, 
+        tempPassword
+      );
+      
+      // Kullanıcı profili oluştur
+      const userProfileData = {
+        uid: userCredential.user.uid,
+        email: personalInfo.email,
+        firstName: personalInfo.firstName,
+        lastName: personalInfo.lastName,
+        phone: personalInfo.phone,
+        role: USER_ROLES.CUSTOMER,
+        createdAt: new Date(),
+        reservationCount: 1,
+        isActive: true
+      };
+      
+      // Firestore'a kullanıcı profili kaydet
+      await addDoc(collection(db, FIREBASE_COLLECTIONS.USERS), userProfileData);
+      
+      setMembershipCreated(true);
+      toast.success('Üyeliğiniz otomatik olarak oluşturuldu!');
+      
+    } catch (error) {
+      console.error('Error creating membership:', error);
+      // Üyelik oluşturulamazsa sistem devam eder
+      setMembershipCreated(true);
     }
   };
 
@@ -121,11 +226,11 @@ Araç: ${bookingData.selectedVehicle?.name}
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6">
+    <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto p-2 sm:p-3 lg:p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
+        className="space-y-3"
       >
         {/* Başarı Mesajı */}
         <motion.div
@@ -215,6 +320,54 @@ Araç: ${bookingData.selectedVehicle?.name}
             </div>
           </div>
         </div>
+
+        {/* Üyelik Bilgileri */}
+        {membershipCreated && membershipPassword && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6"
+          >
+            <div className="text-center mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Crown className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                Üyeliğiniz Oluşturuldu!
+              </h3>
+              <p className="text-sm text-blue-600">
+                SBS Transfer ailesine hoş geldiniz
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-lg p-4 border border-blue-100">
+              <h4 className="font-medium text-gray-800 mb-3">Giriş Bilgileriniz:</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">E-posta:</span>
+                  <span className="font-medium text-gray-800">{bookingData.personalInfo?.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Şifre:</span>
+                  <span className="font-mono bg-gray-100 px-2 py-1 rounded text-gray-800">
+                    {membershipPassword}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <Info className="w-4 h-4 text-blue-600 mt-0.5" />
+                  <div className="text-xs text-blue-800">
+                    <p className="font-medium mb-1">Önemli:</p>
+                    <p>Bu bilgilerle müşteri paneline giriş yapabilir, rezervasyonlarınızı takip edebilir ve yeni rezervasyonlar oluşturabilirsiniz.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* QR Code */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">

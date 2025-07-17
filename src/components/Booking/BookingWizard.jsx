@@ -146,6 +146,7 @@ const BookingWizard = () => {
   const validateCurrentStep = () => {
     switch (currentStep) {
       case 1: // Transfer Details
+        console.log('BookingWizard - Transfer Details Validation:', bookingData);
         if (!bookingData.direction) {
           toast.error('Lütfen transfer yönü seçin');
           return false;
@@ -170,6 +171,7 @@ const BookingWizard = () => {
         return true;
       
       case 2: // Vehicle Selection
+        console.log('BookingWizard - Vehicle Selection Validation:', bookingData);
         if (!bookingData.selectedVehicle) {
           toast.error('Lütfen bir araç seçin');
           return false;
@@ -178,15 +180,16 @@ const BookingWizard = () => {
       
       case 3: // Personal Info
         const { personalInfo } = bookingData;
-        if (!personalInfo.firstName || !personalInfo.lastName) {
+        console.log('BookingWizard - Personal Info Validation:', personalInfo);
+        if (!personalInfo?.firstName || !personalInfo?.lastName) {
           toast.error('Lütfen ad ve soyad bilgilerini girin');
           return false;
         }
-        if (!personalInfo.email || !personalInfo.phone) {
+        if (!personalInfo?.email || !personalInfo?.phone) {
           toast.error('Lütfen iletişim bilgilerini girin');
           return false;
         }
-        if (!personalInfo.agreeToTerms) {
+        if (!personalInfo?.acceptTerms) {
           toast.error('Lütfen kullanım şartlarını kabul edin');
           return false;
         }
@@ -282,8 +285,8 @@ const BookingWizard = () => {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
+        <div className="mb-8">
+          <div className="flex items-center justify-between max-w-3xl mx-auto">
             {steps.map((step, index) => {
               const isActive = currentStep === step.id;
               const isCompleted = currentStep > step.id;
@@ -294,30 +297,30 @@ const BookingWizard = () => {
                   <div className={`flex flex-col items-center ${
                     index < steps.length - 1 ? 'flex-1' : ''
                   }`}>
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center border-4 transition-all duration-300 ${
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
                       isCompleted 
                         ? 'bg-green-500 border-green-500 text-white' 
                         : isActive 
                           ? 'bg-blue-500 border-blue-500 text-white' 
                           : 'bg-white border-gray-300 text-gray-400'
                     }`}>
-                      <StepIcon className="w-7 h-7" />
+                      <StepIcon className="w-4 h-4" />
                     </div>
                     
-                    <div className="mt-4 text-center max-w-32">
-                      <div className={`font-semibold ${
+                    <div className="mt-2 text-center max-w-20">
+                      <div className={`text-xs font-medium ${
                         isActive || isCompleted ? 'text-gray-900' : 'text-gray-500'
                       }`}>
                         {step.title}
                       </div>
-                      <div className="text-sm text-gray-500 mt-1">
+                      <div className="text-xs text-gray-500 mt-0.5 hidden sm:block">
                         {step.description}
                       </div>
                     </div>
                   </div>
                   
                   {index < steps.length - 1 && (
-                    <div className={`w-16 h-1 mx-4 ${
+                    <div className={`w-8 h-0.5 mx-2 ${
                       isCompleted ? 'bg-green-500' : 'bg-gray-200'
                     }`} />
                   )}
@@ -328,12 +331,12 @@ const BookingWizard = () => {
         </div>
 
         {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">
               {steps[currentStep - 1].title}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-sm text-gray-600">
               {steps[currentStep - 1].description}
             </p>
           </div>
@@ -344,7 +347,7 @@ const BookingWizard = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2 }}
             >
               {renderStepContent()}
             </motion.div>

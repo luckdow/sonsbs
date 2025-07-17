@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
+import { AppProvider } from './context/AppContext'
 
 // Layout Components
 import Layout from './components/Layout/Layout'
@@ -19,6 +20,7 @@ import ConfirmationPage from './pages/Public/ConfirmationPage'
 // Auth Pages
 import LoginPage from './pages/Auth/LoginPage'
 import RegisterPage from './pages/Auth/RegisterPage'
+import ResetPasswordPage from './pages/Auth/ResetPasswordPage'
 
 // Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard'
@@ -51,9 +53,10 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Router>
-          <div className="App">
-            <Routes>
+        <AppProvider>
+          <Router>
+            <div className="App">
+              <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
@@ -73,6 +76,11 @@ function App() {
               <Route path="/kayıt" element={
                 <PublicRoute redirectTo="auto">
                   <RegisterPage />
+                </PublicRoute>
+              } />
+              <Route path="/şifre-sıfırla" element={
+                <PublicRoute redirectTo="auto">
+                  <ResetPasswordPage />
                 </PublicRoute>
               } />
 
@@ -159,8 +167,9 @@ function App() {
             />
           </div>
         </Router>
-      </AuthProvider>
-    </ErrorBoundary>
+      </AppProvider>
+    </AuthProvider>
+  </ErrorBoundary>
   )
 }
 

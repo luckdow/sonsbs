@@ -7,9 +7,10 @@ import {
   Check, 
   AlertCircle,
   Lock,
-  Info
+  Info,
+  TestTube
 } from 'lucide-react';
-import { PAYMENT_METHODS } from '../../config/constants';
+import { PAYMENT_METHODS, APP_CONFIG } from '../../config/constants';
 
 const PaymentMethods = ({ bookingData, setBookingData, onNext, onBack }) => {
   const [selectedPayment, setSelectedPayment] = useState(
@@ -61,6 +62,25 @@ const PaymentMethods = ({ bookingData, setBookingData, onNext, onBack }) => {
     }
   ];
 
+  // Test modu seçeneği ekle
+  if (APP_CONFIG.testMode) {
+    paymentOptions.unshift({
+      id: 'test_mode',
+      name: 'Test Modu',
+      description: 'Geliştirme için ödeme atla',
+      icon: TestTube,
+      color: 'orange',
+      details: [
+        'Sadece test için kullanılır',
+        'Gerçek ödeme yapılmaz',
+        'Rezervasyon otomatik onaylanır',
+        'Geliştirme aşaması için'
+      ],
+      recommended: false,
+      testMode: true
+    });
+  }
+
   const handlePaymentSelect = (paymentId) => {
     if (paymentOptions.find(p => p.id === paymentId)?.disabled) return;
     setSelectedPayment(paymentId);
@@ -88,15 +108,15 @@ const PaymentMethods = ({ bookingData, setBookingData, onNext, onBack }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6">
+    <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto p-2 sm:p-3 lg:p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
+        className="space-y-3"
       >
         {/* Rezervasyon Özeti */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Rezervasyon Özeti</h3>
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <h3 className="text-base font-semibold text-gray-800 mb-3">Rezervasyon Özeti</h3>
           
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
@@ -143,6 +163,21 @@ const PaymentMethods = ({ bookingData, setBookingData, onNext, onBack }) => {
         {/* Ödeme Yöntemleri */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-800">Ödeme Yöntemi Seçiniz</h3>
+          
+          {/* Test Modu Uyarısı */}
+          {APP_CONFIG.testMode && (
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <TestTube className="w-5 h-5 text-orange-600 mt-0.5" />
+                <div className="text-sm text-orange-800">
+                  <p className="font-medium mb-1">Test Modu Aktif:</p>
+                  <p className="text-xs">
+                    Sistem test modunda çalışıyor. Test Modu seçeneği ile gerçek ödeme yapmadan rezervasyon tamamlayabilirsiniz.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="space-y-3">
             {paymentOptions.map((option) => {

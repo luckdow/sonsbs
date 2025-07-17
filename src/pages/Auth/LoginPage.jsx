@@ -1,14 +1,27 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Car, Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
+import { 
+  Car, 
+  Eye, 
+  EyeOff, 
+  Mail, 
+  Lock, 
+  ArrowRight,
+  Chrome,
+  Shield,
+  Sparkles,
+  CheckCircle,
+  Settings
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { setupDemoEnvironment } from '../../utils/demoSetup';
 import toast from 'react-hot-toast';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, signInWithGoogle } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -16,6 +29,8 @@ const LoginPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isDemoSetupLoading, setIsDemoSetupLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const from = location.state?.from?.pathname || '/';
@@ -73,6 +88,8 @@ const LoginPage = () => {
         errorMessage = 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı';
       } else if (error.code === 'auth/wrong-password') {
         errorMessage = 'Hatalı şifre';
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = 'Geçersiz giriş bilgileri. Demo hesapları henüz oluşturulmamış olabilir.';
       } else if (error.code === 'auth/invalid-email') {
         errorMessage = 'Geçersiz e-posta adresi';
       } else if (error.code === 'auth/too-many-requests') {
@@ -86,124 +103,225 @@ const LoginPage = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+      toast.success('Google ile başarıyla giriş yaptınız!', {
+        icon: '🎉',
+        duration: 3000,
+      });
+      navigate(from, { replace: true });
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      
+      let errorMessage = 'Google ile giriş yapılırken bir hata oluştu';
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Giriş penceresi kapatıldı. Lütfen tekrar deneyin.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Pop-up engellendi. Lütfen pop-up engelleyiciyi devre dışı bırakın.';
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMessage = 'Bu e-posta adresi zaten farklı bir yöntemle kayıtlı.';
+      }
+      
+      toast.error(errorMessage);
+      setErrors({ general: errorMessage });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
+          transition={{ duration: 0.8 }}
+          className="text-center mb-8"
         >
-          <Link to="/" className="inline-flex items-center space-x-2 mb-6">
-            <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center">
-              <Car className="w-7 h-7 text-white" />
+          <Link to="/" className="inline-flex items-center space-x-3 mb-8 group">
+            <div className="w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <Car className="w-8 h-8 text-white" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">SBS Transfer</span>
+            <span className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              SBS Transfer
+            </span>
           </Link>
           
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Hesabınıza Giriş Yapın
-          </h2>
-          <p className="text-gray-600">
-            Rezervasyonlarınızı yönetmek için giriş yapın
-          </p>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Hoş Geldiniz! 👋
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Hesabınıza giriş yaparak devam edin
+            </p>
+          </div>
         </motion.div>
 
-        {/* Login Form */}
+        {/* Auth Card */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-white rounded-2xl shadow-xl p-8"
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8"
         >
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Google Sign In Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading || isLoading}
+            className="w-full mb-6 flex items-center justify-center space-x-3 py-4 px-6 border-2 border-gray-200 rounded-2xl text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group"
+          >
+            {isGoogleLoading ? (
+              <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+            ) : (
+              <Chrome className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
+            )}
+            <span>
+              {isGoogleLoading ? 'Google ile bağlanılıyor...' : 'Google ile Devam Et'}
+            </span>
+            <Sparkles className="w-4 h-4 text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </motion.button>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500 font-medium">
+                veya e-posta ile
+              </span>
+            </div>
+          </div>
+
+          {/* Email/Password Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* General Error */}
+            {errors.general && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="bg-red-50 border border-red-200 rounded-xl p-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  </div>
+                  <p className="text-red-700 text-sm font-medium">{errors.general}</p>
+                </div>
+              </motion.div>
+            )}
+
             {/* Email Field */}
-            <div className="form-group">
-              <label htmlFor="email" className="form-label">
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">
                 E-posta Adresi
               </label>
               <div className="relative">
                 <input
-                  id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`form-input pl-10 ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="ornek@email.com"
-                  disabled={isLoading}
+                  disabled={isLoading || isGoogleLoading}
+                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 ${
+                    errors.email 
+                      ? 'border-red-300 bg-red-50' 
+                      : 'border-gray-200 hover:border-gray-300 focus:border-blue-300'
+                  }`}
                 />
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail className="w-5 h-5 text-gray-400" />
-                </div>
+                <Mail className={`absolute left-4 top-4 w-5 h-5 transition-colors ${
+                  errors.email ? 'text-red-400' : 'text-gray-400'
+                }`} />
               </div>
               {errors.email && (
-                <p className="form-error">{errors.email}</p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-red-600 text-sm flex items-center space-x-1"
+                >
+                  <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                  <span>{errors.email}</span>
+                </motion.p>
               )}
             </div>
 
             {/* Password Field */}
-            <div className="form-group">
-              <label htmlFor="password" className="form-label">
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">
                 Şifre
               </label>
               <div className="relative">
                 <input
-                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`form-input pl-10 pr-10 ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
-                  placeholder="Şifrenizi girin"
-                  disabled={isLoading}
+                  placeholder="••••••••"
+                  disabled={isLoading || isGoogleLoading}
+                  className={`w-full pl-12 pr-12 py-4 border-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 ${
+                    errors.password 
+                      ? 'border-red-300 bg-red-50' 
+                      : 'border-gray-200 hover:border-gray-300 focus:border-blue-300'
+                  }`}
                 />
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="w-5 h-5 text-gray-400" />
-                </div>
+                <Lock className={`absolute left-4 top-4 w-5 h-5 transition-colors ${
+                  errors.password ? 'text-red-400' : 'text-gray-400'
+                }`} />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                  disabled={isLoading}
+                  className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="form-error">{errors.password}</p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-red-600 text-sm flex items-center space-x-1"
+                >
+                  <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                  <span>{errors.password}</span>
+                </motion.p>
               )}
             </div>
 
             {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+            <div className="flex items-center justify-between pt-2">
+              <label className="flex items-center space-x-3 cursor-pointer group">
                 <input
-                  id="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="w-4 h-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                 />
-                <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600">
+                <span className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
                   Beni hatırla
-                </label>
-              </div>
+                </span>
+              </label>
               <Link
                 to="/şifre-sıfırla"
-                className="text-sm text-primary-600 hover:text-primary-500 font-medium"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
               >
                 Şifremi unuttum
               </Link>
             </div>
 
             {/* Submit Button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
-              disabled={isLoading}
-              className="w-full btn btn-primary btn-lg flex items-center justify-center space-x-2"
+              disabled={isLoading || isGoogleLoading}
+              className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-2xl font-semibold hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
             >
               {isLoading ? (
                 <>
-                  <div className="spinner" />
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Giriş yapılıyor...</span>
                 </>
               ) : (
@@ -212,51 +330,63 @@ const LoginPage = () => {
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
-            </button>
-
-            {/* Demo Accounts */}
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Demo Hesapları:</h4>
-              <div className="text-xs text-gray-600 space-y-1">
-                <div>
-                  <strong>Admin:</strong> admin@sbstransfer.com / admin123
-                </div>
-                <div>
-                  <strong>Şoför:</strong> sofor@sbstransfer.com / sofor123
-                </div>
-                <div>
-                  <strong>Müşteri:</strong> musteri@sbstransfer.com / musteri123
-                </div>
-              </div>
-            </div>
+            </motion.button>
           </form>
 
           {/* Sign Up Link */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="mt-8 text-center">
+            <p className="text-gray-600">
               Hesabınız yok mu?{' '}
               <Link
                 to="/kayıt"
-                className="text-primary-600 hover:text-primary-500 font-medium"
+                className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
               >
                 Kayıt olun
               </Link>
             </p>
           </div>
+
+          {/* Demo Accounts */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4"
+          >
+            <div className="flex items-center space-x-2 mb-3">
+              <Shield className="w-5 h-5 text-amber-600" />
+              <h4 className="text-sm font-semibold text-amber-800">Demo Hesapları</h4>
+            </div>
+            <div className="space-y-2 text-xs text-amber-700">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-3 h-3 text-green-600" />
+                <span><strong>Admin:</strong> admin@sbstransfer.com / admin123</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-3 h-3 text-green-600" />
+                <span><strong>Şoför:</strong> sofor@sbstransfer.com / sofor123</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-3 h-3 text-green-600" />
+                <span><strong>Müşteri:</strong> musteri@sbstransfer.com / musteri123</span>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
 
         {/* Back to Home */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center"
+          transition={{ delay: 0.8 }}
+          className="text-center mt-8"
         >
           <Link
             to="/"
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors group"
           >
-            ← Ana sayfaya dön
+            <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
+            <span>Ana sayfaya dön</span>
           </Link>
         </motion.div>
       </div>

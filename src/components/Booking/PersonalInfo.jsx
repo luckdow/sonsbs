@@ -17,7 +17,7 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
     lastName: bookingData.personalInfo?.lastName || '',
     email: bookingData.personalInfo?.email || '',
     phone: bookingData.personalInfo?.phone || '',
-    passengerCount: bookingData.personalInfo?.passengerCount || 1,
+    passengerCount: bookingData.passengerCount || 1,
     flightNumber: bookingData.personalInfo?.flightNumber || '',
     flightTime: bookingData.personalInfo?.flightTime || '',
     specialRequests: bookingData.personalInfo?.specialRequests || '',
@@ -57,23 +57,34 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
       newErrors.phone = 'Geçerli bir telefon numarası girin';
     }
 
-    // Yolcu sayısı validasyonu
-    if (formData.passengerCount < 1) {
-      newErrors.passengerCount = 'En az 1 yolcu olmalıdır';
-    }
-
     // Uçuş numarası validasyonu (opsiyonel ama girilmişse format kontrolü)
     if (formData.flightNumber && formData.flightNumber.trim().length < 3) {
       newErrors.flightNumber = 'Geçerli bir uçuş numarası girin';
     }
 
     // Şartlar kabul validasyonu
-    if (!formData.acceptTerms) {
+    if (formData.acceptTerms !== true) {
       newErrors.acceptTerms = 'Kullanım şartlarını kabul etmelisiniz';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCheckboxChange = (e) => {
+    const checked = e.target.checked;
+    setFormData(prev => ({
+      ...prev,
+      acceptTerms: checked
+    }));
+
+    // Hata varsa temizle
+    if (errors.acceptTerms) {
+      setErrors(prev => ({
+        ...prev,
+        acceptTerms: ''
+      }));
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -92,13 +103,21 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
   };
 
   const handleNext = () => {
+    console.log('Personal Info - Form Data:', formData);
+    
     if (validateForm()) {
       const updatedData = {
         ...bookingData,
-        personalInfo: formData
+        personalInfo: {
+          ...formData,
+          passengerCount: bookingData.passengerCount || formData.passengerCount
+        }
       };
+      console.log('Personal Info - Updated Data:', updatedData);
       setBookingData(updatedData);
       onNext();
+    } else {
+      console.log('Personal Info - Validation Errors:', errors);
     }
   };
 
@@ -115,16 +134,16 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6">
+    <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto p-2 sm:p-3 lg:p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
+        className="space-y-3"
       >
         {/* Kişisel Bilgiler */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <User className="w-5 h-5 mr-2" />
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center">
+            <User className="w-4 h-4 mr-2" />
             Kişisel Bilgiler
           </h3>
 
@@ -222,36 +241,21 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
             </div>
           </div>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Yolcu Sayısı *
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                min="1"
-                max="50"
-                value={formData.passengerCount}
-                onChange={(e) => handleInputChange('passengerCount', parseInt(e.target.value) || 1)}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pl-10 ${
-                  errors.passengerCount ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              <Users className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+          {/* Yolcu Sayısı - Sadece Bilgi Amaçlı */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-blue-600" />
+              <span className="text-sm text-blue-800">
+                <strong>Yolcu Sayısı:</strong> {bookingData.passengerCount || 1} kişi
+              </span>
             </div>
-            {errors.passengerCount && (
-              <p className="text-red-500 text-xs mt-1 flex items-center">
-                <AlertCircle className="w-3 h-3 mr-1" />
-                {errors.passengerCount}
-              </p>
-            )}
           </div>
         </div>
 
         {/* Uçuş Bilgileri */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <Plane className="w-5 h-5 mr-2" />
+        <div className="bg-white rounded-lg border border-gray-200 p-3 lg:p-4">
+          <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center">
+            <Plane className="w-4 h-4 mr-2" />
             Uçuş Bilgileri (Opsiyonel)
           </h3>
 
@@ -332,7 +336,7 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
               <input
                 type="checkbox"
                 checked={formData.acceptTerms}
-                onChange={(e) => handleInputChange('acceptTerms', e.target.checked)}
+                onChange={handleCheckboxChange}
                 className="sr-only"
               />
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${

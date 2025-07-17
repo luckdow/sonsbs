@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
-  const [direction, setDirection] = useState(bookingData.direction || 'airport-to-hotel');
+  const [direction, setDirection] = useState(bookingData.direction || null);
   const [pickupLocation, setPickupLocation] = useState(bookingData.pickupLocation || '');
   const [dropoffLocation, setDropoffLocation] = useState(bookingData.dropoffLocation || '');
   
@@ -183,9 +183,25 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
     });
   };
 
+  // Transfer yönü değişimini handle et
+  const handleDirectionChange = (newDirection) => {
+    setDirection(newDirection);
+    // Önceki seçimleri temizle
+    setPickupLocation('');
+    setDropoffLocation('');
+    // Hataları temizle
+    setErrors(prev => ({
+      ...prev,
+      direction: '',
+      pickupLocation: '',
+      dropoffLocation: ''
+    }));
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
+    // Transfer yönü kontrolü
     if (!direction) {
       newErrors.direction = 'Transfer yönünü seçiniz';
     }
@@ -220,6 +236,7 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
     }
 
     setErrors(newErrors);
+    console.log('Transfer Details Validation:', { direction, dropoffLocation, pickupLocation, errors: newErrors });
     return Object.keys(newErrors).length === 0;
   };
 
@@ -241,54 +258,54 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6">
+    <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto p-2 sm:p-3 lg:p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
+        className="space-y-3"
       >
         {/* Transfer Yönü Seçimi */}
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
+        <div className="space-y-2">
+          <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
             Transfer Yönü
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               type="button"
-              onClick={() => setDirection('airport-to-hotel')}
-              className={`p-4 rounded-xl border-2 transition-all ${
+              onClick={() => handleDirectionChange('airport-to-hotel')}
+              className={`p-2 rounded-lg border transition-all ${
                 direction === 'airport-to-hotel'
                   ? 'border-blue-500 bg-blue-50 text-blue-700'
                   : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-3">
-                <Plane className="w-5 h-5" />
+              <div className="flex items-center space-x-1.5">
+                <Plane className="w-4 h-4" />
                 <div className="text-left">
                   <div className="font-medium text-sm">Havalimanı → Otel</div>
-                  <div className="text-xs text-gray-500">Karşılama servisi</div>
+                  <div className="text-xs text-gray-500">Karşılama</div>
                 </div>
               </div>
             </motion.button>
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               type="button"
-              onClick={() => setDirection('hotel-to-airport')}
-              className={`p-4 rounded-xl border-2 transition-all ${
+              onClick={() => handleDirectionChange('hotel-to-airport')}
+              className={`p-2 rounded-lg border transition-all ${
                 direction === 'hotel-to-airport'
                   ? 'border-blue-500 bg-blue-50 text-blue-700'
                   : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-3">
-                <Building className="w-5 h-5" />
+              <div className="flex items-center space-x-1.5">
+                <Building className="w-4 h-4" />
                 <div className="text-left">
                   <div className="font-medium text-sm">Otel → Havalimanı</div>
-                  <div className="text-xs text-gray-500">Uğurlama servisi</div>
+                  <div className="text-xs text-gray-500">Uğurlama</div>
                 </div>
               </div>
             </motion.button>
@@ -302,11 +319,11 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
         </div>
 
         {/* Lokasyon Bilgileri */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Hotel Location Input */}
-          {direction === 'airport-to-hotel' ? (
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+          {direction === 'airport-to-hotel' && (
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
                 Otel/Konaklama Yeri
               </label>
               <div className="relative">
@@ -314,24 +331,26 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
                   ref={dropoffRef}
                   type="text"
                   placeholder="Otel adını yazmaya başlayın..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pr-10"
                   value={typeof dropoffLocation === 'string' ? dropoffLocation : dropoffLocation?.address || ''}
                   onChange={(e) => setDropoffLocation(e.target.value)}
                   autoComplete="off"
                   spellCheck="false"
                 />
-                <MapPin className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
+                <MapPin className="absolute right-2.5 top-2.5 w-4 h-4 text-gray-400" />
               </div>
               {errors.dropoffLocation && (
                 <p className="text-red-500 text-xs flex items-center">
-                  <AlertCircle className="w-4 h-4 mr-1" />
+                  <AlertCircle className="w-3 h-3 mr-1" />
                   {errors.dropoffLocation}
                 </p>
               )}
             </div>
-          ) : (
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+          )}
+          
+          {direction === 'hotel-to-airport' && (
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
                 Otel/Konaklama Yeri
               </label>
               <div className="relative">
@@ -339,17 +358,17 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
                   ref={pickupRef}
                   type="text"
                   placeholder="Otel adını yazmaya başlayın..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pr-10"
                   value={typeof pickupLocation === 'string' ? pickupLocation : pickupLocation?.address || ''}
                   onChange={(e) => setPickupLocation(e.target.value)}
                   autoComplete="off"
                   spellCheck="false"
                 />
-                <MapPin className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
+                <MapPin className="absolute right-2.5 top-2.5 w-4 h-4 text-gray-400" />
               </div>
               {errors.pickupLocation && (
                 <p className="text-red-500 text-xs flex items-center">
-                  <AlertCircle className="w-4 h-4 mr-1" />
+                  <AlertCircle className="w-3 h-3 mr-1" />
                   {errors.pickupLocation}
                 </p>
               )}
@@ -358,68 +377,68 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
         </div>
 
         {/* Yolcu ve Bagaj Sayısı */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           {/* Yolcu Sayısı */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Yolcu Sayısı
+          <div className="space-y-1">
+            <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+              Yolcu
             </label>
-            <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg">
+            <div className="flex items-center space-x-1.5 p-2 border border-gray-300 rounded-lg bg-gray-50">
               <Users className="w-4 h-4 text-gray-500" />
-              <div className="flex items-center space-x-3 flex-1">
+              <div className="flex items-center space-x-1.5 flex-1">
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={() => handlePassengerChange(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                  className="w-6 h-6 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors shadow-sm"
                   disabled={passengerCount <= 1}
                 >
-                  <Minus className="w-4 h-4 text-gray-600" />
+                  <Minus className="w-3 h-3 text-gray-600" />
                 </motion.button>
-                <span className="text-lg font-medium text-gray-800 min-w-[2rem] text-center">
+                <span className="text-sm font-medium text-gray-800 min-w-[1.5rem] text-center">
                   {passengerCount}
                 </span>
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={() => handlePassengerChange(true)}
-                  className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors"
+                  className="w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center transition-colors shadow-sm"
                   disabled={passengerCount >= 50}
                 >
-                  <Plus className="w-4 h-4 text-blue-600" />
+                  <Plus className="w-3 h-3 text-white" />
                 </motion.button>
               </div>
             </div>
           </div>
 
           {/* Bagaj Sayısı */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Bagaj Sayısı
+          <div className="space-y-1">
+            <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+              Bagaj
             </label>
-            <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg">
+            <div className="flex items-center space-x-1.5 p-2 border border-gray-300 rounded-lg bg-gray-50">
               <Package className="w-4 h-4 text-gray-500" />
-              <div className="flex items-center space-x-3 flex-1">
+              <div className="flex items-center space-x-1.5 flex-1">
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={() => handleBaggageChange(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                  className="w-6 h-6 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors shadow-sm"
                   disabled={baggageCount <= 0}
                 >
-                  <Minus className="w-4 h-4 text-gray-600" />
+                  <Minus className="w-3 h-3 text-gray-600" />
                 </motion.button>
-                <span className="text-lg font-medium text-gray-800 min-w-[2rem] text-center">
+                <span className="text-sm font-medium text-gray-800 min-w-[1.5rem] text-center">
                   {baggageCount}
                 </span>
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={() => handleBaggageChange(true)}
-                  className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors"
+                  className="w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center transition-colors shadow-sm"
                   disabled={baggageCount >= 20}
                 >
-                  <Plus className="w-4 h-4 text-blue-600" />
+                  <Plus className="w-3 h-3 text-white" />
                 </motion.button>
               </div>
             </div>
@@ -427,9 +446,9 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
         </div>
 
         {/* Tarih ve Saat */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
               Tarih
             </label>
             <div className="relative">
@@ -438,20 +457,20 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
                 value={date}
                 min={getTodayDate()}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pl-7"
               />
-              <Calendar className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Calendar className="absolute left-2 top-2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
             {errors.date && (
               <p className="text-red-500 text-xs flex items-center">
-                <AlertCircle className="w-4 h-4 mr-1" />
+                <AlertCircle className="w-3 h-3 mr-1" />
                 {errors.date}
               </p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+          <div className="space-y-1">
+            <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
               Saat
             </label>
             <div className="relative">
@@ -459,13 +478,13 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pl-7"
               />
-              <Clock className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Clock className="absolute left-2 top-2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
             {errors.time && (
               <p className="text-red-500 text-xs flex items-center">
-                <AlertCircle className="w-4 h-4 mr-1" />
+                <AlertCircle className="w-3 h-3 mr-1" />
                 {errors.time}
               </p>
             )}
@@ -473,15 +492,13 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
         </div>
 
         {/* Bilgilendirme */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-            <div className="text-sm text-blue-800">
-              <p className="font-medium mb-1">Önemli Bilgiler:</p>
-              <ul className="space-y-1 text-xs">
-                <li>• Rezervasyon en az 4 saat önceden yapılmalıdır</li>
-                <li>• Havalimanı transferleri 7/24 hizmet verir</li>
-                <li>• Uçuş bilgilerinizi bir sonraki adımda girebilirsiniz</li>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+          <div className="flex items-start space-x-1.5">
+            <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5" />
+            <div className="text-xs text-blue-800">
+              <p className="font-medium mb-1">Bilgi:</p>
+              <ul className="space-y-0.5">
+                <li>• Transfer için en az 4 saat önceden rezervasyon gerekir</li>
                 <li>• Otel adını yazmaya başladığınızda öneriler görünecek</li>
               </ul>
             </div>
@@ -490,12 +507,12 @@ const TransferDetails = ({ bookingData, setBookingData, onNext }) => {
 
         {/* İleri Butonu */}
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           onClick={handleNext}
-          className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+          className="w-full bg-blue-600 text-white py-2 px-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1.5 text-sm"
         >
-          <span>Devam Et</span>
+          <span>Araçları Bul</span>
           <ArrowRightLeft className="w-4 h-4" />
         </motion.button>
       </motion.div>

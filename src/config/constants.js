@@ -13,7 +13,8 @@ export const APP_CONFIG = {
   version: "1.0.0",
   companyName: "SBS Transfer Hizmetleri",
   supportEmail: "destek@sbstransfer.com",
-  supportPhone: "+90 (555) 000 00 00"
+  supportPhone: "+90 (555) 000 00 00",
+  testMode: true  // Geliştirme aşaması için test modu
 };
 
 // Reservation Status
