@@ -1,0 +1,184 @@
+import React, { useState } from 'react';
+import { X, User, Car, Check } from 'lucide-react';
+
+const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }) => {
+  const [selectedDriver, setSelectedDriver] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Aktif şoförleri filtrele
+  const activeDrivers = drivers.filter(driver => driver.status === 'active');
+  
+  // Seçilen şoförün aracını otomatik seç
+  const handleDriverSelect = (driverId) => {
+    setSelectedDriver(driverId);
+    const driver = drivers.find(d => d.id === driverId);
+    if (driver?.assignedVehicle) {
+      setSelectedVehicle(driver.assignedVehicle);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedDriver || !selectedVehicle) {
+      alert('Lütfen şoför ve araç seçin');
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      await onAssign(reservation.id, selectedDriver, selectedVehicle);
+    } catch (error) {
+      console.error('Şoför atama hatası:', error);
+      alert('Şoför atama sırasında bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Şoför Atama</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Rezervasyon Özeti */}
+        <div className="p-6 bg-gray-50 border-b border-gray-200">
+          <h3 className="font-medium text-gray-900 mb-2">{reservation.reservationId}</h3>
+          <div className="text-sm text-gray-600 space-y-1">
+            <p><strong>Müşteri:</strong> {reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}</p>
+            <p><strong>Tarih:</strong> {reservation.tripDetails?.date} - {reservation.tripDetails?.time}</p>
+            <p><strong>Rota:</strong> {reservation.tripDetails?.pickupLocation} → {reservation.tripDetails?.dropoffLocation}</p>
+            <p><strong>Yolcu:</strong> {reservation.tripDetails?.passengerCount} kişi</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Şoför Seçimi */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Şoför Seçin *
+            </label>
+            
+            {activeDrivers.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                <User className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <p>Aktif şoför bulunamadı</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {activeDrivers.map((driver) => {
+                  const assignedVehicle = vehicles.find(v => v.id === driver.assignedVehicle);
+                  return (
+                    <label
+                      key={driver.id}
+                      className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                        selectedDriver === driver.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="driver"
+                        value={driver.id}
+                        checked={selectedDriver === driver.id}
+                        onChange={() => handleDriverSelect(driver.id)}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center justify-between w-full">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {driver.firstName} {driver.lastName}
+                          </p>
+                          <p className="text-sm text-gray-600">{driver.phone}</p>
+                          {assignedVehicle && (
+                            <p className="text-xs text-gray-500">
+                              {assignedVehicle.brand} {assignedVehicle.model} - {assignedVehicle.plateNumber}
+                            </p>
+                          )}
+                        </div>
+                        {selectedDriver === driver.id && (
+                          <Check className="w-5 h-5 text-blue-600" />
+                        )}
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Araç Seçimi */}
+          {selectedVehicle && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Atanacak Araç
+              </label>
+              <div className="p-3 border border-gray-300 rounded-lg bg-gray-50">
+                {(() => {
+                  const vehicle = vehicles.find(v => v.id === selectedVehicle);
+                  return vehicle ? (
+                    <div className="flex items-center gap-3">
+                      <Car className="w-5 h-5 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {vehicle.brand} {vehicle.model}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Plaka: {vehicle.plateNumber} • Kapasite: {vehicle.capacity} kişi
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">Araç bilgisi bulunamadı</p>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !selectedDriver || !selectedVehicle || activeDrivers.length === 0}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Atanıyor...
+                </>
+              ) : (
+                <>
+                  <User className="w-4 h-4" />
+                  Şoför Ata
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default DriverAssignModal;

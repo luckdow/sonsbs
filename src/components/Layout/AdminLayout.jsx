@@ -14,7 +14,8 @@ import {
   Home,
   Bell,
   UserCheck,
-  ChevronRight
+  ChevronRight,
+  Package
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -58,6 +59,12 @@ const AdminLayout = () => {
       href: '/admin/şoförler',
       icon: Users,
       description: 'Şoför kayıtları ve atamalar'
+    },
+    {
+      name: 'Ek Hizmetler',
+      href: '/admin/ek-hizmetler',
+      icon: Package,
+      description: 'Ek hizmet yönetimi ve fiyatlandırma'
     },
     {
       name: 'Rezervasyonlar',
