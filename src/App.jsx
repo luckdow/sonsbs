@@ -25,7 +25,7 @@ import ResetPasswordPage from './pages/Auth/ResetPasswordPage'
 // Admin Pages
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import VehicleManagement from './pages/Admin/VehicleManagement'
-import DriverManagement from './pages/Admin/DriverManagement'
+import DriverIndex from './pages/Admin/Drivers'
 import ExtraServicesManagement from './pages/Admin/ExtraServicesManagement'
 import ReservationManagement from './pages/Admin/ReservationManagement'
 import FinancialManagement from './pages/Admin/FinancialManagement'
@@ -94,7 +94,7 @@ function App() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="araçlar" element={<VehicleManagement />} />
-                <Route path="şoförler" element={<DriverManagement />} />
+                <Route path="şoförler" element={<DriverIndex />} />
                 <Route path="ek-hizmetler" element={<ExtraServicesManagement />} />
                 <Route path="rezervasyonlar" element={<ReservationManagement />} />
                 <Route path="finans" element={<FinancialManagement />} />

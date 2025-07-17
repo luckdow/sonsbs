@@ -6,7 +6,8 @@ import {
   AlertCircle,
   CreditCard,
   DollarSign,
-  Ban
+  Ban,
+  User
 } from 'lucide-react';
 
 // Status Badge Component
@@ -53,6 +54,12 @@ export const StatusBadge = ({ status, type = 'reservation' }) => {
             color: 'bg-green-100 text-green-800 border-green-200',
             icon: CheckCircle,
             label: 'Onaylandı'
+          };
+        case 'assigned':
+          return {
+            color: 'bg-purple-100 text-purple-800 border-purple-200',
+            icon: User,
+            label: 'Şoför Atandı'
           };
         case 'pending':
           return {
@@ -236,4 +243,9 @@ export const canCancelReservation = (status) => {
 
 export const canAssignDriver = (status) => {
   return ['confirmed'].includes(status);
+};
+
+// Backward compatibility function
+export const getStatusBadge = (status, type = 'reservation') => {
+  return <StatusBadge status={status} type={type} />;
 };

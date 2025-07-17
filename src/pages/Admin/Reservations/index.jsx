@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Calendar, Clock, MapPin, User, Car, CreditCard, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import QuickReservationModal from './QuickReservationModal';
 import EditReservationModal from './EditReservationModal';
-import ReservationCard from './ReservationCard';
+import ReservationTable from './ReservationTable';
+import ReservationFilters from './ReservationFilters';
 import DriverAssignModal from './DriverAssignModal';
 import QRModal from './QRModal';
 
 const ReservationIndex = () => {
   const [reservations, setReservations] = useState([]);
+  const [filteredReservations, setFilteredReservations] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +74,31 @@ const ReservationIndex = () => {
       createdAt: '2024-01-11T08:00:00Z',
       assignedDriver: 'driver1',
       assignedVehicle: 'vehicle1'
+    },
+    {
+      id: '3',
+      reservationId: 'SBS-001236',
+      customerInfo: {
+        firstName: 'Mehmet',
+        lastName: 'Özkan',
+        phone: '+90 555 333 44 55',
+        email: 'mehmet@example.com'
+      },
+      tripDetails: {
+        date: '2024-01-17',
+        time: '16:45',
+        pickupLocation: 'Antalya Havalimanı',
+        dropoffLocation: 'Belek Otelleri',
+        passengerCount: 4,
+        luggageCount: 6,
+        flightNumber: 'TK789'
+      },
+      status: 'assigned',
+      paymentMethod: 'card',
+      totalPrice: 180,
+      createdAt: '2024-01-12T14:00:00Z',
+      assignedDriver: 'driver2',
+      assignedVehicle: 'vehicle2'
     }
   ];
 
@@ -169,6 +196,90 @@ const ReservationIndex = () => {
     };
   }, []);
 
+  // Filtreleme fonksiyonu
+  const handleFilterChange = (filters) => {
+    let filtered = [...reservations];
+
+    // Arama filtresi
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filtered = filtered.filter(res => 
+        res.reservationId.toLowerCase().includes(searchTerm) ||
+        res.customerInfo?.firstName.toLowerCase().includes(searchTerm) ||
+        res.customerInfo?.lastName.toLowerCase().includes(searchTerm) ||
+        res.customerInfo?.phone.includes(searchTerm) ||
+        res.customerInfo?.email.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Durum filtresi
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(res => res.status === filters.status);
+    }
+
+    // Tarih filtresi
+    if (filters.dateRange !== 'all') {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      filtered = filtered.filter(res => {
+        const resDate = new Date(res.tripDetails?.date);
+        
+        switch (filters.dateRange) {
+          case 'today':
+            return resDate.toDateString() === today.toDateString();
+          case 'tomorrow':
+            return resDate.toDateString() === tomorrow.toDateString();
+          case 'this_week':
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            return resDate >= weekStart && resDate <= weekEnd;
+          case 'this_month':
+            return resDate.getMonth() === today.getMonth() && resDate.getFullYear() === today.getFullYear();
+          case 'next_month':
+            const nextMonth = new Date(today);
+            nextMonth.setMonth(today.getMonth() + 1);
+            return resDate.getMonth() === nextMonth.getMonth() && resDate.getFullYear() === nextMonth.getFullYear();
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Şoför atama filtresi
+    if (filters.assignedDriver !== 'all') {
+      if (filters.assignedDriver === 'assigned') {
+        filtered = filtered.filter(res => res.assignedDriver);
+      } else if (filters.assignedDriver === 'unassigned') {
+        filtered = filtered.filter(res => !res.assignedDriver);
+      }
+    }
+
+    // Ödeme yöntemi filtresi
+    if (filters.paymentMethod !== 'all') {
+      filtered = filtered.filter(res => res.paymentMethod === filters.paymentMethod);
+    }
+
+    // Yolcu sayısı filtresi
+    if (filters.passengerCount !== 'all') {
+      if (filters.passengerCount === '5+') {
+        filtered = filtered.filter(res => res.tripDetails?.passengerCount >= 5);
+      } else {
+        filtered = filtered.filter(res => res.tripDetails?.passengerCount === parseInt(filters.passengerCount));
+      }
+    }
+
+    setFilteredReservations(filtered);
+  };
+
+  // Rezervasyonlar değiştiğinde filtrelenmiş listeyi de güncelle
+  useEffect(() => {
+    setFilteredReservations(reservations);
+  }, [reservations]);
+
   // Hızlı rezervasyon ekleme
   const handleQuickReservation = async (reservationData) => {
     try {
@@ -193,9 +304,17 @@ const ReservationIndex = () => {
     }
   };
 
-  // Şoför atama
+  // Şoför atama - Hata düzeltmesi
   const handleDriverAssign = async (reservationId, driverId, vehicleId) => {
     try {
+      // Rezervasyonu bul
+      const reservationToUpdate = reservations.find(res => res.id === reservationId);
+      if (!reservationToUpdate) {
+        console.error('Rezervasyon bulunamadı:', reservationId);
+        alert('Rezervasyon bulunamadı');
+        return;
+      }
+
       // Önce local state'i güncelle
       setReservations(prev => prev.map(res => 
         res.id === reservationId 
@@ -203,114 +322,60 @@ const ReservationIndex = () => {
           : res
       ));
       
-      // Firebase'ı güncelle
-      await updateDoc(doc(db, 'reservations', reservationId), {
-        assignedDriver: driverId,
-        assignedVehicle: vehicleId,
-        status: 'assigned',
-        updatedAt: new Date().toISOString()
-      });
+      // Eğer gerçek Firebase ID'si varsa güncelle
+      if (reservationToUpdate.firebaseId) {
+        await updateDoc(doc(db, 'reservations', reservationToUpdate.firebaseId), {
+          assignedDriver: driverId,
+          assignedVehicle: vehicleId,
+          status: 'assigned',
+          updatedAt: new Date().toISOString()
+        });
+      }
       
       setShowDriverModal(false);
       setSelectedReservation(null);
     } catch (error) {
       console.error('Şoför atama hatası:', error);
-      alert('Şoför atama sırasında bir hata oluştu');
+      alert('Şoför atama sırasında bir hata oluştu: ' + error.message);
+      
+      // Hata durumunda local state'i geri al
+      setReservations(prev => prev.map(res => 
+        res.id === reservationId 
+          ? { ...res, assignedDriver: null, assignedVehicle: null, status: 'pending' }
+          : res
+      ));
     }
   };
 
   // Rezervasyon güncelleme
-  const handleUpdateReservation = async (updatedReservation) => {
+  const handleReservationUpdate = async (reservationId, updatedData) => {
     try {
-      // Önce local state'i güncelle
+      // Rezervasyonu bul
+      const reservationToUpdate = reservations.find(res => res.id === reservationId);
+      if (!reservationToUpdate) {
+        console.error('Rezervasyon bulunamadı:', reservationId);
+        alert('Rezervasyon bulunamadı');
+        return;
+      }
+
       setReservations(prev => prev.map(res => 
-        res.id === updatedReservation.id ? updatedReservation : res
+        res.id === reservationId ? { ...res, ...updatedData } : res
       ));
       
-      // Firebase'ı güncelle
-      await updateDoc(doc(db, 'reservations', updatedReservation.id), {
-        ...updatedReservation,
-        updatedAt: new Date().toISOString()
-      });
+      // Eğer gerçek Firebase ID'si varsa güncelle
+      if (reservationToUpdate.firebaseId) {
+        await updateDoc(doc(db, 'reservations', reservationToUpdate.firebaseId), {
+          ...updatedData,
+          updatedAt: new Date().toISOString()
+        });
+      }
       
       setShowEditModal(false);
       setSelectedReservation(null);
-      alert('Rezervasyon güncellendi');
     } catch (error) {
       console.error('Rezervasyon güncelleme hatası:', error);
-      alert('Rezervasyon güncellenirken hata oluştu');
+      alert('Rezervasyon güncellenirken bir hata oluştu: ' + error.message);
     }
-  };
-
-  // Rezervasyon düzenleme
-  const handleEditReservation = (reservation) => {
-    setSelectedReservation(reservation);
-    setShowEditModal(true);
-  };
-
-  // Rezervasyon iptal etme
-  const handleCancelReservation = async (reservation) => {
-    if (window.confirm('Bu rezervasyonu iptal etmek istediğinizden emin misiniz?')) {
-      try {
-        await updateReservationStatus(reservation.id, 'cancelled');
-        alert('Rezervasyon iptal edildi');
-      } catch (error) {
-        console.error('Rezervasyon iptal hatası:', error);
-        alert('Rezervasyon iptal edilirken hata oluştu');
-      }
-    }
-  };
-
-  // QR kod gösterme
-  const handleShowQR = (reservation) => {
-    setSelectedReservation(reservation);
-    setShowQRModal(true);
-  };
-
-  // Rezervasyon durumu güncelleme
-  const updateReservationStatus = async (reservationId, newStatus) => {
-    try {
-      // Önce local state'i güncelle
-      setReservations(prev => prev.map(res => 
-        res.id === reservationId 
-          ? { ...res, status: newStatus, updatedAt: new Date().toISOString() }
-          : res
-      ));
-      
-      // Firebase'ı güncelle
-      await updateDoc(doc(db, 'reservations', reservationId), {
-        status: newStatus,
-        updatedAt: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Durum güncelleme hatası:', error);
-      alert('Durum güncellenirken bir hata oluştu');
-    }
-  };
-
-  // Durum badge renkleri
-  const getStatusBadge = (status) => {
-    const badges = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-blue-100 text-blue-800',
-      assigned: 'bg-purple-100 text-purple-800',
-      started: 'bg-green-100 text-green-800',
-      completed: 'bg-gray-100 text-gray-800',
-      cancelled: 'bg-red-100 text-red-800'
-    };
-    return badges[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getStatusText = (status) => {
-    const texts = {
-      pending: 'Bekliyor',
-      confirmed: 'Onaylandı',
-      assigned: 'Şoför Atandı',
-      started: 'Başladı',
-      completed: 'Tamamlandı',
-      cancelled: 'İptal Edildi'
-    };
-    return texts[status] || 'Bilinmiyor';
   };
 
   if (loading) {
@@ -332,7 +397,7 @@ const ReservationIndex = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Rezervasyon Yönetimi</h1>
             <p className="text-gray-600 mt-1">
-              Toplam {reservations.length} rezervasyon bulunuyor
+              Toplam {reservations.length} rezervasyon • Filtrelenmiş {filteredReservations.length} rezervasyon
             </p>
           </div>
           <button
@@ -345,74 +410,35 @@ const ReservationIndex = () => {
         </div>
       </div>
 
-      {/* Durum Özeti */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        {[
-          { status: 'pending', label: 'Bekleyen', icon: Clock, color: 'yellow' },
-          { status: 'confirmed', label: 'Onaylanan', icon: Calendar, color: 'blue' },
-          { status: 'assigned', label: 'Atanan', icon: User, color: 'purple' },
-          { status: 'started', label: 'Başlayan', icon: Car, color: 'green' },
-          { status: 'completed', label: 'Tamamlanan', icon: CreditCard, color: 'gray' },
-          { status: 'cancelled', label: 'İptal', icon: RefreshCw, color: 'red' }
-        ].map(({ status, label, icon: Icon, color }) => {
-          const count = reservations.filter(r => r.status === status).length;
-          return (
-            <div key={status} className="bg-white rounded-lg border border-gray-100 p-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-${color}-100`}>
-                  <Icon className={`w-4 h-4 text-${color}-600`} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">{label}</p>
-                  <p className="text-lg font-semibold text-gray-900">{count}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Filtreleme */}
+      <ReservationFilters 
+        onFilterChange={handleFilterChange}
+        reservations={reservations}
+      />
 
-      {/* Rezervasyon Listesi */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Tüm Rezervasyonlar</h2>
-        </div>
-        
-        {reservations.length === 0 ? (
-          <div className="p-8 text-center">
-            <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz rezervasyon yok</h3>
-            <p className="text-gray-600 mb-4">İlk rezervasyonu oluşturmak için yukarıdaki butonu kullanın</p>
-            <button
-              onClick={() => setShowQuickModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-            >
-              Rezervasyon Ekle
-            </button>
-          </div>
-        ) : (
-          <div className="p-6 space-y-4">
-            {reservations.map((reservation) => (
-              <ReservationCard
-                key={reservation.id}
-                reservation={reservation}
-                drivers={drivers}
-                vehicles={vehicles}
-                getStatusBadge={getStatusBadge}
-                getStatusText={getStatusText}
-                onAssignDriver={(res) => {
-                  setSelectedReservation(res);
-                  setShowDriverModal(true);
-                }}
-                onUpdateStatus={updateReservationStatus}
-                onEdit={handleEditReservation}
-                onCancel={handleCancelReservation}
-                onShowQR={handleShowQR}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Rezervasyon Tablosu */}
+      <ReservationTable
+        reservations={filteredReservations}
+        drivers={drivers}
+        vehicles={vehicles}
+        onEdit={(reservation) => {
+          setSelectedReservation(reservation);
+          setShowEditModal(true);
+        }}
+        onDriverAssign={(reservation) => {
+          setSelectedReservation(reservation);
+          setShowDriverModal(true);
+        }}
+        onShowQR={(reservation) => {
+          setSelectedReservation(reservation);
+          setShowQRModal(true);
+        }}
+        onStatusChange={(reservationId, newStatus) => {
+          setReservations(prev => prev.map(res => 
+            res.id === reservationId ? { ...res, status: newStatus } : res
+          ));
+        }}
+      />
 
       {/* Modals */}
       {showQuickModal && (
@@ -429,7 +455,7 @@ const ReservationIndex = () => {
             setShowEditModal(false);
             setSelectedReservation(null);
           }}
-          onUpdate={handleUpdateReservation}
+          onUpdate={handleReservationUpdate}
         />
       )}
 
