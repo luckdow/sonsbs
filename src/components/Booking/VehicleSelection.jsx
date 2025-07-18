@@ -1,327 +1,325 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Car, 
-  Users, 
-  Star, 
-  MapPin, 
-  Clock,
-  Check,
-  AlertCircle
-} from 'lucide-react';
-import { VEHICLE_TYPES } from '../../config/constants';
+import { Car, Users, MapPin, Clock, Check, AlertCircle, Navigation } from 'lucide-react';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import googleMapsService from '../../services/googleMapsService';
 
 const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
   const [selectedVehicle, setSelectedVehicle] = useState(bookingData.selectedVehicle || null);
   const [selectedServices, setSelectedServices] = useState(bookingData.selectedServices || []);
-  const [distance, setDistance] = useState(50); // Varsayılan 50km
-  const [duration, setDuration] = useState(60); // Varsayılan 60dk
-  const [routeLoaded, setRouteLoaded] = useState(true); // Başlangıçta true
+  const [vehicles, setVehicles] = useState([]);
+  const [extraServices, setExtraServices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
+  const [distance, setDistance] = useState(bookingData.distance || 0);
+  const [duration, setDuration] = useState(bookingData.duration || 0);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState('');
   const mapRef = useRef(null);
-  const map = useRef(null);
-  const directionsService = useRef(null);
-  const directionsRenderer = useRef(null);
+  const [map, setMap] = useState(null);
 
-  // Antalya Havalimanı koordinatları
+  // Firebase'den verileri al
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Araçları getir
+        const vehiclesQuery = query(
+          collection(db, 'vehicles'),
+          where('status', '==', 'active')
+        );
+        const vehiclesSnapshot = await getDocs(vehiclesQuery);
+        const vehiclesData = vehiclesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        // Ekstra hizmetleri getir
+        const servicesQuery = query(
+          collection(db, 'extraServices'),
+          where('status', '==', 'active')
+        );
+        const servicesSnapshot = await getDocs(servicesQuery);
+        const servicesData = servicesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setVehicles(vehiclesData);
+        setExtraServices(servicesData);
+      } catch (error) {
+        console.error('Veri alınırken hata:', error);
+        setVehicles([]);
+        setExtraServices([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Google Maps ile gerçek rota hesaplama
+  useEffect(() => {
+    const calculateRealRoute = async () => {
+      const locations = getDisplayLocations();
+      if (!locations.pickup || !locations.dropoff) {
+        console.log('Lokasyonlar eksik, rota hesaplanamıyor');
+        return;
+      }
+
+      setRouteLoading(true);
+      setRouteError('');
+      // Eski araç seçimini temizle - fiyatlar yeniden hesaplanacak
+      setSelectedVehicle(null);
+      setSelectedServices([]);
+
+      try {
+        console.log('Google Maps API ile gerçek rota hesaplanıyor...');
+        
+        // Google Maps'i başlat
+        const initialized = await googleMapsService.initialize();
+        if (!initialized) {
+          throw new Error('Google Maps API başlatılamadı');
+        }
+
+        // Lokasyon stringlerini hazırla
+        const origin = getLocationString(locations.pickup);
+        const destination = getLocationString(locations.dropoff);
+
+        console.log('Başlangıç:', origin);
+        console.log('Varış:', destination);
+
+        if (!origin || !destination) {
+          throw new Error('Geçersiz lokasyon formatı');
+        }
+
+        // Gerçek rota hesaplaması
+        const result = await googleMapsService.calculateRoute(origin, destination);
+        
+        if (result && result.distance && result.duration) {
+          const distanceKm = Math.round(result.distance.value / 1000);
+          const durationMin = Math.round(result.duration.value / 60);
+          
+          console.log('Gerçek rota hesaplandı:', {
+            distance: distanceKm + ' km',
+            duration: durationMin + ' dk'
+          });
+          
+          setDistance(distanceKm);
+          setDuration(durationMin);
+          
+          // BookingData'yı güncelle
+          setBookingData(prev => ({
+            ...prev,
+            distance: distanceKm,
+            duration: durationMin,
+            selectedVehicle: null, // Araç seçimini sıfırla
+            selectedServices: [] // Hizmet seçimini sıfırla
+          }));
+
+          // Rota bilgisini sakla
+          window.routeData = result;
+        } else {
+          throw new Error('Rota hesaplanamadı');
+        }
+
+      } catch (error) {
+        console.error('Rota hesaplama hatası:', error);
+        setRouteError('Rota hesaplanamadı. Lütfen lokasyonları kontrol edin.');
+      } finally {
+        setRouteLoading(false);
+      }
+    };
+
+    // Sadece gerekli lokasyonlar varsa hesapla
+    if (bookingData.pickupLocation || bookingData.dropoffLocation) {
+      calculateRealRoute();
+    }
+  }, [bookingData.pickupLocation, bookingData.dropoffLocation, bookingData.direction]);
+
+  // Harita çizimi - basit ve çalışan versiyon
+  useEffect(() => {
+    if (distance > 0 && window.routeData && mapRef.current && window.google) {
+      console.log('🗺️ Harita çizimi başlıyor...');
+      
+      const drawMap = async () => {
+        // Container'ı temizle
+        mapRef.current.innerHTML = '';
+        
+        // Basit harita oluştur
+        const map = new window.google.maps.Map(mapRef.current, {
+          zoom: 10,
+          center: { lat: 36.8987, lng: 30.8005 },
+          mapTypeId: window.google.maps.MapTypeId.ROADMAP
+        });
+
+        // DirectionsService ve DirectionsRenderer oluştur
+        const directionsService = new window.google.maps.DirectionsService();
+        const directionsRenderer = new window.google.maps.DirectionsRenderer({
+          map: map,
+          suppressMarkers: false,
+          polylineOptions: {
+            strokeColor: '#4285f4',
+            strokeWeight: 6,
+            strokeOpacity: 1.0
+          }
+        });
+
+        // Lokasyonları al
+        const locations = getDisplayLocations();
+        const origin = getLocationString(locations.pickup);
+        const destination = getLocationString(locations.dropoff);
+        
+        console.log('🎯 Rota çiziliyor:', origin, '→', destination);
+
+        // Rota hesapla ve çiz
+        directionsService.route({
+          origin: origin,
+          destination: destination,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+          unitSystem: window.google.maps.UnitSystem.METRIC,
+          language: 'tr',
+          region: 'TR'
+        }, (result, status) => {
+          if (status === 'OK') {
+            console.log('✅ MAVİ ÇİZGİ ÇİZİLDİ!');
+            directionsRenderer.setDirections(result);
+          } else {
+            console.error('❌ Rota çizilemedi:', status);
+          }
+        });
+      };
+
+      // Biraz bekle ve çiz
+      setTimeout(drawMap, 500);
+    }
+  }, [distance]);
+
+  // Antalya Havalimanı sabit lokasyonu
   const ANTALYA_AIRPORT = {
+    address: 'Antalya Havalimanı, Antalya, Türkiye',
     lat: 36.8987,
     lng: 30.8005
   };
 
-  // Ekstra hizmetler
-  const extraServices = [
-    {
-      id: 'baby_seat',
-      name: 'Bebek Koltuğu',
-      price: 50,
-      description: 'Güvenli bebek koltuğu (0-4 yaş)',
-      icon: '👶'
-    },
-    {
-      id: 'child_seat',
-      name: 'Çocuk Koltuğu',
-      price: 40,
-      description: 'Güvenli çocuk koltuğu (4-12 yaş)',
-      icon: '👧'
-    },
-    {
-      id: 'wheelchair',
-      name: 'Tekerlekli Sandalye Desteği',
-      price: 75,
-      description: 'Tekerlekli sandalye taşıma desteği',
-      icon: '♿'
-    },
-    {
-      id: 'extra_luggage',
-      name: 'Ekstra Bagaj',
-      price: 30,
-      description: 'Standart üzeri bagaj taşıma',
-      icon: '🧳'
-    },
-    {
-      id: 'meet_greet',
-      name: 'Karşılama Hizmeti',
-      price: 100,
-      description: 'Havalimanında karşılama ve yönlendirme',
-      icon: '🎯'
-    },
-    {
-      id: 'refreshments',
-      name: 'İkram Paketi',
-      price: 25,
-      description: 'Su, kahve, çikolata ikram paketi',
-      icon: '☕'
+  // Lokasyon formatını düzenle
+  const formatLocation = (location) => {
+    if (!location) return 'Seçilmedi';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      if (location.address) return location.address;
+      if (location.formatted_address) return location.formatted_address;
+      if (location.name) return location.name;
+      // Eğer sadece koordinatlar varsa
+      if (location.lat && location.lng) {
+        return `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`;
+      }
     }
-  ];
-
-  // Araç tipleri ve fiyatlandırma
-  const vehicles = [
-    {
-      id: VEHICLE_TYPES.VIP_CAR,
-      name: 'VIP Araç',
-      capacity: '1-3 Kişi',
-      basePrice: 150,
-      pricePerKm: 3,
-      image: '🚗',
-      features: ['Klima', 'WiFi', 'Su İkramı', 'Premium İç Tasarım'],
-      description: 'Konforlu ve lüks seyahat deneyimi'
-    },
-    {
-      id: VEHICLE_TYPES.MINIBUS,
-      name: 'Minibüs',
-      capacity: '4-8 Kişi',
-      basePrice: 200,
-      pricePerKm: 4,
-      image: '🚐',
-      features: ['Klima', 'Geniş Bagaj', 'Rahat Koltuklar'],
-      description: 'Aileler ve küçük gruplar için ideal'
-    },
-    {
-      id: VEHICLE_TYPES.MIDIBUS,
-      name: 'Midibüs',
-      capacity: '9-16 Kişi',
-      basePrice: 300,
-      pricePerKm: 5,
-      image: '🚌',
-      features: ['Klima', 'Geniş Bagaj', 'TV/Müzik Sistemi'],
-      description: 'Orta büyüklükteki gruplar için'
-    },
-    {
-      id: VEHICLE_TYPES.BUS,
-      name: 'Otobüs',
-      capacity: '17+ Kişi',
-      basePrice: 400,
-      pricePerKm: 6,
-      image: '🚍',
-      features: ['Klima', 'TV/Müzik', 'Büyük Bagaj', 'Hostesli Hizmet'],
-      description: 'Büyük gruplar ve organizasyonlar için'
-    }
-  ];
-
-  useEffect(() => {
-    // Google Maps yüklenene kadar bekle
-    if (!window.google) {
-      const checkGoogle = setInterval(() => {
-        if (window.google) {
-          clearInterval(checkGoogle);
-          initializeMap();
-        }
-      }, 100);
-      return () => clearInterval(checkGoogle);
-    } else {
-      initializeMap();
-    }
-  }, []);
-
-  useEffect(() => {
-    // Harita ve lokasyon verileri hazır olduğunda rota hesapla
-    if (map.current && bookingData.pickupLocation && bookingData.dropoffLocation) {
-      setTimeout(() => {
-        calculateRoute();
-      }, 500); // Kısa bir gecikme ile
-    } else if (map.current) {
-      // Lokasyon verisi eksikse varsayılan değerler set et
-      setDistance(50); // Varsayılan mesafe
-      setDuration(60); // Varsayılan süre
-      setRouteLoaded(true);
-    }
-  }, [bookingData.pickupLocation, bookingData.dropoffLocation, map.current]);
-
-  const initializeMap = () => {
-    if (!window.google || !window.google.maps || !mapRef.current) {
-      console.log('Google Maps not ready or map ref not available');
-      return;
-    }
-
-    try {
-      map.current = new window.google.maps.Map(mapRef.current, {
-        zoom: 10,
-        center: ANTALYA_AIRPORT,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }]
-          }
-        ]
-      });
-
-      directionsService.current = new window.google.maps.DirectionsService();
-      directionsRenderer.current = new window.google.maps.DirectionsRenderer({
-        suppressMarkers: false,
-        polylineOptions: {
-          strokeColor: '#3B82F6',
-          strokeOpacity: 0.8,
-          strokeWeight: 4
-        }
-      });
-      directionsRenderer.current.setMap(map.current);
-      
-      console.log('Map initialized successfully');
-    } catch (error) {
-      console.error('Map initialization error:', error);
-      // Hata durumunda varsayılan değerler set et
-      setDistance(50);
-      setDuration(60);
-      setRouteLoaded(true);
-    }
+    return 'Bilinmeyen lokasyon';
   };
 
-  const calculateRoute = () => {
-    if (!directionsService.current) {
-      console.log('DirectionsService not ready');
-      return;
+  // Transfer yönüne göre lokasyonları belirle
+  const getDisplayLocations = () => {
+    const direction = bookingData.direction;
+    
+    if (direction === 'airport-to-hotel') {
+      return {
+        pickup: ANTALYA_AIRPORT,
+        dropoff: bookingData.dropoffLocation || null
+      };
+    } else if (direction === 'hotel-to-airport') {
+      return {
+        pickup: bookingData.pickupLocation || null,
+        dropoff: ANTALYA_AIRPORT
+      };
     }
-
-    // Lokasyon verilerini kontrol et
-    let origin, destination;
-
-    if (bookingData.direction === 'airport-to-hotel') {
-      origin = ANTALYA_AIRPORT;
-      destination = bookingData.dropoffLocation;
-    } else {
-      origin = bookingData.pickupLocation;
-      destination = ANTALYA_AIRPORT;
-    }
-
-    // Lokasyon verilerinin format kontrolü
-    if (!origin || !destination) {
-      console.log('Missing location data:', { origin, destination });
-      return;
-    }
-
-    // Koordinat formatını düzelt
-    const formatLocation = (location) => {
-      if (typeof location === 'object' && location.lat && location.lng) {
-        return { lat: location.lat, lng: location.lng };
-      }
-      if (typeof location === 'object' && location.address) {
-        return location.address;
-      }
-      return location;
+    
+    // Fallback - eski sistemi kullan
+    return {
+      pickup: bookingData.pickupLocation || null,
+      dropoff: bookingData.dropoffLocation || null
     };
+  };
 
-    const formattedOrigin = formatLocation(origin);
-    const formattedDestination = formatLocation(destination);
-
-    console.log('Calculating route:', { formattedOrigin, formattedDestination });
-
-    // Sadece yeni rota hesaplanıyorsa loading göster
-    if (distance === 50 && duration === 60) {
-      setRouteLoaded(false);
-    }
-    setError('');
-
-    // Timeout mekanizması - 10 saniye sonra varsayılan değerleri kullan
-    const timeoutId = setTimeout(() => {
-      console.log('Route calculation timeout, using default values');
-      setDistance(50);
-      setDuration(60);
-      setRouteLoaded(true);
-    }, 10000);
-
-    directionsService.current.route(
-      {
-        origin: formattedOrigin,
-        destination: formattedDestination,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-        avoidTolls: false,
-        avoidHighways: false
-      },
-      (result, status) => {
-        clearTimeout(timeoutId); // Başarılı olursa timeout'u iptal et
-        
-        if (status === 'OK') {
-          directionsRenderer.current.setDirections(result);
-          
-          const route = result.routes[0];
-          const leg = route.legs[0];
-          
-          setDistance(Math.round(leg.distance.value / 1000)); // km
-          setDuration(Math.round(leg.duration.value / 60)); // dakika
-          setRouteLoaded(true);
-          setError('');
-          console.log('Route calculated successfully:', { distance: leg.distance.value / 1000, duration: leg.duration.value / 60 });
-        } else {
-          console.error('Directions request failed due to ' + status);
-          // Hata durumunda varsayılan değerleri kullan
-          setDistance(50);
-          setDuration(60);
-          setRouteLoaded(true);
-          setError('');
-        }
+  // Lokasyon string formatına çevir (Google Maps API için)
+  const getLocationString = (location) => {
+    if (!location) return null;
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      if (location.address) return location.address;
+      if (location.formatted_address) return location.formatted_address;
+      if (location.name) return location.name;
+      // Koordinatlar varsa string olarak döndür
+      if (location.lat && location.lng) {
+        return `${location.lat},${location.lng}`;
       }
-    );
+    }
+    return null;
   };
 
+  // Fiyat hesaplama - admin panelindeki kmRate ile gerçek km çarpılır
   const calculatePrice = (vehicle) => {
-    const basePrice = vehicle.basePrice;
-    const distancePrice = distance * vehicle.pricePerKm;
-    return basePrice + distancePrice;
+    if (!distance || distance === 0) return 0;
+    const kmRate = vehicle.kmRate || 0;
+    return Math.round(distance * kmRate);
   };
 
+  // Araç seçimi
   const handleVehicleSelect = (vehicle) => {
+    const calculatedPrice = calculatePrice(vehicle);
     setSelectedVehicle({
       ...vehicle,
-      totalPrice: calculatePrice(vehicle),
+      totalPrice: calculatedPrice,
       distance,
       duration
     });
-    // Error mesajını temizle
     setError('');
+    
+    // BookingData'yı da güncelle
+    setBookingData(prev => ({
+      ...prev,
+      selectedVehicle: {
+        ...vehicle,
+        totalPrice: calculatedPrice,
+        distance,
+        duration
+      }
+    }));
   };
 
+  // Devam et
   const handleNext = () => {
-    console.log('Vehicle Selection - Selected Vehicle:', selectedVehicle);
-    
     if (!selectedVehicle) {
       setError('Lütfen bir araç seçiniz');
       return;
     }
 
-    // Ekstra hizmetler toplam fiyatını hesapla
-    const servicesTotal = selectedServices.reduce((total, service) => total + service.price, 0);
-    const totalPrice = selectedVehicle.totalPrice + servicesTotal;
+    // Güncel fiyatı hesapla
+    const currentVehiclePrice = calculatePrice(selectedVehicle);
+    const servicesTotal = selectedServices.reduce((total, service) => total + (service.price || 0), 0);
+    const totalPrice = currentVehiclePrice + servicesTotal;
 
     const updatedData = {
       ...bookingData,
-      selectedVehicle,
+      selectedVehicle: {
+        ...selectedVehicle,
+        totalPrice: currentVehiclePrice,
+        distance,
+        duration
+      },
       selectedServices,
       totalPrice,
       distance,
       duration
     };
     
-    console.log('Vehicle Selection - Updated Data:', updatedData);
     setBookingData(updatedData);
     onNext();
   };
 
+  // Hizmet seçimi
   const handleServiceToggle = (service) => {
     setSelectedServices(prev => {
       const exists = prev.find(s => s.id === service.id);
@@ -333,241 +331,340 @@ const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
     });
   };
 
+  // Araç ikonu
+  const getVehicleIcon = (type) => {
+    const icons = {
+      sedan: '🚗',
+      suv: '🚙',
+      minibus: '🚐',
+      midibus: '🚌',
+      bus: '🚍',
+      vip: '🏎️'
+    };
+    return icons[type] || '🚗';
+  };
+
+  // Yolcu sayısına göre filtreleme
+  const filteredVehicles = vehicles.filter(vehicle => {
+    const passengerCount = bookingData.passengers || 1;
+    return vehicle.capacity >= passengerCount;
+  });
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Araçlar yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-md sm:max-w-lg lg:max-w-4xl mx-auto p-2 sm:p-3 lg:p-4">
+    <div className="max-w-4xl mx-auto p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-3"
+        className="space-y-6"
       >
         {/* Rota Bilgileri */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
-          <h3 className="text-base font-semibold text-gray-800 mb-3">Transfer Rotası</h3>
-          
-          {/* Harita */}
-          <div className="relative">
-            <div 
-              ref={mapRef} 
-              className="w-full h-64 sm:h-80 rounded-lg border border-gray-200"
-            />
-            {!routeLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                  <p className="text-sm text-gray-600">Rota hesaplanıyor...</p>
-                </div>
-              </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Navigation className="w-5 h-5 text-blue-600" />
+            Transfer Rotası
+            {bookingData.direction && (
+              <span className="text-sm font-normal text-gray-500">
+                ({bookingData.direction === 'airport-to-hotel' ? 'Karşılama' : 'Uğurlama'})
+              </span>
             )}
-          </div>
-
-          {/* Rota Detayları */}
-          {routeLoaded && (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Mesafe</p>
-                  <p className="text-lg font-bold text-blue-600">{distance} km</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                <Clock className="w-5 h-5 text-green-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Süre</p>
-                  <p className="text-lg font-bold text-green-600">{duration} dk</p>
-                </div>
-              </div>
+          </h3>
+          
+          {routeLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Gerçek rota hesaplanıyor...</p>
             </div>
-          )}
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="w-5 h-5 text-red-600" />
-                <p className="text-sm text-red-800">{error}</p>
+          ) : (
+            <div className="space-y-4">
+              {/* Lokasyonlar */}
+              <div className="grid grid-cols-2 gap-4">
+                {(() => {
+                  const locations = getDisplayLocations();
+                  const direction = bookingData.direction;
+                  
+                  return (
+                    <>
+                      <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-600">
+                            {direction === 'airport-to-hotel' ? 'Havalimanı (Başlangıç)' : 'Otel (Başlangıç)'}
+                          </p>
+                          <p className="text-sm text-gray-800">{formatLocation(locations.pickup)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-lg">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-600">
+                            {direction === 'airport-to-hotel' ? 'Otel (Varış)' : 'Havalimanı (Varış)'}
+                          </p>
+                          <p className="text-sm text-gray-800">{formatLocation(locations.dropoff)}</p>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
+
+              {/* Google Maps Haritası - Yeni tasarım */}
+              {distance > 0 && (
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl shadow-lg p-6">
+                  <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    🗺️ Rota Haritası
+                  </h4>
+                  <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div 
+                      ref={mapRef}
+                      className="w-full"
+                      style={{ height: '450px' }}
+                    />
+                  </div>
+                  
+                  {/* Mesafe ve Süre - Harita altında */}
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Mesafe</p>
+                          <p className="text-xl font-bold text-blue-600">
+                            {distance} km
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                          <Clock className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Süre</p>
+                          <p className="text-xl font-bold text-purple-600">
+                            {duration} dk
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    {formatLocation(getDisplayLocations().pickup)} → {formatLocation(getDisplayLocations().dropoff)}
+                  </p>
+                </div>
+              )}
+
+              {/* Hata Mesajı */}
+              {routeError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="flex items-center space-x-2">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <p className="text-sm text-red-800">{routeError}</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {/* Araç Seçimi */}
-        <div className="space-y-3">
-          <h3 className="text-base font-semibold text-gray-800">Araç Seçimi</h3>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-800">Uygun Araçlar</h3>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {vehicles.map((vehicle) => {
-              const totalPrice = routeLoaded ? calculatePrice(vehicle) : 0;
-              const isSelected = selectedVehicle?.id === vehicle.id;
-              
-              return (
-                <motion.div
-                  key={vehicle.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleVehicleSelect(vehicle)}
-                  className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                    isSelected
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  {isSelected && (
-                    <div className="absolute top-3 right-3">
-                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                        <Check className="w-4 h-4 text-white" />
+          {filteredVehicles.length === 0 ? (
+            <div className="text-center py-8">
+              <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">
+                {loading ? 'Araçlar yükleniyor...' : 'Uygun araç bulunamadı.'}
+              </p>
+            </div>
+          ) : distance === 0 ? (
+            <div className="text-center py-8">
+              <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+              <p className="text-gray-600">
+                Lütfen önce rota hesaplamasının tamamlanmasını bekleyin.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredVehicles.map((vehicle) => {
+                const totalPrice = calculatePrice(vehicle);
+                const isSelected = selectedVehicle?.id === vehicle.id;
+                
+                return (
+                  <motion.div
+                    key={vehicle.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleVehicleSelect(vehicle)}
+                    className={`relative bg-white rounded-2xl border-2 cursor-pointer transition-all duration-300 overflow-hidden shadow-lg hover:shadow-xl ${
+                      isSelected
+                        ? 'border-blue-500 shadow-blue-200 bg-gradient-to-br from-blue-50 to-indigo-100'
+                        : 'border-gray-200 hover:border-blue-300 hover:shadow-blue-100'
+                    }`}
+                  >
+                    {/* Seçili işareti */}
+                    {isSelected && (
+                      <div className="absolute top-4 right-4 z-10">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                          <Check className="w-5 h-5 text-white" />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <div className="flex items-start space-x-3">
-                    <div className="text-3xl">{vehicle.image}</div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-800">{vehicle.name}</h4>
-                        {routeLoaded && (
-                          <div className="text-right">
-                            <p className="text-xl font-bold text-blue-600">
-                              ₺{totalPrice.toLocaleString()}
-                            </p>
-                            <p className="text-xs text-gray-500">Toplam Fiyat</p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-1 mb-2">
-                        <Users className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">{vehicle.capacity}</span>
-                      </div>
-
-                      <p className="text-sm text-gray-600 mb-3">{vehicle.description}</p>
-
-                      <div className="flex flex-wrap gap-2">
-                        {vehicle.features.map((feature, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full"
-                          >
-                            {feature}
-                          </span>
-                        ))}
-                      </div>
-
-                      {routeLoaded && (
-                        <div className="mt-3 pt-3 border-t border-gray-200">
-                          <div className="flex justify-between text-sm text-gray-600">
-                            <span>Başlangıç fiyatı:</span>
-                            <span>₺{vehicle.basePrice}</span>
-                          </div>
-                          <div className="flex justify-between text-sm text-gray-600">
-                            <span>Mesafe ({distance} km):</span>
-                            <span>₺{(distance * vehicle.pricePerKm).toLocaleString()}</span>
+                    {/* Araç Resmi */}
+                    <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                      {vehicle.imageUrl ? (
+                        <img
+                          src={vehicle.imageUrl}
+                          alt={`${vehicle.brand} ${vehicle.model}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+                          <div className="text-6xl opacity-40 text-blue-500">
+                            {getVehicleIcon(vehicle.type)}
                           </div>
                         </div>
                       )}
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
+                    
+                    {/* Araç Bilgileri */}
+                    <div className="p-4">
+                      {/* Araç Adı */}
+                      <h4 className="font-semibold text-lg text-gray-800 mb-2 line-clamp-1">
+                        {vehicle.brand} {vehicle.model}
+                      </h4>
 
-        {/* Ekstra Hizmetler */}
-        {selectedVehicle && (
-          <div className="bg-white rounded-lg border border-gray-200 p-3 lg:p-4">
-            <h3 className="text-base font-semibold text-gray-800 mb-3">Ekstra Hizmetler</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Transferinizi daha konforlu hale getirmek için ekstra hizmetler seçebilirsiniz.
-            </p>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-              {extraServices.map((service) => {
-                const isSelected = selectedServices.find(s => s.id === service.id);
-                return (
-                  <motion.div
-                    key={service.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleServiceToggle(service)}
-                    className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className="text-2xl">{service.icon}</div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="font-medium text-gray-800">{service.name}</h4>
-                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                            isSelected 
-                              ? 'bg-blue-500 border-blue-500' 
-                              : 'border-gray-300'
-                          }`}>
-                            {isSelected && (
-                              <Check className="w-3 h-3 text-white" />
+                      {/* Kapasite */}
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Users className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">{vehicle.capacity} Kişi</span>
+                      </div>
+
+                      {/* Km Oranı - KALDIRILDI */}
+
+                      {/* Özellikler - Yeni tasarım */}
+                      {vehicle.features && vehicle.features.length > 0 && (
+                        <div className="mb-4">
+                          <div className="flex flex-wrap gap-2">
+                            {vehicle.features.slice(0, 3).map((feature, index) => (
+                              <span
+                                key={index}
+                                className="text-xs bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full font-medium shadow-sm flex items-center gap-1"
+                              >
+                                <span>✨</span> {feature}
+                              </span>
+                            ))}
+                            {vehicle.features.length > 3 && (
+                              <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full border">
+                                +{vehicle.features.length - 3} özellik
+                              </span>
                             )}
                           </div>
                         </div>
-                        <p className="text-xs text-gray-600 mb-2">{service.description}</p>
-                        <p className="text-sm font-semibold text-green-600">
-                          +₺{service.price}
-                        </p>
+                      )}
+
+                      {/* Fiyat - Sadece toplam fiyat */}
+                      <div className="pt-3 border-t border-gray-100">
+                        <div className="text-center bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-3 border border-orange-200">
+                          <p className="text-2xl font-bold text-orange-600">
+                            ₺{totalPrice.toLocaleString()}
+                          </p>
+                          <p className="text-sm font-semibold text-gray-600 mt-1">
+                            Transfer Ücreti
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
                 );
               })}
             </div>
+          )}
+        </div>
 
-            {selectedServices.length > 0 && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h4 className="font-medium text-green-800 mb-2">Seçilen Hizmetler:</h4>
-                <div className="space-y-1">
-                  {selectedServices.map((service) => (
-                    <div key={service.id} className="flex justify-between text-sm">
-                      <span className="text-green-700">{service.name}</span>
-                      <span className="font-medium text-green-800">+₺{service.price}</span>
+        {/* Ekstra Hizmetler - Sadece araç seçildiğinde göster */}
+        {selectedVehicle && distance > 0 && extraServices.length > 0 && (
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border border-purple-200 p-6 shadow-lg">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              ⭐ Ekstra Hizmetler
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {extraServices.map((service) => {
+                const isSelected = selectedServices.find(s => s.id === service.id);
+                
+                return (
+                  <motion.div
+                    key={service.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleServiceToggle(service)}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      isSelected
+                        ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 shadow-lg shadow-purple-200'
+                        : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="text-2xl">{service.icon || '⭐'}</div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-gray-800">{service.name}</h4>
+                          <span className="text-lg font-bold text-purple-600">
+                            ₺{service.price || 0}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">{service.description}</p>
+                      </div>
                     </div>
-                  ))}
-                  <div className="border-t border-green-300 pt-2 mt-2">
-                    <div className="flex justify-between font-semibold text-green-800">
-                      <span>Ekstra Hizmetler Toplamı:</span>
-                      <span>+₺{selectedServices.reduce((total, service) => total + service.price, 0)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* Fiyat Özeti */}
-        {selectedVehicle && routeLoaded && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Fiyat Detayı</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Araç ({selectedVehicle.name}):</span>
-                <span>₺{selectedVehicle.basePrice}</span>
+        {/* Fiyat Özeti - Sadece araç seçildiğinde göster */}
+        {selectedVehicle && distance > 0 && (
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-6 shadow-lg">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              💰 Fiyat Özeti
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-white rounded-lg">
+                <span className="font-medium text-gray-700">Transfer Ücreti</span>
+                <span className="font-bold text-green-600">₺{calculatePrice(selectedVehicle).toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Mesafe ({distance} km × ₺{selectedVehicle.pricePerKm}):</span>
-                <span>₺{(distance * selectedVehicle.pricePerKm).toLocaleString()}</span>
-              </div>
-              {selectedServices.length > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Ekstra Hizmetler:</span>
-                  <span>₺{selectedServices.reduce((total, service) => total + service.price, 0)}</span>
+              
+              {selectedServices.map((service) => (
+                <div key={service.id} className="flex justify-between items-center p-3 bg-white rounded-lg">
+                  <span className="font-medium text-gray-700">{service.name}</span>
+                  <span className="font-bold text-purple-600">₺{service.price || 0}</span>
                 </div>
-              )}
-              <div className="border-t border-gray-200 pt-2">
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>Toplam Tutar:</span>
-                  <span className="text-green-600">
-                    ₺{(selectedVehicle.totalPrice + selectedServices.reduce((total, service) => total + service.price, 0)).toLocaleString()}
+              ))}
+              
+              <div className="border-t border-green-300 pt-4">
+                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl border border-orange-200">
+                  <span className="text-lg font-bold text-gray-800">Toplam Tutar</span>
+                  <span className="text-2xl font-bold text-orange-600">
+                    ₺{(calculatePrice(selectedVehicle) + selectedServices.reduce((sum, s) => sum + (s.price || 0), 0)).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -575,26 +672,32 @@ const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
           </div>
         )}
 
-        {/* Navigasyon Butonları */}
-        <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onBack}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-          >
-            Geri Dön
-          </motion.button>
+        {/* Hata Mesajı */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          </div>
+        )}
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleNext}
-            disabled={!selectedVehicle || !routeLoaded}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        {/* Navigasyon */}
+        <div className="flex justify-between pt-6">
+          <button
+            onClick={onBack}
+            className="px-8 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg"
           >
-            Devam Et
-          </motion.button>
+            ← Geri
+          </button>
+          
+          <button
+            onClick={handleNext}
+            disabled={!selectedVehicle || distance === 0}
+            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-md hover:shadow-lg"
+          >
+            {distance === 0 ? 'Rota Hesaplanıyor...' : 'Devam Et →'}
+          </button>
         </div>
       </motion.div>
     </div>

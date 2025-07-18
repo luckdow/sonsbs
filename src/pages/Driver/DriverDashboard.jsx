@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, 
   MapPin, 
@@ -8,437 +8,695 @@ import {
   Phone,
   Navigation,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
-  DollarSign,
+  QrCode,
   Car,
-  Route
+  ExternalLink,
+  Eye,
+  X,
+  Plane,
+  Users,
+  Package,
+  ArrowLeft,
+  Mail
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { collection, onSnapshot, updateDoc, doc, query, where } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import { processQRScanCompletion } from '../../utils/financialIntegration';
+import QRScannerComponent from '../../components/QR/QRScannerComponent';
+import toast from 'react-hot-toast';
 
 const DriverDashboard = () => {
-  const { state, user } = useApp();
-  const { reservations, vehicles, drivers } = state;
-  
-  const [driverInfo, setDriverInfo] = useState(null);
-  const [driverReservations, setDriverReservations] = useState([]);
-  const [todayStats, setTodayStats] = useState({
-    totalTrips: 0,
-    completedTrips: 0,
-    earnings: 0,
-    totalDistance: 0
-  });
+  const { currentUser } = useApp();
+  const { user, userProfile } = useAuth();
+  const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedReservation, setSelectedReservation] = useState(null);
+  const [activeView, setActiveView] = useState('dashboard');
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const [activeTrip, setActiveTrip] = useState(null);
 
+  // Real-time reservations listener
   useEffect(() => {
-    // Find current driver info
-    const currentDriver = drivers.find(d => d.email === user?.email);
-    setDriverInfo(currentDriver);
+    if (!currentUser?.uid) return;
 
-    if (currentDriver) {
-      // Get driver's reservations
-      const driverReservations = reservations.filter(r => r.driverId === currentDriver.id);
-      setDriverReservations(driverReservations);
-
-      // Calculate today's stats
-      const today = new Date().toDateString();
-      const todayReservations = driverReservations.filter(
-        r => r.tripDetails?.date && new Date(r.tripDetails.date).toDateString() === today
-      );
-
-      const todayCompleted = todayReservations.filter(r => r.status === 'completed');
-      const todayEarnings = todayCompleted.reduce((sum, r) => {
-        const driverShare = (r.totalPrice || 0) * ((currentDriver.commission || 10) / 100);
-        return sum + driverShare;
-      }, 0);
-
-      const todayDistance = todayCompleted.reduce((sum, r) => {
-        return sum + (r.tripDetails?.distance || 0);
-      }, 0);
-
-      setTodayStats({
-        totalTrips: todayReservations.length,
-        completedTrips: todayCompleted.length,
-        earnings: todayEarnings,
-        totalDistance: todayDistance
-      });
-    }
-  }, [drivers, reservations, user]);
-
-  const getAssignedVehicle = () => {
-    if (!driverInfo) return null;
-    return vehicles.find(v => v.driverId === driverInfo.id);
-  };
-
-  const getUpcomingTrips = () => {
-    const now = new Date();
-    return driverReservations
-      .filter(r => {
-        if (!r.tripDetails?.date) return false;
-        const tripDate = new Date(`${r.tripDetails.date}T${r.tripDetails.time || '00:00'}`);
-        return tripDate > now && ['confirmed', 'assigned'].includes(r.status);
-      })
-      .sort((a, b) => {
-        const dateA = new Date(`${a.tripDetails.date}T${a.tripDetails.time || '00:00'}`);
-        const dateB = new Date(`${b.tripDetails.date}T${b.tripDetails.time || '00:00'}`);
-        return dateA - dateB;
-      })
-      .slice(0, 5);
-  };
-
-  const getCurrentTrip = () => {
-    return driverReservations.find(r => r.status === 'in-progress');
-  };
-
-  const assignedVehicle = getAssignedVehicle();
-  const upcomingTrips = getUpcomingTrips();
-  const currentTrip = getCurrentTrip();
-
-  if (!driverInfo) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Şoför Profili Bulunamadı</h3>
-          <p className="text-gray-500">Lütfen yöneticinizle iletişime geçin.</p>
-        </div>
-      </div>
+    const q = query(
+      collection(db, 'reservations'),
+      where('assignedDriverId', '==', currentUser.uid)
     );
-  }
 
-  return (
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const reservationList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Sort by date - most recent first
+      reservationList.sort((a, b) => {
+        if (a.date && b.date) {
+          return new Date(b.date) - new Date(a.date);
+        }
+        return 0;
+      });
+
+      setReservations(reservationList);
+      
+      // Find active trip
+      const activeTrip = reservationList.find(r => r.status === 'trip-started');
+      setActiveTrip(activeTrip);
+      
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  // Get assigned reservations (not completed)
+  const assignedReservations = reservations.filter(r => 
+    r.status === 'assigned' || r.status === 'confirmed'
+  );
+
+  // Start trip function
+  const startTrip = async (reservationId) => {
+    try {
+      const reservationRef = doc(db, 'reservations', reservationId);
+      await updateDoc(reservationRef, {
+        status: 'trip-started',
+        tripStartTime: new Date().toISOString()
+      });
+      
+      toast.success('Yolculuk başlatıldı!');
+      setActiveView('active-trip');
+    } catch (error) {
+      console.error('Error starting trip:', error);
+      toast.error('Yolculuk başlatılırken hata oluştu');
+    }
+  };
+
+  // Complete trip function
+  const completeTrip = async (reservationId) => {
+    try {
+      // Use financial integration
+      await processQRScanCompletion(reservationId);
+      
+      toast.success('Yolculuk tamamlandı!');
+      setActiveView('dashboard');
+      setActiveTrip(null);
+    } catch (error) {
+      console.error('Error completing trip:', error);
+      toast.error('Yolculuk tamamlanırken hata oluştu');
+    }
+  };
+
+  // Open Google Maps for navigation
+  const openNavigation = (pickup, dropoff) => {
+    const mapsUrl = `https://www.google.com/maps/dir/${encodeURIComponent(pickup)}/${encodeURIComponent(dropoff)}`;
+    window.open(mapsUrl, '_blank');
+  };
+
+  // QR Scanner modal component
+  const QRScannerModal = () => (
+    <AnimatePresence>
+      {isQRScannerOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-2xl p-6 w-full max-w-md"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900">QR Kod Okut</h3>
+              <button
+                onClick={() => setIsQRScannerOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Gerçek QR Scanner Component */}
+            <QRScannerComponent
+              onScanSuccess={(result) => {
+                console.log('QR Scan Result:', result);
+                // QR kod sonucunda rezervasyon ID'sini al
+                const reservationId = result;
+                const reservation = reservations.find(r => r.id === reservationId);
+                
+                if (reservation) {
+                  startTrip(reservation.id);
+                  setIsQRScannerOpen(false);
+                  toast.success('QR kod başarıyla okundu!');
+                } else {
+                  toast.error('Bu QR koda ait rezervasyon bulunamadı');
+                }
+              }}
+              onScanError={(error) => {
+                console.error('QR Scan Error:', error);
+                toast.error('QR kod okuma hatası');
+              }}
+            />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  // Dashboard View - Main screen with assigned reservations
+  const DashboardView = () => (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Hoş geldiniz, {driverInfo.firstName}!
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+        <h1 className="text-2xl font-bold mb-2">
+          Merhaba {userProfile?.firstName || userProfile?.name || 'Şoför'}!
         </h1>
-        <p className="text-gray-600">Bugünkü seferleriniz ve performansınız</p>
+        <p className="text-blue-100">
+          {assignedReservations.length} atanmış göreviniz var
+        </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Active Trip Alert */}
+      {activeTrip && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card"
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-green-50 border-2 border-green-200 rounded-xl p-4"
         >
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Bugünkü Seferler</p>
-                <p className="text-2xl font-bold text-gray-900">{todayStats.totalTrips}</p>
-                <p className="text-sm text-gray-500">
-                  {todayStats.completedTrips} tamamlandı
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card"
-        >
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Bugünkü Kazanç</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ₺{todayStats.earnings.toLocaleString('tr-TR')}
-                </p>
-                <p className="text-sm text-gray-500">
-                  %{driverInfo.commission || 10} komisyon
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card"
-        >
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Bugünkü Mesafe</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {todayStats.totalDistance} km
-                </p>
-                <p className="text-sm text-gray-500">Toplam mesafe</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Route className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="card"
-        >
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Değerlendirme</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ⭐ {driverInfo.rating || 5.0}
-                </p>
-                <p className="text-sm text-gray-500">Müşteri puanı</p>
-              </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Current Trip */}
-      {currentTrip && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="card border-l-4 border-l-blue-500"
-        >
-          <div className="card-header bg-blue-50">
-            <div className="flex items-center">
-              <Navigation className="w-5 h-5 text-blue-600 mr-2" />
-              <h3 className="text-lg font-semibold text-blue-900">Devam Eden Sefer</h3>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-gray-600">Müşteri</p>
-                <p className="font-medium text-gray-900">
-                  {currentTrip.customerInfo?.firstName} {currentTrip.customerInfo?.lastName}
-                </p>
-                <p className="text-sm text-gray-500">{currentTrip.customerInfo?.phone}</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-green-500 p-2 rounded-full">
+                <Car className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Nereden</p>
-                <p className="font-medium text-gray-900">{currentTrip.tripDetails?.from}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Nereye</p>
-                <p className="font-medium text-gray-900">{currentTrip.tripDetails?.to}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Ücret</p>
-                <p className="text-lg font-bold text-green-600">
-                  ₺{currentTrip.totalPrice?.toLocaleString('tr-TR')}
-                </p>
+                <p className="font-semibold text-green-900">Aktif Yolculuk</p>
+                <p className="text-sm text-green-700">{activeTrip.customerName}</p>
               </div>
             </div>
-            <div className="mt-4 flex space-x-2">
-              <button className="btn btn-success flex-1">
-                Seferi Tamamla
-              </button>
-              <button className="btn btn-outline">
-                Müşteriyi Ara
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Vehicle Info */}
-      {assignedVehicle && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            className="card"
-          >
-            <div className="card-header">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Car className="w-5 h-5 mr-2" />
-                Atanmış Aracınız
-              </h3>
-            </div>
-            <div className="card-body">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Araç:</span>
-                  <span className="font-medium">
-                    {assignedVehicle.brand} {assignedVehicle.model}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Plaka:</span>
-                  <span className="font-medium">{assignedVehicle.plateNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Yıl:</span>
-                  <span className="font-medium">{assignedVehicle.year}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Kapasite:</span>
-                  <span className="font-medium">{assignedVehicle.capacity} kişi</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Durum:</span>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    assignedVehicle.status === 'active' ? 'status-active' : 'status-inactive'
-                  }`}>
-                    {assignedVehicle.status === 'active' ? 'Aktif' : 'Pasif'}
-                  </span>
-                </div>
-              </div>
-              
-              {assignedVehicle.features && assignedVehicle.features.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-600 mb-2">Özellikler:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {assignedVehicle.features.map((feature, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded"
-                      >
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Upcoming Trips */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-            className="card"
-          >
-            <div className="card-header">
-              <h3 className="text-lg font-semibold text-gray-900">Yaklaşan Seferler</h3>
-            </div>
-            <div className="card-body">
-              {upcomingTrips.length === 0 ? (
-                <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Yaklaşan sefer yok</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {upcomingTrips.map((trip, index) => (
-                    <div key={trip.id} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {trip.customerInfo?.firstName} {trip.customerInfo?.lastName}
-                          </p>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Clock className="w-3 h-3 mr-1" />
-                            {new Date(trip.tripDetails?.date).toLocaleDateString('tr-TR')} - {trip.tripDetails?.time}
-                          </div>
-                        </div>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          trip.status === 'confirmed' ? 'status-confirmed' : 'status-assigned'
-                        }`}>
-                          {trip.status === 'confirmed' ? 'Onaylandı' : 'Atandı'}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        <div className="flex items-center mb-1">
-                          <MapPin className="w-3 h-3 mr-1" />
-                          {trip.tripDetails?.from}
-                        </div>
-                        <div className="flex items-center">
-                          <Navigation className="w-3 h-3 mr-1" />
-                          {trip.tripDetails?.to}
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
-                        <span className="text-sm font-medium text-green-600">
-                          ₺{trip.totalPrice?.toLocaleString('tr-TR')}
-                        </span>
-                        <div className="flex space-x-1">
-                          <button className="btn btn-xs btn-outline">
-                            <Phone className="w-3 h-3" />
-                          </button>
-                          <button className="btn btn-xs btn-outline">
-                            <MapPin className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* No Vehicle Assigned */}
-      {!assignedVehicle && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="card"
-        >
-          <div className="card-body text-center py-12">
-            <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Henüz Araç Atanmadı
-            </h3>
-            <p className="text-gray-500">
-              Size bir araç atanması için yöneticinizle iletişime geçin.
-            </p>
+            <button
+              onClick={() => setActiveView('active-trip')}
+              className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors"
+            >
+              Görüntüle
+            </button>
           </div>
         </motion.div>
       )}
 
       {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="card"
-      >
-        <div className="card-header">
-          <h3 className="text-lg font-semibold text-gray-900">Hızlı İşlemler</h3>
-        </div>
-        <div className="card-body">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button className="btn btn-outline flex-col h-20">
-              <CheckCircle className="w-6 h-6 mb-1" />
-              <span className="text-sm">Müsait</span>
-            </button>
-            <button className="btn btn-outline flex-col h-20">
-              <XCircle className="w-6 h-6 mb-1" />
-              <span className="text-sm">Meşgul</span>
-            </button>
-            <button className="btn btn-outline flex-col h-20">
-              <AlertTriangle className="w-6 h-6 mb-1" />
-              <span className="text-sm">Arıza Bildir</span>
-            </button>
-            <button className="btn btn-outline flex-col h-20">
-              <Phone className="w-6 h-6 mb-1" />
-              <span className="text-sm">Destek</span>
-            </button>
+      <div className="grid grid-cols-2 gap-4">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setIsQRScannerOpen(true)}
+          className="bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-blue-300 transition-colors"
+        >
+          <QrCode className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+          <p className="font-semibold text-gray-900">QR Kod Okut</p>
+          <p className="text-sm text-gray-500 mt-1">Yolculuk Başlat</p>
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setActiveView('trip-details')}
+          className="bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-blue-300 transition-colors"
+        >
+          <Eye className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+          <p className="font-semibold text-gray-900">Geçmiş İşler</p>
+          <p className="text-sm text-gray-500 mt-1">Tamamlananlar</p>
+        </motion.button>
+      </div>
+
+      {/* Assigned Reservations */}
+      <div>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Atanmış Görevler</h2>
+        
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-gray-100 rounded-xl p-4 animate-pulse">
+                <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                <div className="h-3 bg-gray-300 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
+        ) : assignedReservations.length === 0 ? (
+          <div className="bg-gray-50 rounded-xl p-8 text-center">
+            <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 font-medium">Henüz atanmış görev yok</p>
+            <p className="text-sm text-gray-400 mt-1">Yeni görevler için bekleyin</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {assignedReservations.map((reservation) => (
+              <motion.div
+                key={reservation.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <p className="font-semibold text-gray-900">{reservation.customerName}</p>
+                    <p className="text-sm text-blue-600 font-medium">{reservation.id}</p>
+                  </div>
+                  <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-lg text-xs font-medium">
+                    Atandı
+                  </span>
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <MapPin className="w-4 h-4 text-green-500" />
+                    <span>{reservation.pickupLocation}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <MapPin className="w-4 h-4 text-red-500" />
+                    <span>{reservation.dropoffLocation}</span>
+                  </div>
+                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{reservation.date}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Clock className="w-4 h-4" />
+                      <span>{reservation.time}</span>
+                    </div>
+                  </div>
+                  {reservation.flightNumber && (
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <Plane className="w-4 h-4 text-blue-500" />
+                      <span>Uçuş: {reservation.flightNumber}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => {
+                      setSelectedReservation(reservation);
+                      setActiveView('reservation-details');
+                    }}
+                    className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    Detaylar
+                  </button>
+                  <button
+                    onClick={() => setIsQRScannerOpen(true)}
+                    className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                  >
+                    QR Okut
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Active Trip View
+  const ActiveTripView = () => (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => setActiveView('dashboard')}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-6 h-6 text-gray-600" />
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900">Aktif Yolculuk</h1>
+      </div>
+
+      {activeTrip && (
+        <div className="space-y-6">
+          {/* Trip Status */}
+          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+            <div className="text-center">
+              <div className="bg-green-500 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <Car className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-green-900 mb-2">Yolculuk Devam Ediyor</h2>
+              <p className="text-green-700">{activeTrip.customerName}</p>
+              <p className="text-sm text-green-600 mt-1">{activeTrip.id}</p>
+            </div>
+          </div>
+
+          {/* Trip Details */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h3 className="font-bold text-gray-900 mb-4">Yolculuk Detayları</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="bg-green-100 p-2 rounded-full">
+                  <MapPin className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Alış Noktası</p>
+                  <p className="text-gray-600">{activeTrip.pickupLocation}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="bg-red-100 p-2 rounded-full">
+                  <MapPin className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Varış Noktası</p>
+                  <p className="text-gray-600">{activeTrip.dropoffLocation}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="bg-blue-100 p-2 rounded-full">
+                  <User className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Müşteri</p>
+                  <p className="text-gray-600">{activeTrip.customerName}</p>
+                  <p className="text-sm text-gray-500">{activeTrip.phone}</p>
+                </div>
+              </div>
+
+              {activeTrip.passengerCount && (
+                <div className="flex items-start space-x-3">
+                  <div className="bg-purple-100 p-2 rounded-full">
+                    <Users className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Yolcu Sayısı</p>
+                    <p className="text-gray-600">{activeTrip.passengerCount} kişi</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => openNavigation(activeTrip.pickupLocation, activeTrip.dropoffLocation)}
+              className="w-full bg-blue-500 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-3"
+            >
+              <Navigation className="w-6 h-6" />
+              <span>Google Maps'te Aç</span>
+              <ExternalLink className="w-5 h-5" />
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => completeTrip(activeTrip.id)}
+              className="w-full bg-green-500 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-3"
+            >
+              <CheckCircle className="w-6 h-6" />
+              <span>Yolculuğu Tamamla</span>
+            </motion.button>
           </div>
         </div>
-      </motion.div>
+      )}
+    </div>
+  );
+
+  // Reservation Details View
+  const ReservationDetailsView = () => (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => setActiveView('dashboard')}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-6 h-6 text-gray-600" />
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900">Rezervasyon Detayı</h1>
+      </div>
+
+      {selectedReservation && (
+        <div className="space-y-6">
+          {/* Customer Info */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h3 className="font-bold text-gray-900 mb-4">Müşteri Bilgileri</h3>
+            
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <User className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="font-medium text-gray-900">{selectedReservation.customerName}</p>
+                  <p className="text-sm text-gray-500">Müşteri</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <Phone className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="font-medium text-gray-900">{selectedReservation.phone}</p>
+                  <p className="text-sm text-gray-500">Telefon</p>
+                </div>
+              </div>
+
+              {selectedReservation.email && (
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedReservation.email}</p>
+                    <p className="text-sm text-gray-500">E-posta</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Trip Info */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h3 className="font-bold text-gray-900 mb-4">Yolculuk Bilgileri</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="bg-green-100 p-2 rounded-full">
+                  <MapPin className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Alış Noktası</p>
+                  <p className="text-gray-600">{selectedReservation.pickupLocation}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="bg-red-100 p-2 rounded-full">
+                  <MapPin className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Varış Noktası</p>
+                  <p className="text-gray-600">{selectedReservation.dropoffLocation}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedReservation.date}</p>
+                    <p className="text-sm text-gray-500">Tarih</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedReservation.time}</p>
+                    <p className="text-sm text-gray-500">Saat</p>
+                  </div>
+                </div>
+              </div>
+
+              {selectedReservation.flightNumber && (
+                <div className="flex items-center space-x-3">
+                  <Plane className="w-5 h-5 text-blue-500" />
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedReservation.flightNumber}</p>
+                    <p className="text-sm text-gray-500">Uçuş Numarası</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedReservation.passengerCount && (
+                <div className="flex items-center space-x-3">
+                  <Users className="w-5 h-5 text-purple-500" />
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedReservation.passengerCount} kişi</p>
+                    <p className="text-sm text-gray-500">Yolcu Sayısı</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedReservation.luggageCount && (
+                <div className="flex items-center space-x-3">
+                  <Package className="w-5 h-5 text-orange-500" />
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedReservation.luggageCount} adet</p>
+                    <p className="text-sm text-gray-500">Bagaj</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setIsQRScannerOpen(true)}
+            className="w-full bg-blue-500 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-3"
+          >
+            <QrCode className="w-6 h-6" />
+            <span>QR Kod Okut ve Başlat</span>
+          </motion.button>
+        </div>
+      )}
+    </div>
+  );
+
+  // Trip History View
+  const TripHistoryView = () => {
+    const completedTrips = reservations.filter(r => r.status === 'completed');
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setActiveView('dashboard')}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900">Geçmiş İşler</h1>
+        </div>
+
+        {/* Stats */}
+        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+          <h2 className="text-xl font-bold mb-2">Tamamlanan Yolculuklar</h2>
+          <p className="text-green-100">
+            Toplam {completedTrips.length} yolculuk tamamladınız
+          </p>
+        </div>
+
+        {/* Completed Trips List */}
+        <div>
+          {completedTrips.length === 0 ? (
+            <div className="bg-gray-50 rounded-xl p-8 text-center">
+              <CheckCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 font-medium">Henüz tamamlanmış yolculuk yok</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {completedTrips.map((trip) => (
+                <motion.div
+                  key={trip.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="font-semibold text-gray-900">{trip.customerName}</p>
+                      <p className="text-sm text-green-600 font-medium">{trip.id}</p>
+                    </div>
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-medium">
+                      Tamamlandı
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 text-green-500" />
+                      <span>{trip.pickupLocation}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 text-red-500" />
+                      <span>{trip.dropoffLocation}</span>
+                    </div>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>{trip.date}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="w-4 h-4" />
+                        <span>{trip.time}</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Main render
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 max-w-md mx-auto">
+      <AnimatePresence mode="wait">
+        {activeView === 'dashboard' && (
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+          >
+            <DashboardView />
+          </motion.div>
+        )}
+
+        {activeView === 'active-trip' && (
+          <motion.div
+            key="active-trip"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+          >
+            <ActiveTripView />
+          </motion.div>
+        )}
+
+        {activeView === 'reservation-details' && (
+          <motion.div
+            key="reservation-details"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+          >
+            <ReservationDetailsView />
+          </motion.div>
+        )}
+
+        {activeView === 'trip-details' && (
+          <motion.div
+            key="trip-details"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+          >
+            <TripHistoryView />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <QRScannerModal />
     </div>
   );
 };

@@ -11,7 +11,8 @@ import {
   Phone, 
   CreditCard,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  CheckCircle
 } from 'lucide-react';
 import { StatusBadge, getStatusColor } from '../../../utils/statusUtils';
 
@@ -22,7 +23,8 @@ const ReservationTable = ({
   onEdit, 
   onDriverAssign, 
   onShowQR, 
-  onStatusChange 
+  onStatusChange,
+  onCompleteReservation
 }) => {
   const [expandedRows, setExpandedRows] = useState(new Set());
 
@@ -186,6 +188,17 @@ const ReservationTable = ({
                       >
                         <QrCode className="w-4 h-4" />
                       </button>
+
+                      {/* Tamamlama Butonu - Sadece atanmış ve tamamlanmamış rezervasyonlar için */}
+                      {reservation.status !== 'completed' && reservation.driverId && (
+                        <button
+                          onClick={() => onCompleteReservation(reservation.id)}
+                          className="text-emerald-600 hover:text-emerald-800"
+                          title="Rezervasyonu Tamamla & Cari Güncelle"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

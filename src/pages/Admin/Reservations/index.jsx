@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
-import { collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { Plus, RefreshCw, CheckCircle } from 'lucide-react';
+import { collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, query, where } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
+import { USER_ROLES } from '../../../config/constants';
+import { manualCompleteReservation } from '../../../utils/financialIntegration';
 import QuickReservationModal from './QuickReservationModal';
 import EditReservationModal from './EditReservationModal';
 import ReservationTable from './ReservationTable';
 import ReservationFilters from './ReservationFilters';
 import DriverAssignModal from './DriverAssignModal';
 import QRModal from './QRModal';
+import toast from 'react-hot-toast';
 
 const ReservationIndex = () => {
   const [reservations, setReservations] = useState([]);
@@ -163,15 +166,30 @@ const ReservationIndex = () => {
       }
     );
 
+    const driversQuery = query(
+      collection(db, 'users'),
+      where('role', '==', USER_ROLES.DRIVER)
+    );
+    
     const unsubscribeDrivers = onSnapshot(
-      collection(db, 'drivers'),
+      driversQuery,
       (snapshot) => {
         const driverData = snapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
+          // Eski format ile uyumlu olmak için alan adlarını ayarla
+          name: doc.data().firstName && doc.data().lastName 
+            ? `${doc.data().firstName} ${doc.data().lastName}`
+            : doc.data().name || doc.data().email,
+          phone: doc.data().phone || '',
+          licenseNumber: doc.data().licenseNumber || 'Belirtilmemiş',
+          vehicle: doc.data().assignedVehicle || 'Atanmamış',
+          status: doc.data().isActive ? 'active' : 'inactive'
         }));
         if (driverData.length > 0) {
           setDrivers([...mockDrivers, ...driverData]);
+        } else {
+          setDrivers(mockDrivers);
         }
       }
     );
@@ -318,7 +336,13 @@ const ReservationIndex = () => {
       // Önce local state'i güncelle
       setReservations(prev => prev.map(res => 
         res.id === reservationId 
-          ? { ...res, assignedDriver: driverId, assignedVehicle: vehicleId, status: 'assigned' }
+          ? { 
+              ...res, 
+              assignedDriver: driverId,
+              assignedDriverId: driverId, // Şoför dashboard uyumluluğu için
+              assignedVehicle: vehicleId, 
+              status: 'assigned' 
+            }
           : res
       ));
       
@@ -326,6 +350,7 @@ const ReservationIndex = () => {
       if (reservationToUpdate.firebaseId) {
         await updateDoc(doc(db, 'reservations', reservationToUpdate.firebaseId), {
           assignedDriver: driverId,
+          assignedDriverId: driverId, // Şoför dashboard uyumluluğu için
           assignedVehicle: vehicleId,
           status: 'assigned',
           updatedAt: new Date().toISOString()
@@ -375,6 +400,48 @@ const ReservationIndex = () => {
     } catch (error) {
       console.error('Rezervasyon güncelleme hatası:', error);
       alert('Rezervasyon güncellenirken bir hata oluştu: ' + error.message);
+    }
+  };
+
+  // Manuel rezervasyon tamamlama - CARİ HESAP ENTEGRASYONu
+  const handleCompleteReservation = async (reservationId) => {
+    try {
+      const reservation = reservations.find(r => r.id === reservationId);
+      if (!reservation) {
+        toast.error('Rezervasyon bulunamadı');
+        return;
+      }
+
+      if (reservation.status === 'completed') {
+        toast.error('Bu rezervasyon zaten tamamlanmış');
+        return;
+      }
+
+      if (!reservation.driverId) {
+        toast.error('Rezervasyona şoför atanmamış');
+        return;
+      }
+
+      // Finansal entegrasyon ile tamamla
+      const result = await manualCompleteReservation(reservationId, 'admin-user');
+      
+      // Local state'i güncelle
+      setReservations(prev => prev.map(res => 
+        res.id === reservationId 
+          ? { ...res, status: 'completed', completedAt: new Date() }
+          : res
+      ));
+
+      // Başarı mesajı
+      const paymentMsg = reservation.paymentMethod === 'cash' 
+        ? 'Şoför komisyon borcu eklendi' 
+        : 'Şoför alacağı eklendi';
+      
+      toast.success(`Rezervasyon tamamlandı! ${paymentMsg}`);
+      
+    } catch (error) {
+      console.error('Rezervasyon tamamlama hatası:', error);
+      toast.error('Rezervasyon tamamlanırken hata oluştu: ' + error.message);
     }
   };
 
@@ -438,6 +505,7 @@ const ReservationIndex = () => {
             res.id === reservationId ? { ...res, status: newStatus } : res
           ));
         }}
+        onCompleteReservation={handleCompleteReservation}
       />
 
       {/* Modals */}

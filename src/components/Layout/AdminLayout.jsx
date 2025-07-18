@@ -50,7 +50,7 @@ const AdminLayout = () => {
     },
     {
       name: 'Araç Yönetimi',
-      href: '/admin/araçlar',
+      href: '/admin/vehicles',
       icon: Car,
       description: 'Araç ekleme, düzenleme ve yönetimi'
     },

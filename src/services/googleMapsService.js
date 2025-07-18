@@ -16,11 +16,75 @@ class GoogleMapsService {
    */
   async initialize() {
     try {
+      // Eğer Google Maps zaten yüklenmişse, doğrudan kullan
+      if (window.google && window.google.maps) {
+        console.log('Google Maps zaten yüklü, mevcut API kullanılıyor');
+        this.google = window.google;
+        
+        // Services'i güvenli bir şekilde initialize et
+        try {
+          this.placesService = new this.google.maps.places.PlacesService(document.createElement('div'));
+        } catch (error) {
+          console.warn('PlacesService initialization failed:', error);
+          this.placesService = null;
+        }
+        
+        try {
+          this.directionsService = new this.google.maps.DirectionsService();
+        } catch (error) {
+          console.warn('DirectionsService initialization failed:', error);
+          this.directionsService = null;
+        }
+        
+        try {
+          this.autocompleteService = new this.google.maps.places.AutocompleteService();
+        } catch (error) {
+          console.warn('AutocompleteService initialization failed:', error);
+          this.autocompleteService = null;
+        }
+        
+        try {
+          this.geocoder = new this.google.maps.Geocoder();
+        } catch (error) {
+          console.warn('Geocoder initialization failed:', error);
+          this.geocoder = null;
+        }
+        
+        return true;
+      }
+      
+      // Eğer yüklenmemişse, loader ile yükle
       this.google = await this.loader.load();
-      this.placesService = new this.google.maps.PlacesService(document.createElement('div'));
-      this.directionsService = new this.google.maps.DirectionsService();
-      this.autocompleteService = new this.google.maps.places.AutocompleteService();
-      this.geocoder = new this.google.maps.Geocoder();
+      
+      // Services'i güvenli bir şekilde initialize et
+      try {
+        this.placesService = new this.google.maps.places.PlacesService(document.createElement('div'));
+      } catch (error) {
+        console.warn('PlacesService initialization failed:', error);
+        this.placesService = null;
+      }
+      
+      try {
+        this.directionsService = new this.google.maps.DirectionsService();
+      } catch (error) {
+        console.warn('DirectionsService initialization failed:', error);
+        this.directionsService = null;
+      }
+      
+      try {
+        this.autocompleteService = new this.google.maps.places.AutocompleteService();
+      } catch (error) {
+        console.warn('AutocompleteService initialization failed:', error);
+        this.autocompleteService = null;
+      }
+      
+      try {
+        this.geocoder = new this.google.maps.Geocoder();
+      } catch (error) {
+        console.warn('Geocoder initialization failed:', error);
+        this.geocoder = null;
+      }
+      
       return true;
     } catch (error) {
       console.error('Google Maps API initialization failed:', error);
@@ -124,7 +188,9 @@ class GoogleMapsService {
             endLocation: {
               lat: leg.end_location.lat(),
               lng: leg.end_location.lng()
-            }
+            },
+            // Tam directions result'unu da ekle
+            directionsResult: result
           });
         } else {
           reject(new Error(`Directions API error: ${status}`));

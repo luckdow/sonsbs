@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, RefreshCw, Users } from 'lucide-react';
-import { collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
+import { USER_ROLES } from '../../../config/constants';
 import { initializeFirebaseData } from '../../../utils/initializeFirebaseData';
 import DriverTable from './DriverTable';
 import DriverFilters from './DriverFilters';
@@ -38,14 +39,27 @@ const DriverIndex = () => {
         await initializeFirebaseData();
         console.log('Firebase başlangıç verileri hazırlandı');
         
-        // Drivers koleksiyonunu dinle
+        // Users koleksiyonundan role="driver" olanları dinle
+        const driversQuery = query(
+          collection(db, 'users'),
+          where('role', '==', USER_ROLES.DRIVER)
+        );
+        
         const unsubscribeDrivers = onSnapshot(
-          collection(db, 'drivers'),
+          driversQuery,
           (snapshot) => {
-            console.log('Drivers koleksiyonu güncellendi, döküman sayısı:', snapshot.docs.length);
+            console.log('Driver users güncellendi, döküman sayısı:', snapshot.docs.length);
             const driverData = snapshot.docs.map(doc => ({
               id: doc.id,
-              ...doc.data()
+              ...doc.data(),
+              // Eski format ile uyumlu olmak için alan adlarını ayarla
+              name: doc.data().firstName && doc.data().lastName 
+                ? `${doc.data().firstName} ${doc.data().lastName}`
+                : doc.data().name || doc.data().email,
+              phone: doc.data().phone || '',
+              licenseNumber: doc.data().licenseNumber || 'Belirtilmemiş',
+              vehicle: doc.data().assignedVehicle || 'Atanmamış',
+              status: doc.data().isActive ? 'active' : 'inactive'
             }));
             setDrivers(driverData);
             setLoading(false);
