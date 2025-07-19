@@ -28,93 +28,90 @@ export const generateReservationPDF = async (reservationData, companyInfo, qrCod
     pdf.setFont('helvetica', 'bold');
     pdf.text('TRANSFER REZERVASYON ONAY BELGESİ', 20, 70);
     
-    // Rezervasyon bilgileri
+    // QR Kod ve Rezervasyon Bilgileri yan yana
     let yPos = 85;
     
+    // Sol taraf: QR Kod
+    if (qrCodeUrl) {
+      try {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.text('QR Kod:', 20, yPos);
+        
+        const qrSize = 40;
+        pdf.addImage(qrCodeUrl, 'PNG', 20, yPos + 5, qrSize, qrSize);
+      } catch (error) {
+        console.error('QR kod eklenirken hata:', error);
+      }
+    }
+    
+    // Sağ taraf: Rezervasyon ve Geçici Şifre
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Rezervasyon Bilgileri:', 20, yPos);
+    pdf.text('Rezervasyon Bilgileri:', 100, yPos);
     yPos += 10;
     
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Rezervasyon Kodu: ${reservationData.reservationCode}`, 25, yPos);
+    pdf.text(`Rezervasyon Kodu: ${reservationData.reservationCode}`, 105, yPos);
     yPos += 7;
-    pdf.text(`Tarih: ${new Date(reservationData.date).toLocaleDateString('tr-TR')}`, 25, yPos);
+    pdf.text(`Geçici Şifre: ${reservationData.tempPassword || 'Belirtilmemiş'}`, 105, yPos);
     yPos += 7;
-    pdf.text(`Saat: ${reservationData.time}`, 25, yPos);
+    pdf.text(`Tarih: ${new Date(reservationData.date).toLocaleDateString('tr-TR')}`, 105, yPos);
+    yPos += 7;
+    pdf.text(`Saat: ${reservationData.time}`, 105, yPos);
     yPos += 7;
     
     const direction = reservationData.direction === 'airport-to-hotel' 
       ? 'Havalimanı → Otel' 
       : 'Otel → Havalimanı';
-    pdf.text(`Transfer Yönü: ${direction}`, 25, yPos);
-    yPos += 7;
+    pdf.text(`Transfer Yönü: ${direction}`, 105, yPos);
     
+    // Transfer ve Yolcu Bilgileri yan yana
+    yPos = 155; // QR koddan sonraki pozisyon
+    
+    // Sol: Transfer Detayları
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Transfer Detayları:', 20, yPos);
+    yPos += 10;
+    
+    pdf.setFont('helvetica', 'normal');
     pdf.text(`Kalkış: ${reservationData.pickupLocation}`, 25, yPos);
     yPos += 7;
     pdf.text(`Varış: ${reservationData.dropoffLocation}`, 25, yPos);
-    yPos += 15;
-    
-    // Yolcu bilgileri
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Yolcu Bilgileri:', 20, yPos);
-    yPos += 10;
-    
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Ad Soyad: ${reservationData.passenger.firstName} ${reservationData.passenger.lastName}`, 25, yPos);
     yPos += 7;
-    pdf.text(`Telefon: ${reservationData.passenger.phone}`, 25, yPos);
-    yPos += 7;
-    pdf.text(`E-mail: ${reservationData.passenger.email}`, 25, yPos);
-    yPos += 7;
-    
-    if (reservationData.passenger.flightNumber) {
-      pdf.text(`Uçuş No: ${reservationData.passenger.flightNumber}`, 25, yPos);
-      yPos += 7;
-    }
-    
-    pdf.text(`Yolcu Sayısı: ${reservationData.passenger.count} kişi`, 25, yPos);
-    yPos += 15;
-    
-    // Araç bilgileri
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Araç Bilgileri:', 20, yPos);
-    yPos += 10;
-    
-    pdf.setFont('helvetica', 'normal');
     pdf.text(`Araç: ${reservationData.vehicle.brand} ${reservationData.vehicle.model}`, 25, yPos);
     yPos += 7;
     pdf.text(`Kategori: ${reservationData.vehicle.category}`, 25, yPos);
-    yPos += 15;
+    yPos += 7;
     
-    // Ödeme bilgileri
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Ödeme Bilgileri:', 20, yPos);
-    yPos += 10;
-    
-    pdf.setFont('helvetica', 'normal');
     const paymentMethod = reservationData.payment.method === 'cash' ? 'Nakit' :
                          reservationData.payment.method === 'bank_transfer' ? 'Banka Havalesi' :
                          'Kredi Kartı';
     pdf.text(`Ödeme Yöntemi: ${paymentMethod}`, 25, yPos);
     yPos += 7;
     pdf.text(`Toplam Tutar: ₺${reservationData.payment.amount.toLocaleString()}`, 25, yPos);
-    yPos += 15;
     
-    // QR Kod ekle (eğer varsa)
-    if (qrCodeUrl) {
-      try {
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('QR Kod:', 20, yPos);
-        
-        // QR kodu PDF'e ekle
-        const qrSize = 30;
-        pdf.addImage(qrCodeUrl, 'PNG', 25, yPos + 5, qrSize, qrSize);
-        yPos += qrSize + 15;
-      } catch (error) {
-        console.error('QR kod eklenirken hata:', error);
-      }
+    // Sağ: Yolcu Bilgileri
+    let yPosRight = 165; // Transfer başlığıyla aynı hizada
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Yolcu Bilgileri:', 105, yPosRight);
+    yPosRight += 10;
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Ad Soyad: ${reservationData.passenger.firstName} ${reservationData.passenger.lastName}`, 110, yPosRight);
+    yPosRight += 7;
+    pdf.text(`Telefon: ${reservationData.passenger.phone}`, 110, yPosRight);
+    yPosRight += 7;
+    pdf.text(`E-mail: ${reservationData.passenger.email}`, 110, yPosRight);
+    yPosRight += 7;
+    
+    if (reservationData.passenger.flightNumber) {
+      pdf.text(`Uçuş No: ${reservationData.passenger.flightNumber}`, 110, yPosRight);
+      yPosRight += 7;
     }
+    
+    pdf.text(`Yolcu Sayısı: ${reservationData.passenger.count} kişi`, 110, yPosRight);
     
     // Alt bilgi
     yPos = pageHeight - 30;
