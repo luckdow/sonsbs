@@ -549,7 +549,8 @@ export const AppProvider = ({ children }) => {
     
     updateSettings: async (settingsData) => {
       try {
-        const updatedSettings = await firebaseOperations.update('settings', 'app-settings', settingsData);
+        // 'main' id'li settings dokümanını güncelle
+        const updatedSettings = await firebaseOperations.update('settings', 'main', settingsData);
         dispatch({ type: ACTION_TYPES.UPDATE_SETTINGS, payload: updatedSettings });
         actions.showNotification('success', 'Ayarlar başarıyla güncellendi', 'Başarılı');
         return updatedSettings;

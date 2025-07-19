@@ -8,7 +8,9 @@ import {
   Clock, 
   Users,
   AlertCircle,
-  Check
+  Check,
+  ArrowLeft,
+  ArrowRight
 } from 'lucide-react';
 
 const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
@@ -134,109 +136,164 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
   };
 
   return (
-    <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto p-2 sm:p-3 lg:p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-3"
-      >
-        {/* Kişisel Bilgiler */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
-          <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center">
-            <User className="w-4 h-4 mr-2" />
-            Kişisel Bilgiler
-          </h3>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-8">
+        <div className="max-w-md lg:max-w-2xl xl:max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-3"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto">
+              <User className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold">Kişisel Bilgiler</h1>
+            <p className="text-blue-100 text-sm">
+              Transfer için gerekli bilgilerinizi girin
+            </p>
+          </motion.div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+      {/* Main Content */}
+      <div className="max-w-md lg:max-w-2xl xl:max-w-4xl mx-auto px-4 -mt-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-t-3xl shadow-xl space-y-6 p-6"
+        >
+        {/* Kişisel Bilgiler */}
+        <div className="space-y-4">
+          <div className="text-left">
+            <h2 className="text-base font-medium text-gray-900 mb-1">
+              Kişisel Bilgiler
+            </h2>
+            <p className="text-sm text-gray-600">
+              Transfer için gerekli bilgilerinizi girin
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Ad *
               </label>
-              <input
-                type="text"
-                value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
-                placeholder="Adınızı girin"
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
-                  errors.firstName ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10">
+                  <User className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  placeholder="Adınızı girin"
+                  className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium transition-all ${
+                    errors.firstName ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
+                  }`}
+                />
+              </div>
               {errors.firstName && (
-                <p className="text-red-500 text-xs mt-1 flex items-center">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {errors.firstName}
-                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center space-x-2 text-red-500 text-xs"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.firstName}</span>
+                </motion.div>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Soyad *
               </label>
-              <input
-                type="text"
-                value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
-                placeholder="Soyadınızı girin"
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
-                  errors.lastName ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10">
+                  <User className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  placeholder="Soyadınızı girin"
+                  className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium transition-all ${
+                    errors.lastName ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
+                  }`}
+                />
+              </div>
               {errors.lastName && (
-                <p className="text-red-500 text-xs mt-1 flex items-center">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {errors.lastName}
-                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center space-x-2 text-red-500 text-xs"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.lastName}</span>
+                </motion.div>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 E-posta *
               </label>
               <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10">
+                  <Mail className="w-5 h-5 text-gray-400" />
+                </div>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="ornek@email.com"
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pl-10 ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium transition-all ${
+                    errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
                   }`}
                 />
-                <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-xs mt-1 flex items-center">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {errors.email}
-                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center space-x-2 text-red-500 text-xs"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.email}</span>
+                </motion.div>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Telefon *
               </label>
               <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10">
+                  <Phone className="w-5 h-5 text-gray-400" />
+                </div>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', formatPhoneNumber(e.target.value))}
                   placeholder="555 123 4567"
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm pl-10 ${
-                    errors.phone ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium transition-all ${
+                    errors.phone ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
                   }`}
                 />
-                <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               </div>
               {errors.phone && (
-                <p className="text-red-500 text-xs mt-1 flex items-center">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {errors.phone}
-                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center space-x-2 text-red-500 text-xs"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.phone}</span>
+                </motion.div>
               )}
             </div>
           </div>
@@ -363,27 +420,26 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
           )}
         </div>
 
-        {/* Navigasyon Butonları */}
-        <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+        {/* Navigation Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-6">
+          <button
             onClick={onBack}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 sm:flex-none px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:border-gray-400 hover:bg-gray-50 transition-all duration-300 font-semibold flex items-center justify-center gap-2"
           >
-            Geri Dön
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            <ArrowLeft className="w-4 h-4" />
+            Geri
+          </button>
+          
+          <button
             onClick={handleNext}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="flex-1 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
           >
             Devam Et
-          </motion.button>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </motion.div>
+    </div>
     </div>
   );
 };

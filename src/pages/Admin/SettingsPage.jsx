@@ -27,6 +27,8 @@ import {
   Info
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 import toast from 'react-hot-toast';
 
 const SettingsPage = () => {
@@ -179,16 +181,32 @@ const SettingsPage = () => {
   ];
 
   useEffect(() => {
-    // Load settings from state or localStorage
-    const savedSettings = localStorage.getItem('sbsSettings');
-    if (savedSettings) {
+    // Firebase'den settings'i yükle
+    const loadSettings = async () => {
       try {
-        const parsed = JSON.parse(savedSettings);
-        setSettings(prev => ({ ...prev, ...parsed }));
+        setIsLoading(true);
+        const settingsSnapshot = await getDocs(collection(db, 'settings'));
+        
+        if (!settingsSnapshot.empty) {
+          const settingsDoc = settingsSnapshot.docs.find(doc => doc.id === 'main');
+          if (settingsDoc) {
+            const firebaseSettings = settingsDoc.data();
+            console.log('Firebase Settings Loaded:', firebaseSettings);
+            setSettings(prev => ({
+              ...prev,
+              ...firebaseSettings
+            }));
+          }
+        }
       } catch (error) {
-        console.error('Error parsing saved settings:', error);
+        console.error('Settings yüklenirken hata:', error);
+        toast.error('Ayarlar yüklenirken hata oluştu');
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    loadSettings();
   }, []);
 
   const handleInputChange = (section, field, value) => {
@@ -253,17 +271,17 @@ const SettingsPage = () => {
   const handleSaveSettings = async () => {
     setIsLoading(true);
     try {
-      // Save to localStorage (in production, save to Firebase)
-      localStorage.setItem('sbsSettings', JSON.stringify(settings));
-      
-      // Also update context if needed
-      await updateSettings(settings);
+      // Firebase'e settings'i kaydet
+      await setDoc(doc(db, 'settings', 'main'), {
+        ...settings,
+        updatedAt: new Date().toISOString()
+      });
       
       setHasChanges(false);
       toast.success('Ayarlar başarıyla kaydedildi!');
     } catch (error) {
       console.error('Settings save error:', error);
-      toast.error('Ayarlar kaydedilirken bir hata oluştu');
+      toast.error('Ayarlar kaydedilirken hata oluştu: ' + error.message);
     } finally {
       setIsLoading(false);
     }

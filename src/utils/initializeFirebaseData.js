@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 // Demo şoför verileri
@@ -124,6 +124,105 @@ export const initializeFirebaseData = async () => {
     console.log('Firebase başlangıç verileri hazır!');
   } catch (error) {
     console.error('Firebase başlangıç verilerini eklerken hata:', error);
+    throw error;
+  }
+};
+
+// Demo Settings verilerini ekle
+export const initializeSettings = async () => {
+  try {
+    // Settings koleksiyonunu kontrol et
+    const settingsSnapshot = await getDocs(collection(db, 'settings'));
+    
+    if (settingsSnapshot.empty) {
+      console.log('Settings verisi ekleniyor...');
+      
+      // Demo settings verisi
+      const demoSettings = {
+        general: {
+          companyName: 'SBS Transfer',
+          companyEmail: 'info@sbstransfer.com',
+          companyPhone: '+90 555 123 45 67',
+          companyAddress: 'İstanbul, Türkiye',
+          companyDescription: 'Premium transfer hizmetleri',
+          website: 'https://sbstransfer.com',
+          logo: '',
+          favicon: ''
+        },
+        payment: {
+          paytrMerchantId: 'demo_merchant_id',
+          paytrMerchantKey: 'demo_merchant_key',
+          paytrMerchantSalt: 'demo_merchant_salt',
+          testMode: true,
+          enabledMethods: {
+            cash: true,
+            creditCard: true,
+            bankTransfer: true,
+            paytr: false // Başlangıçta kapalı
+          },
+          currency: 'TRY',
+          taxRate: 18
+        },
+        bankAccounts: [
+          {
+            id: 1,
+            bankName: 'Türkiye İş Bankası',
+            accountHolder: 'SBS Transfer Hizmetleri Ltd. Şti.',
+            iban: 'TR33 0006 4000 0011 2345 6789 01',
+            branch: 'Ataşehir Şubesi',
+            currency: 'TL',
+            isActive: true
+          },
+          {
+            id: 2,
+            bankName: 'Garanti BBVA',
+            accountHolder: 'SBS Transfer Hizmetleri Ltd. Şti.',
+            iban: 'TR64 0062 0001 2345 6789 1011 12',
+            branch: 'Kadıköy Şubesi',
+            currency: 'TL',
+            isActive: true
+          }
+        ],
+        commission: {
+          defaultDriverCommission: 70,
+          companyCommission: 30,
+          minimumCommission: 50,
+          maximumCommission: 90,
+          paymentFrequency: 'weekly'
+        },
+        notifications: {
+          email: {
+            newReservation: true,
+            reservationUpdate: true,
+            driverAssignment: true,
+            paymentReceived: true,
+            cancellation: true,
+            weeklyReport: true
+          },
+          sms: {
+            reservationConfirmation: true,
+            driverAssignment: true,
+            paymentReminder: false,
+            promotions: false
+          },
+          push: {
+            newReservation: true,
+            statusUpdate: true,
+            promotions: false
+          }
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Settings dokümanını ekle
+      await setDoc(doc(db, 'settings', 'main'), demoSettings);
+      console.log('Settings verisi eklendi!');
+    } else {
+      console.log('Settings verisi mevcut:', settingsSnapshot.docs.length, 'kayıt');
+    }
+  } catch (error) {
+    console.error('Settings verilerini eklerken hata:', error);
     throw error;
   }
 };

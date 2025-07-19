@@ -1,3 +1,50 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import {
+  CheckCircle,
+  Calendar,
+  MapPin,
+  Car,
+  Users,
+  Phone,
+  Mail,
+  CreditCard,
+  QrCode,
+  Download,
+  Share2,
+  Star,
+  Clock,
+  Route,
+  Package,
+  Home,
+  ArrowRight,
+  Info,
+  Banknote,
+  Building2,
+  Copy,
+  Check,
+  Plane,
+  User,
+  Shield,
+  FileText
+} from 'lucide-react';
+import QRCode from 'qrcode';
+import { useNavigate } from 'react-router-dom';
+import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import toast from 'react-hot-toast';
+import { generateReservationPDF } from '../../utils/pdfGenerator';
+
+const BookingConfirmation = ({ bookingData, onComplete }) => {
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [reservationCode, setReservationCode] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [passwordCopied, setPasswordCopied] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState(null);
+  const [reservationData, setReservationData] = useState(null);
+  const navigate = useNavigate();
+
   // Lokasyon objesini stringe çeviren yardımcı fonksiyon
   const formatLocation = (location) => {
     if (!location) return 'Belirtilmemiş';
@@ -12,577 +59,495 @@
     }
     return String(location);
   };
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  CheckCircle, 
-  Calendar, 
-  MapPin, 
-  Car, 
-  Users, 
-  Phone, 
-  Mail,
-  CreditCard,
-  QrCode,
-  Download,
-  Share2,
-  MessageCircle,
-  Star,
-  Gift,
-  Crown,
-  Clock,
-  Route,
-  Package,
-  Home,
-  ArrowRight,
-  Info
-} from 'lucide-react';
-import QRCode from 'qrcode';
-import { useNavigate } from 'react-router-dom';
-import { collection, addDoc } from 'firebase/firestore';
-import { db, auth } from '../../config/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { FIREBASE_COLLECTIONS, RESERVATION_STATUS, USER_ROLES } from '../../config/constants';
-import toast from 'react-hot-toast';
 
-const BookingConfirmation = ({ bookingData, onComplete }) => {
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const [isGeneratingQR, setIsGeneratingQR] = useState(true);
-  const [membershipCreated, setMembershipCreated] = useState(false);
-  const [membershipPassword, setMembershipPassword] = useState('');
-  const [reservationId, setReservationId] = useState('');
-  const navigate = useNavigate();
+  // Rezervasyon kodu oluştur
+  const generateReservationCode = () => {
+    const prefix = 'SBS';
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `${prefix}${timestamp}${random}`;
+  };
 
-  useEffect(() => {
-    generateReservationData();
-  }, []);
-
-  const generateReservationData = async () => {
-    // Use reservation ID from BookingWizard if available, otherwise generate new one
-    let newReservationId = bookingData.reservationId;
-    
-    if (!newReservationId) {
-      // Generate unique reservation ID as fallback
-      const timestamp = Date.now();
-      const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
-      newReservationId = `SBS${timestamp.toString().slice(-6)}${randomStr}`;
+  // Geçici şifre oluştur
+  const generateTempPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    
-    setReservationId(newReservationId);
+    return result;
+  };
 
-    // Create reservation data for Firebase - Admin panel uyumlu format
-    const reservationData = {
-      reservationId: newReservationId,  // Admin panel için rezervasyon ID
-      status: 'pending',  // String format kullan
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      
-      // Admin panel beklenen format: tripDetails objesi
-      tripDetails: {
-        date: bookingData.date,
-        time: bookingData.time,
-        pickupLocation: bookingData.pickupLocation,
-        dropoffLocation: bookingData.dropoffLocation,
-        passengerCount: bookingData.passengerCount || bookingData.personalInfo?.passengerCount || 1,
-        luggageCount: bookingData.baggageCount || 1,
-        flightNumber: bookingData.personalInfo?.flightNumber || '',
-        direction: bookingData.direction
-      },
-      
-      // Admin panel beklenen format: customerInfo objesi  
-      customerInfo: {
-        firstName: bookingData.personalInfo?.firstName || '',
-        lastName: bookingData.personalInfo?.lastName || '',
-        email: bookingData.personalInfo?.email || '',
-        phone: bookingData.personalInfo?.phone || ''
-      },
-      
-      // Diğer alanlar
-      selectedVehicle: bookingData.selectedVehicle,
-      selectedServices: bookingData.selectedServices || [],
-      paymentMethod: bookingData.paymentMethod,
-      totalPrice: bookingData.totalPrice,
-      
-      // Route info
-      distance: bookingData.distance,
-      duration: bookingData.duration,
-      
-      // Müşteri paneli için backward compatibility
-      personalInfo: bookingData.personalInfo,
-      direction: bookingData.direction,
-      pickupLocation: bookingData.pickupLocation,
-      dropoffLocation: bookingData.dropoffLocation,
-      date: bookingData.date,
-      time: bookingData.time,
-      
-      // Assignment fields
-      assignedDriver: null,
-      assignedDriverId: null,
-      assignedVehicle: null,
-      driverAssigned: null
-    };
-
+  // Şirket bilgilerini yükle
+  const loadCompanyInfo = async () => {
     try {
-      // Rezervasyon zaten BookingWizard'da kaydedildi, sadece QR ve üyelik işlemleri
-      console.log('Booking confirmation - Rezervasyon zaten kaydedildi, QR ve üyelik oluşturuluyor');
-      
-      // Create automatic membership if not logged in
-      await createAutomaticMembership();
-      
+      const settingsDoc = await getDoc(doc(db, 'settings', 'main'));
+      if (settingsDoc.exists()) {
+        const settings = settingsDoc.data();
+        setCompanyInfo(settings.companyInfo || {});
+      }
     } catch (error) {
-      console.error('Error in booking confirmation:', error);
-      toast.error('Rezervasyon onaylanırken bir hata oluştu.');
-    }
-
-    // Create QR code data
-    const qrData = {
-      reservationId: newReservationId,
-      customerName: `${bookingData.personalInfo?.firstName} ${bookingData.personalInfo?.lastName}`,
-      date: bookingData.date,
-      time: bookingData.time,
-      direction: bookingData.direction,
-      vehicle: bookingData.selectedVehicle?.name,
-      passengers: bookingData.personalInfo?.passengerCount,
-      amount: bookingData.totalPrice,
-      paymentMethod: bookingData.paymentMethod,
-      phone: bookingData.personalInfo?.phone,
-      verificationUrl: `https://sbstransfer.com/verify/${newReservationId}`
-    };
-
-    try {
-      // Generate QR code
-      const qrUrl = await QRCode.toDataURL(JSON.stringify(qrData), {
-        width: 200,
-        margin: 2,
-        color: {
-          dark: '#1F2937',
-          light: '#FFFFFF'
-        }
-      });
-      setQrCodeUrl(qrUrl);
-      setIsGeneratingQR(false);
-      
-      // Simulate membership creation
-      setTimeout(() => {
-        setMembershipCreated(true);
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Error generating QR code:', error);
-      setIsGeneratingQR(false);
+      console.error('Şirket bilgileri yüklenirken hata:', error);
     }
   };
 
-  const createAutomaticMembership = async () => {
-    // Eğer kullanıcı zaten giriş yapmışsa üyelik oluşturma
-    if (auth.currentUser) {
-      setMembershipCreated(true);
+  // PDF indirme fonksiyonu
+  const downloadPDF = async () => {
+    if (!reservationData || !reservationCode) {
+      toast.error('Rezervasyon bilgileri henüz hazır değil');
       return;
     }
 
     try {
-      const personalInfo = bookingData.personalInfo;
-      
-      // Geçici şifre oluştur
-      const tempPassword = Math.random().toString(36).slice(-8) + '123';
-      setMembershipPassword(tempPassword);
-      
-      // Firebase Auth ile kullanıcı oluştur
-      const userCredential = await createUserWithEmailAndPassword(
-        auth, 
-        personalInfo.email, 
-        tempPassword
-      );
-      
-      // Kullanıcı profili oluştur
-      const userProfileData = {
-        uid: userCredential.user.uid,
-        email: personalInfo.email,
-        firstName: personalInfo.firstName,
-        lastName: personalInfo.lastName,
-        phone: personalInfo.phone,
-        role: USER_ROLES.CUSTOMER,
-        createdAt: new Date(),
-        reservationCount: 1,
-        isActive: true
-      };
-      
-      // Firestore'a kullanıcı profili kaydet
-      await addDoc(collection(db, 'users'), userProfileData);
-      
-      setMembershipCreated(true);
-      toast.success('Üyeliğiniz otomatik olarak oluşturuldu!');
-      
+      await generateReservationPDF(reservationData, companyInfo, qrCodeUrl);
+      toast.success('PDF başarıyla indirildi!');
     } catch (error) {
-      console.error('Error creating membership:', error);
-      // Üyelik oluşturulamazsa sistem devam eder
-      setMembershipCreated(true);
+      console.error('PDF indirme hatası:', error);
+      toast.error('PDF indirirken bir hata oluştu');
     }
   };
 
-  const handleDownloadQR = () => {
+  // Toplam tutarı hesapla
+  const calculateTotal = () => {
+    const vehiclePrice = bookingData.selectedVehicle?.totalPrice || 0;
+    const servicesTotal = (bookingData.selectedServices || []).reduce((total, service) => total + (service.price || 0), 0);
+    return vehiclePrice + servicesTotal;
+  };
+
+  // QR kod oluştur
+  const generateQRCode = async (code) => {
+    try {
+      const qrText = `SBS Transfer - Rezervasyon: ${code}`;
+      const qrCodeDataUrl = await QRCode.toDataURL(qrText, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#1f2937',
+          light: '#ffffff'
+        }
+      });
+      setQrCodeUrl(qrCodeDataUrl);
+    } catch (error) {
+      console.error('QR kod oluşturma hatası:', error);
+    }
+  };
+
+  // Rezervasyonu tamamla
+  const handleConfirmReservation = async () => {
+    const code = generateReservationCode();
+    const password = generateTempPassword();
+    setReservationCode(code);
+    setTempPassword(password);
+
+    // Rezervasyon verisini hazırla
+    const newReservationData = {
+      reservationCode: code,
+      tempPassword: password,
+      status: 'confirmed',
+      direction: bookingData.direction,
+      pickupLocation: formatLocation(bookingData.pickupLocation),
+      dropoffLocation: formatLocation(bookingData.dropoffLocation),
+      date: bookingData.date,
+      time: bookingData.time,
+      vehicle: {
+        id: bookingData.selectedVehicle?.id,
+        brand: bookingData.selectedVehicle?.brand,
+        model: bookingData.selectedVehicle?.model,
+        category: bookingData.selectedVehicle?.category,
+        price: bookingData.selectedVehicle?.totalPrice
+      },
+      passenger: {
+        count: bookingData.passengerCount || 1,
+        firstName: bookingData.personalInfo?.firstName,
+        lastName: bookingData.personalInfo?.lastName,
+        email: bookingData.personalInfo?.email,
+        phone: bookingData.personalInfo?.phone,
+        flightNumber: bookingData.personalInfo?.flightNumber,
+        flightTime: bookingData.personalInfo?.flightTime,
+        specialRequests: bookingData.personalInfo?.specialRequests
+      },
+      payment: {
+        method: bookingData.paymentMethod,
+        amount: calculateTotal(),
+        status: bookingData.paymentMethod === 'cash' ? 'pending' :
+                bookingData.paymentMethod === 'bank_transfer' ? 'pending' : 'completed'
+      },
+      extraServices: bookingData.selectedServices || [],
+      distance: bookingData.distance,
+      duration: bookingData.duration,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    setReservationData(newReservationData);
+
+    try {
+      // Firebase'e kaydet
+      const docRef = await addDoc(collection(db, 'reservations'), newReservationData);
+      console.log('Rezervasyon kaydedildi:', docRef.id);
+
+      // QR kod oluştur
+      await generateQRCode(code);
+
+      toast.success('Rezervasyonunuz başarıyla oluşturuldu!');
+      
+      if (onComplete) {
+        onComplete(newReservationData);
+      }
+    } catch (error) {
+      console.error('Rezervasyon oluşturma hatası:', error);
+      toast.error('Rezervasyon oluşturulurken bir hata oluştu.');
+    }
+  };
+
+  // Rezervasyon kodunu kopyala
+  const copyReservationCode = () => {
+    navigator.clipboard.writeText(reservationCode);
+    setCopied(true);
+    toast.success('Rezervasyon kodu kopyalandı!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Geçici şifreyi kopyala
+  const copyTempPassword = () => {
+    navigator.clipboard.writeText(tempPassword);
+    setPasswordCopied(true);
+    toast.success('Geçici şifre kopyalandı!');
+    setTimeout(() => setPasswordCopied(false), 2000);
+  };
+
+  // QR kodu indir
+  const downloadQRCode = () => {
     if (qrCodeUrl) {
       const link = document.createElement('a');
+      link.download = `SBS-Transfer-${reservationCode}.png`;
       link.href = qrCodeUrl;
-      link.download = `SBS-Transfer-${reservationId}.png`;
       link.click();
     }
   };
 
-  const handleShare = () => {
-    const shareText = `SBS Transfer Rezervasyonum
-Rezervasyon No: ${reservationId}
-Tarih: ${new Date(bookingData.date).toLocaleDateString('tr-TR')}
-Saat: ${bookingData.time}
-${bookingData.direction === 'airport-to-hotel' ? 'Havalimanı → Otel' : 'Otel → Havalimanı'}
-Araç: ${bookingData.selectedVehicle?.name}
-`;
-
-    if (navigator.share) {
-      navigator.share({
-        title: 'SBS Transfer Rezervasyonu',
-        text: shareText,
-        url: `https://sbstransfer.com/verify/${reservationId}`
-      });
-    } else {
-      navigator.clipboard.writeText(shareText);
-      alert('Rezervasyon bilgileri kopyalandı!');
-    }
+  // Ana sayfaya dön
+  const goToHome = () => {
+    navigate('/');
   };
 
-  const handleGoHome = () => {
-    if (membershipCreated) {
-      // Üyelik oluşturulmuşsa rezervasyonlar sayfasına yönlendir
-      navigate('/rezervasyonlarim');
-    } else {
-      // Üyelik oluşturulmamışsa ana sayfaya yönlendir
-      navigate('/');
-    }
+  // Rezervasyonlarım sayfasına git
+  const goToMyReservations = () => {
+    navigate('/my-reservations');
   };
 
-  const handleNewBooking = () => {
-    window.location.reload();
+  // Profil sayfasına git
+  const goToProfile = () => {
+    navigate('/profile');
   };
+
+  // Component mount olduğunda rezervasyonu oluştur ve şirket bilgilerini yükle
+  useEffect(() => {
+    loadCompanyInfo();
+    handleConfirmReservation();
+  }, []);
 
   return (
-    <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto p-2 sm:p-3 lg:p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-3"
-      >
-        {/* Başarı Mesajı */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className="text-center"
-        >
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-12 h-12 text-green-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Rezervasyonunuz Onaylandı!
-          </h2>
-          <p className="text-gray-600">
-            Transfer rezervasyonunuz başarıyla oluşturuldu
-          </p>
-        </motion.div>
-
-        {/* Rezervasyon Bilgileri */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Rezervasyon Detayları</h3>
-            <span className="text-sm font-mono bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-              {reservationId}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <Calendar className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Tarih & Saat</p>
-                  <p className="font-medium">
-                    {new Date(bookingData.date).toLocaleDateString('tr-TR')} - {bookingData.time}
-                  </p>
-              {/* Kalkış ve Varış Noktaları */}
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Kalkış Noktası</p>
-                  <p className="font-medium">{formatLocation(bookingData.pickupLocation)}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Varış Noktası</p>
-                  <p className="font-medium">{formatLocation(bookingData.dropoffLocation)}</p>
-                </div>
-              </div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Route className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Transfer Yönü</p>
-                  <p className="font-medium">
-                    {bookingData.direction === 'airport-to-hotel' 
-                      ? 'Havalimanı → Otel' 
-                      : 'Otel → Havalimanı'
-                    }
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Car className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Araç</p>
-                  <p className="font-medium">{bookingData.selectedVehicle?.name}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <Users className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Yolcu Sayısı</p>
-                  <p className="font-medium">{bookingData.personalInfo?.passengerCount} kişi</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">İletişim</p>
-                  <p className="font-medium">{bookingData.personalInfo?.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <CreditCard className="w-5 h-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Toplam Tutar</p>
-                  <p className="font-bold text-blue-600">₺{bookingData.totalPrice?.toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Üyelik Bilgileri */}
-        {membershipCreated && membershipPassword && (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-4 py-8">
+        <div className="max-w-md lg:max-w-2xl xl:max-w-4xl mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6"
+            className="space-y-3"
           >
-            <div className="text-center mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Crown className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                Üyeliğiniz Oluşturuldu!
-              </h3>
-              <p className="text-sm text-blue-600">
-                SBS Transfer ailesine hoş geldiniz
-              </p>
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto">
+              <CheckCircle className="w-8 h-8" />
             </div>
-            
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <h4 className="font-medium text-gray-800 mb-3">Giriş Bilgileriniz:</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">E-posta:</span>
-                  <span className="font-medium text-gray-800">{bookingData.personalInfo?.email}</span>
+            <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold">Rezervasyon Tamamlandı!</h1>
+            <p className="text-green-100 text-sm">
+              Transfer rezervasyonunuz başarıyla oluşturuldu
+            </p>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-md lg:max-w-2xl xl:max-w-4xl mx-auto px-4 -mt-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-t-3xl shadow-xl p-6"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Sol: Rezervasyon Detayları */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Başarı Mesajı */}
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-2xl p-6 text-center">
+                <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
+                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                  Rezervasyon Başarılı!
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  Transfer rezervasyonunuz başarıyla oluşturuldu. Rezervasyon kodunuz:
+                </p>
+                <div className="bg-white border-2 border-green-300 rounded-xl p-4 flex items-center justify-between mb-4">
+                  <span className="text-2xl font-bold text-gray-900">{reservationCode}</span>
+                  <button
+                    onClick={copyReservationCode}
+                    className="ml-3 p-2 bg-green-100 hover:bg-green-200 rounded-lg transition-colors"
+                  >
+                    {copied ? <Check className="w-5 h-5 text-green-600" /> : <Copy className="w-5 h-5 text-green-600" />}
+                  </button>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Şifre:</span>
-                  <span className="font-mono bg-gray-100 px-2 py-1 rounded text-gray-800">
-                    {membershipPassword}
-                  </span>
+
+                {/* Geçici Şifre */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p className="text-sm text-gray-600 mb-2">Geçici Şifreniz (Rezervasyonlarınızı görüntülemek için):</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-blue-900">{tempPassword}</span>
+                    <button
+                      onClick={copyTempPassword}
+                      className="ml-3 p-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+                    >
+                      {passwordCopied ? <Check className="w-5 h-5 text-blue-600" /> : <Copy className="w-5 h-5 text-blue-600" />}
+                    </button>
+                  </div>
                 </div>
               </div>
-              
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <Info className="w-4 h-4 text-blue-600 mt-0.5" />
-                  <div className="text-xs text-blue-800">
-                    <p className="font-medium mb-1">Önemli:</p>
-                    <p>Bu bilgilerle müşteri paneline giriş yapabilir, rezervasyonlarınızı takip edebilir ve yeni rezervasyonlar oluşturabilirsiniz.</p>
+
+                {/* Transfer Detayları */}
+                <div className="bg-gray-50 rounded-2xl p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Transfer Detayları</h3>
+                  
+                  <div className="space-y-4">
+                    {/* Transfer Yönü */}
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Route className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Transfer Yönü</p>
+                        <p className="font-medium text-gray-900">
+                          {bookingData.direction === 'airport-to-hotel'
+                             ? 'Havalimanı → Otel'
+                             : 'Otel → Havalimanı'
+                          }
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Lokasyonlar */}
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-600">Kalkış - Varış</p>
+                        <p className="font-medium text-gray-900 text-sm">
+                          {formatLocation(bookingData.pickupLocation)} → {formatLocation(bookingData.dropoffLocation)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Tarih & Saat */}
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Tarih & Saat</p>
+                        <p className="font-medium text-gray-900">
+                          {new Date(bookingData.date).toLocaleDateString('tr-TR')} - {bookingData.time}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Araç */}
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                        <Car className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Araç</p>
+                        <p className="font-medium text-gray-900">
+                          {bookingData.selectedVehicle?.brand} {bookingData.selectedVehicle?.model}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Yolcu */}
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <Users className="w-5 h-5 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Yolcu Sayısı</p>
+                        <p className="font-medium text-gray-900">{bookingData.passengerCount || 1} kişi</p>
+                      </div>
+                    </div>
+
+                    {/* Ödeme */}
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                        {bookingData.paymentMethod === 'cash' ? <Banknote className="w-5 h-5 text-emerald-600" /> :
+                         bookingData.paymentMethod === 'bank_transfer' ? <Building2 className="w-5 h-5 text-emerald-600" /> :
+                         <CreditCard className="w-5 h-5 text-emerald-600" />}
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Ödeme Yöntemi</p>
+                        <p className="font-medium text-gray-900">
+                          {bookingData.paymentMethod === 'cash' ? 'Nakit Ödeme' :
+                           bookingData.paymentMethod === 'bank_transfer' ? 'Banka Havalesi' :
+                           'Kredi Kartı'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* İletişim Bilgileri */}
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <User className="w-5 h-5 mr-2 text-blue-600" />
+                    İletişim Bilgileri
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <User className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600">Ad Soyad</p>
+                        <p className="font-medium text-gray-900">
+                          {bookingData.personalInfo?.firstName} {bookingData.personalInfo?.lastName}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Phone className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600">Telefon</p>
+                        <p className="font-medium text-gray-900">{bookingData.personalInfo?.phone}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Mail className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600">E-posta</p>
+                        <p className="font-medium text-gray-900">{bookingData.personalInfo?.email}</p>
+                      </div>
+                    </div>
+                    {bookingData.personalInfo?.flightNumber && (
+                      <div className="flex items-center space-x-3">
+                        <Plane className="w-5 h-5 text-gray-500" />
+                        <div>
+                          <p className="text-sm text-gray-600">Uçuş No</p>
+                          <p className="font-medium text-gray-900">{bookingData.personalInfo?.flightNumber}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sonraki Adımlar */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                  <div className="flex items-start space-x-3">
+                    <Info className="w-5 h-5 text-yellow-600 mt-0.5" />
+                    <div className="text-sm text-yellow-800">
+                      <p className="font-medium mb-2">Sonraki Adımlar:</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Rezervasyon kodunuzu not alın veya ekran görüntüsü kaydedin</li>
+                        <li>• Transfer zamanından 15 dakika önce hazır olun</li>
+                        <li>• Şoförümüz sizinle iletişime geçecektir</li>
+                        <li>• Sorularınız için +90 555 123 45 67 numarayı arayabilirsiniz</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sağ: QR Kod ve Toplam */}
+              <div className="lg:col-span-1">
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 sticky top-4 space-y-4">
+                  {/* QR Kod */}
+                  {qrCodeUrl && (
+                    <div className="text-center">
+                      <h3 className="text-base font-semibold text-gray-900 mb-3">QR Kod</h3>
+                      <div className="bg-white p-4 rounded-xl border border-gray-200 inline-block">
+                        <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32 mx-auto" />
+                      </div>
+                      <button
+                        onClick={downloadQRCode}
+                        className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center gap-2 mx-auto"
+                      >
+                        <Download className="w-4 h-4" />
+                        QR Kodunu İndir
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Toplam Tutar */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Transfer Ücreti</span>
+                        <span className="font-medium">₺{(bookingData.selectedVehicle?.totalPrice || 0).toLocaleString()}</span>
+                      </div>
+                      
+                      {bookingData.selectedServices && bookingData.selectedServices.length > 0 && (
+                        bookingData.selectedServices.map((service) => (
+                          <div key={service.id} className="flex justify-between text-sm">
+                            <span className="text-gray-600">{service.name}</span>
+                            <span className="font-medium">₺{(service.price || 0).toLocaleString()}</span>
+                          </div>
+                        ))
+                      )}
+                      
+                      <div className="border-t border-gray-200 pt-2">
+                        <div className="flex justify-between">
+                          <span className="font-semibold text-gray-900">Toplam Tutar</span>
+                          <span className="text-xl font-bold text-green-600">
+                            ₺{calculateTotal().toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Ana Sayfa ve Yönlendirme Butonları */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 mt-6 border-t border-gray-200">
+              <button
+                onClick={downloadPDF}
+                className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                <FileText className="w-5 h-5" />
+                PDF İndir
+              </button>
+              <button
+                onClick={goToHome}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                <Home className="w-5 h-5" />
+                Ana Sayfa
+              </button>
+              <button
+                onClick={goToMyReservations}
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                <Calendar className="w-5 h-5" />
+                Rezervasyonlarım
+              </button>
+              <button
+                onClick={goToProfile}
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                <User className="w-5 h-5" />
+                Profilim
+              </button>
+            </div>
           </motion.div>
-        )}
-
-        {/* QR Code */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center justify-center">
-              <QrCode className="w-5 h-5 mr-2" />
-              Rezervasyon QR Kodu
-            </h3>
-            
-            {isGeneratingQR ? (
-              <div className="flex flex-col items-center">
-                <div className="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-                <p className="text-sm text-gray-600">QR kod oluşturuluyor...</p>
-              </div>
-            ) : qrCodeUrl ? (
-              <div className="flex flex-col items-center">
-                <img 
-                  src={qrCodeUrl} 
-                  alt="Reservation QR Code" 
-                  className="w-48 h-48 border rounded-lg mb-4"
-                />
-                <p className="text-sm text-gray-600 mb-4">
-                  Bu QR kodu şoföre göstererek rezervasyonunuzu doğrulayabilirsiniz
-                </p>
-                <div className="flex space-x-3">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleDownloadQR}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>İndir</span>
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleShare}
-                    className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    <span>Paylaş</span>
-                  </motion.button>
-                </div>
-              </div>
-            ) : (
-              <div className="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <p className="text-sm text-gray-500">QR kod oluşturulamadı</p>
-              </div>
-            )}
-          </div>
         </div>
-
-        {/* Otomatik Üyelik */}
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ 
-            opacity: membershipCreated ? 1 : 0, 
-            height: membershipCreated ? 'auto' : 0 
-          }}
-          className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6"
-        >
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-              <Crown className="w-6 h-6 text-yellow-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                🎉 Otomatik Üyelik Oluşturuldu!
-              </h3>
-              <p className="text-sm text-gray-600 mb-3">
-                Rezervasyonunuz ile birlikte SBS Transfer üyeliğiniz otomatik olarak oluşturuldu. 
-                Artık gelecek rezervasyonlarınızda daha hızlı işlem yapabilirsiniz.
-              </p>
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="flex items-center text-green-600">
-                  <Gift className="w-4 h-4 mr-1" />
-                  <span>%10 indirim kazandınız</span>
-                </div>
-                <div className="flex items-center text-blue-600">
-                  <Star className="w-4 h-4 mr-1" />
-                  <span>Puan sistemi aktif</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Önemli Bilgiler */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Önemli Bilgiler</h3>
-          <div className="space-y-2 text-sm text-gray-700">
-            <div className="flex items-start space-x-2">
-              <Clock className="w-4 h-4 text-blue-600 mt-0.5" />
-              <p>Şoförümüz belirlenen saatte sizinle iletişime geçecektir</p>
-            </div>
-            <div className="flex items-start space-x-2">
-              <MessageCircle className="w-4 h-4 text-blue-600 mt-0.5" />
-              <p>Rezervasyon detayları e-posta ve SMS ile gönderilecektir</p>
-            </div>
-            <div className="flex items-start space-x-2">
-              <Phone className="w-4 h-4 text-blue-600 mt-0.5" />
-              <p>Acil durumlar için: +90 (555) 000 00 00</p>
-            </div>
-            {bookingData.paymentMethod === 'bank_transfer' && (
-              <div className="flex items-start space-x-2">
-                <CreditCard className="w-4 h-4 text-blue-600 mt-0.5" />
-                <p>IBAN bilgileri e-posta ile gönderildi. 24 saat içinde ödeme yapınız.</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* İletişim ve Destek */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">İletişim & Destek</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center space-x-3">
-              <Phone className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="text-sm text-gray-600">Telefon</p>
-                <p className="font-medium">+90 (555) 000 00 00</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Mail className="w-5 h-5 text-gray-500" />
-              <div>
-                <p className="text-sm text-gray-600">E-posta</p>
-                <p className="font-medium">destek@sbstransfer.com</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Aksiyon Butonları */}
-        <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleGoHome}
-            className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-          >
-            <Home className="w-4 h-4" />
-            <span>{membershipCreated ? 'Rezervasyonlarım' : 'Ana Sayfa'}</span>
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleNewBooking}
-            className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            <span>Yeni Rezervasyon</span>
-            <ArrowRight className="w-4 h-4" />
-          </motion.button>
-        </div>
-      </motion.div>
-    </div>
-  );
+      </div>
+    );
 };
 
 export default BookingConfirmation;

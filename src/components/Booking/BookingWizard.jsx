@@ -311,13 +311,14 @@ const BookingWizard = () => {
         return true;
       
       case 4: // Payment
+        console.log('BookingWizard - Payment Validation:', bookingData);
         if (!bookingData.paymentMethod) {
           toast.error('Lütfen ödeme yöntemi seçin');
           return false;
         }
         if (bookingData.paymentMethod === 'credit_card') {
-          const { cardData } = bookingData;
-          if (!cardData.cardNumber || !cardData.expiryDate || !cardData.cvv || !cardData.cardholderName) {
+          const { creditCardInfo } = bookingData;
+          if (!creditCardInfo || !creditCardInfo.cardNumber || !creditCardInfo.expiryDate || !creditCardInfo.cvv || !creditCardInfo.cardName) {
             toast.error('Lütfen kart bilgilerini tamamlayın');
             return false;
           }

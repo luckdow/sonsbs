@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -13,8 +13,21 @@ import {
   Globe,
   CheckCircle2
 } from 'lucide-react';
+import { initializeSettings } from '../../utils/initializeFirebaseData';
 
 const HomePage = () => {
+  // Demo settings'i başlat
+  useEffect(() => {
+    const setupSettings = async () => {
+      try {
+        await initializeSettings();
+      } catch (error) {
+        console.error('Settings kurulumu hatası:', error);
+      }
+    };
+    
+    setupSettings();
+  }, []);
   const features = [
     {
       icon: <MapPin className="w-8 h-8" />,
