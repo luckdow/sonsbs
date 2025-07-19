@@ -77,18 +77,18 @@ const DriverDetailsModal = ({
   const licenseStatus = getLicenseStatus(driver.licenseExpiry);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[85vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gradient-to-br from-white via-blue-50 to-indigo-100 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-y-auto border border-slate-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-lg font-bold text-gray-600">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full flex items-center justify-center border border-blue-200">
+              <span className="text-2xl font-bold text-blue-700">
                 {(driver.firstName || '')[0] || ''}{(driver.lastName || '')[0] || ''}
               </span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-slate-800">
                 {driver.firstName || ''} {driver.lastName || ''}
               </h2>
               <div className="flex items-center gap-2 mt-1">
@@ -96,23 +96,22 @@ const DriverDetailsModal = ({
               </div>
             </div>
           </div>
-          
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-blue-100 text-blue-600 rounded-full transition-colors border border-blue-100"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-6">
           {/* Ehliyet Uyarısı */}
           {licenseStatus.urgent && (
-            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-xl">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-orange-600" />
-                <span className={`font-medium ${licenseStatus.color}`}>
+                <span className={`font-semibold ${licenseStatus.color}`}>
                   Ehliyet Uyarısı: {licenseStatus.label}
                 </span>
               </div>
@@ -120,12 +119,12 @@ const DriverDetailsModal = ({
           )}
 
           {/* Ana Bilgiler - Yatay Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Sol Kolon */}
             <div className="space-y-4">
               {/* Kişisel Bilgiler */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <div className="bg-gradient-to-br from-blue-100/30 to-white/60 rounded-xl p-5 border border-blue-100 shadow">
+                <h3 className="font-semibold text-blue-700 mb-3 flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Kişisel Bilgiler
                 </h3>
@@ -150,8 +149,8 @@ const DriverDetailsModal = ({
               </div>
 
               {/* İletişim */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <div className="bg-gradient-to-br from-blue-100/30 to-white/60 rounded-xl p-5 border border-blue-100 shadow">
+                <h3 className="font-semibold text-blue-700 mb-3 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
                   İletişim
                 </h3>
@@ -171,8 +170,8 @@ const DriverDetailsModal = ({
             {/* Sağ Kolon */}
             <div className="space-y-4">
               {/* Lisans ve Araç */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-gradient-to-br from-blue-100/30 to-white/60 rounded-xl p-5 border border-blue-100 shadow">
+              <h3 className="font-semibold text-blue-700 mb-3 flex items-center gap-2">
                   <CreditCard className="w-4 h-4" />
                   Lisans & Araç
                 </h3>
@@ -195,8 +194,8 @@ const DriverDetailsModal = ({
               </div>
 
               {/* Finansal ve Performans */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-gradient-to-br from-blue-100/30 to-white/60 rounded-xl p-5 border border-blue-100 shadow">
+              <h3 className="font-semibold text-blue-700 mb-3 flex items-center gap-2">
                   <DollarSign className="w-4 h-4" />
                   Finansal & Performans
                 </h3>
@@ -224,10 +223,10 @@ const DriverDetailsModal = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end p-4 border-t bg-gray-50">
+        <div className="flex justify-end p-6 border-t border-slate-200 bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            className="px-5 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all font-semibold shadow"
           >
             Kapat
           </button>

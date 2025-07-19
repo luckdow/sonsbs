@@ -169,21 +169,23 @@ const AddDriverModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[85vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gradient-to-br from-white via-blue-50 to-indigo-100 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-y-auto border border-slate-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-          <h2 className="text-xl font-semibold text-gray-900">Yeni Şoför Ekle</h2>
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10">
+          <h2 className="text-2xl font-bold text-blue-700 flex items-center gap-2">
+            <User className="w-6 h-6" /> Yeni Şoför Ekle
+          </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-blue-100 text-blue-600 rounded-full transition-colors border border-blue-100"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4">
+        <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Sol Kolon - Kişisel Bilgiler */}
             <div className="space-y-4">
@@ -393,19 +395,23 @@ const AddDriverModal = ({
                 </label>
                 <div className="relative">
                   <Car className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <select
-                    name="assignedVehicle"
-                    value={formData.assignedVehicle}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Araç seçiniz</option>
-                    {vehicles.filter(v => v.status === 'available').map(vehicle => (
-                      <option key={vehicle.id} value={vehicle.id}>
-                        {vehicle.brand} {vehicle.model} ({vehicle.plateNumber})
-                      </option>
-                    ))}
-                  </select>
+                  {vehicles && vehicles.filter(v => v.status === 'active').length > 0 ? (
+                    <select
+                      name="assignedVehicle"
+                      value={formData.assignedVehicle}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Araç seçiniz</option>
+                      {vehicles.filter(v => v.status === 'active').map(vehicle => (
+                        <option key={vehicle.id} value={vehicle.id}>
+                          {vehicle.brand} {vehicle.model} ({vehicle.plateNumber})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-400 flex items-center">Uygun araç bulunamadı</div>
+                  )}
                 </div>
               </div>
 
@@ -502,25 +508,25 @@ const AddDriverModal = ({
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-end gap-3 mt-4 pt-4 border-t bg-gray-50 -mx-4 -mb-4 px-4 py-4">
+          <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-200 bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 -mx-6 -mb-6 px-6 py-6">
             <button
               type="button"
               onClick={handleReset}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-slate-600 border border-slate-300 rounded-xl hover:bg-slate-100 transition-colors font-semibold"
             >
               Temizle
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-slate-600 border border-slate-300 rounded-xl hover:bg-slate-100 transition-colors font-semibold"
             >
               İptal
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 font-semibold shadow disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

@@ -75,89 +75,71 @@ const DriverTable = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+    <div className="bg-gradient-to-br from-white via-blue-50 to-indigo-100 rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div>
+        <table className="w-full text-xs">
+          <thead className="bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 border-b border-slate-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Şoför
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                İletişim
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ehliyet
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Durum
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Araç
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Komisyon
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                İşlemler
-              </th>
+              <th className="px-2 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">Şoför</th>
+              <th className="px-2 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">İletişim</th>
+              <th className="px-2 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">Ehliyet</th>
+              <th className="px-2 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">Durum</th>
+              <th className="px-2 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">Araç</th>
+              <th className="px-2 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">Kom.</th>
+              <th className="px-2 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">İşlem</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white/80 divide-y divide-slate-100">
             {drivers && drivers.length > 0 ? drivers.map((driver) => (
               <React.Fragment key={driver.id}>
-                {/* Ana satır */}
-                <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr className="hover:bg-blue-50/60 transition-colors">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-gray-600">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full flex items-center justify-center border border-blue-200">
+                        <span className="text-base font-bold text-blue-700">
                           {(driver.firstName || '')[0] || ''}{(driver.lastName || '')[0] || ''}
                         </span>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-semibold text-slate-800">
                           {driver.firstName || ''} {driver.lastName || ''}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs text-slate-500">
                           {driver.totalTrips || 0} sefer
                         </div>
                       </div>
                     </div>
                   </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="text-sm text-slate-800">
                       <div className="flex items-center mb-1">
-                        <Phone className="w-4 h-4 text-gray-400 mr-2" />
+                        <Phone className="w-4 h-4 text-blue-400 mr-2" />
                         {driver.phone}
                       </div>
                       <div className="flex items-center">
-                        <Mail className="w-4 h-4 text-gray-400 mr-2" />
+                        <Mail className="w-4 h-4 text-blue-400 mr-2" />
                         {driver.email}
                       </div>
                     </div>
                   </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      <div className="font-medium">{driver.licenseNumber}</div>
-                      <div className={`text-xs ${getLicenseStatus(driver.licenseExpiry).color}`}>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="text-sm text-slate-800">
+                      <div className="font-semibold">{driver.licenseNumber}</div>
+                      <div className={`text-xs ${getLicenseStatus(driver.licenseExpiry).color} flex items-center`}>
                         {getLicenseStatus(driver.licenseExpiry).label}
                         {getLicenseStatus(driver.licenseExpiry).urgent && (
-                          <AlertTriangle className="w-3 h-3 inline ml-1" />
+                          <AlertTriangle className="w-3 h-3 inline ml-1 text-orange-500" />
                         )}
                       </div>
                     </div>
                   </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       {getStatusBadge(driver.status)}
                       <select
                         value={driver.status}
                         onChange={(e) => onStatusChange(driver.id, e.target.value)}
-                        className="text-xs border border-gray-300 rounded px-2 py-1"
+                        className="text-xs border border-slate-300 rounded-lg px-2 py-1 bg-white/80 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                       >
                         <option value="active">Aktif</option>
                         <option value="inactive">Pasif</option>
@@ -165,48 +147,41 @@ const DriverTable = ({
                       </select>
                     </div>
                   </td>
-                  
-                  <td className="px-6 py-4">
-                    <div className="flex items-center text-sm text-gray-900">
-                      <Car className="w-4 h-4 text-gray-400 mr-2" />
+                  <td className="px-2 py-2">
+                    <div className="flex items-center text-sm text-slate-800">
+                      <Car className="w-4 h-4 text-blue-400 mr-2" />
                       <div className="max-w-xs">
-                        <div className={`truncate ${driver.assignedVehicle ? 'text-gray-900' : 'text-gray-500'}`}>
+                        <div className={`truncate ${driver.assignedVehicle ? 'text-slate-800' : 'text-slate-400'}`}>
                           {getVehicleName(driver.assignedVehicle)}
                         </div>
                       </div>
                     </div>
                   </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-sm text-gray-900">
-                      <span className="text-lg font-semibold text-green-600">
-                        %{driver.commission || 0}
-                      </span>
-                      <span className="text-xs text-gray-500 ml-1">komisyon</span>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="flex items-center text-sm text-green-700 font-bold">
+                      %{driver.commission || 0}
+                      <span className="text-xs text-slate-400 ml-1 font-normal">komisyon</span>
                     </div>
                   </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => onViewDetails(driver)}
-                        className="text-blue-600 hover:text-blue-800 p-1 rounded"
+                        className="p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-colors shadow"
                         title="Detayları Görüntüle"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      
                       <button
                         onClick={() => onEdit(driver)}
-                        className="text-green-600 hover:text-green-800 p-1 rounded"
+                        className="p-2 text-green-600 hover:text-white hover:bg-green-600 rounded-lg transition-colors shadow"
                         title="Düzenle"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      
                       <button
                         onClick={() => onDelete(driver.id)}
-                        className="text-red-600 hover:text-red-800 p-1 rounded"
+                        className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-colors shadow"
                         title="Sil"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -214,11 +189,10 @@ const DriverTable = ({
                     </div>
                   </td>
                 </tr>
-                
               </React.Fragment>
             )) : (
               <tr>
-                <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                <td colSpan="7" className="px-2 py-2 text-center text-slate-400">
                   Henüz şoför bulunmuyor
                 </td>
               </tr>
@@ -226,11 +200,10 @@ const DriverTable = ({
           </tbody>
         </table>
       </div>
-      
       {(!drivers || drivers.length === 0) && (
         <div className="text-center py-12">
-          <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Henüz şoför bulunmuyor</p>
+          <Users className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <p className="text-slate-400">Henüz şoför bulunmuyor</p>
         </div>
       )}
     </div>

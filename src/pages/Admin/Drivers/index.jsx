@@ -3,7 +3,6 @@ import { Plus, RefreshCw, Users } from 'lucide-react';
 import { collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { USER_ROLES } from '../../../config/constants';
-import { initializeFirebaseData } from '../../../utils/initializeFirebaseData';
 import DriverTable from './DriverTable';
 import DriverFilters from './DriverFilters';
 import AddDriverModal from './AddDriverModal';
@@ -31,24 +30,16 @@ const DriverIndex = () => {
   // Firebase'den verileri dinle
   useEffect(() => {
     const initializeData = async () => {
-      console.log('Firebase initialize başlatılıyor...');
       setLoading(true);
-      
       try {
-        // Firebase'a demo verilerini ekle (eğer yoksa)
-        await initializeFirebaseData();
-        console.log('Firebase başlangıç verileri hazırlandı');
-        
         // Users koleksiyonundan role="driver" olanları dinle
         const driversQuery = query(
           collection(db, 'users'),
           where('role', '==', USER_ROLES.DRIVER)
         );
-        
         const unsubscribeDrivers = onSnapshot(
           driversQuery,
           (snapshot) => {
-            console.log('Driver users güncellendi, döküman sayısı:', snapshot.docs.length);
             const driverData = snapshot.docs.map(doc => ({
               id: doc.id,
               ...doc.data(),
@@ -175,18 +166,17 @@ const DriverIndex = () => {
     try {
       const newDriver = {
         ...driverData,
+        role: 'driver',
+        isActive: true,
         totalTrips: 0,
         joinDate: new Date().toISOString().split('T')[0],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
       console.log('Firebase\'a eklenecek veri:', newDriver);
-      
-      // Firebase'a ekle
-      const docRef = await addDoc(collection(db, 'drivers'), newDriver);
+      // Firebase'a users koleksiyonuna ekle
+      const docRef = await addDoc(collection(db, 'users'), newDriver);
       console.log('Yeni şoför eklendi, ID:', docRef.id);
-      
       setShowAddModal(false);
       alert('Şoför başarıyla eklendi!');
     } catch (error) {
@@ -219,9 +209,8 @@ const DriverIndex = () => {
   const handleDeleteDriver = async (driverId) => {
     if (window.confirm('Bu şoförü silmek istediğinizden emin misiniz?')) {
       try {
-        // Firebase'dan sil
-        await deleteDoc(doc(db, 'drivers', driverId));
-        
+        // Firebase'dan sil (users koleksiyonu)
+        await deleteDoc(doc(db, 'users', driverId));
         console.log('Şoför silindi:', driverId);
         alert('Şoför başarıyla silindi!');
       } catch (error) {
