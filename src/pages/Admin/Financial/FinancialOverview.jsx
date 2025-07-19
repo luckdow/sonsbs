@@ -44,8 +44,11 @@ const FinancialOverview = () => {
         ...doc.data()
       }));
 
-      // Şoför ödeme verilerini getir
-      const driversQuery = query(collection(db, 'drivers'));
+      // Şoför ödeme verilerini getir (users koleksiyonundan)
+      const driversQuery = query(
+        collection(db, 'users'),
+        where('role', '==', 'driver')
+      );
       const driversSnapshot = await getDocs(driversQuery);
       const drivers = driversSnapshot.docs.map(doc => ({
         id: doc.id,
@@ -54,21 +57,37 @@ const FinancialOverview = () => {
 
       // İstatistikleri hesapla
       const totalRevenue = reservations.reduce((sum, res) => sum + (res.totalPrice || 0), 0);
-      const pendingCount = reservations.filter(res => res.paymentStatus === 'pending').length;
       
-      // Şoför borçlarını hesapla (komisyon borçları)
+      // Nakit ödemeli rezervasyonlar için bekleyen ödemeler
+      const pendingCashPayments = reservations
+        .filter(res => res.paymentMethod === 'cash')
+        .reduce((sum, res) => sum + (res.totalPrice || 0), 0);
+      
+      // Şoför borçlarını ve alacaklarını hesapla
       let driverDebts = 0;
+      let driverCredits = 0;
+      let totalCommissionRevenue = 0;
+      
       drivers.forEach(driver => {
-        if (driver.balance && driver.balance < 0) {
-          driverDebts += Math.abs(driver.balance);
+        const balance = driver.balance || 0;
+        if (balance < 0) {
+          driverDebts += Math.abs(balance); // Şoför firmaya borçlu (komisyon borçları)
+        } else if (balance > 0) {
+          driverCredits += balance; // Firma şofore borçlu (kart ödemeleri)
         }
+        
+        // Toplam komisyon geliri
+        totalCommissionRevenue += driver.totalCommission || 0;
       });
 
       setStats({
         totalRevenue,
-        pendingPayments: pendingCount,
+        pendingCashPayments,
         driverDebts,
+        driverCredits,
+        totalCommissionRevenue,
         completedTrips: reservations.length,
+        activeDrivers: drivers.filter(d => d.isActive !== false).length,
         monthlyGrowth: 12.5 // Bu gerçek verilerle hesaplanacak
       });
 
@@ -134,25 +153,49 @@ const FinancialOverview = () => {
         />
         
         <StatCard
-          title="Bekleyen Ödemeler"
-          value={stats.pendingPayments}
-          icon={AlertCircle}
-          color="border-l-yellow-500"
-          prefix=""
+          title="Komisyon Gelirimiz"
+          value={stats.totalCommissionRevenue}
+          icon={TrendingUp}
+          color="border-l-purple-500"
         />
         
         <StatCard
-          title="Şoför Borçları"
+          title="Şoför Borçları (Nakit Komisyon)"
           value={stats.driverDebts}
-          icon={Users}
+          icon={AlertCircle}
           color="border-l-red-500"
+        />
+        
+        <StatCard
+          title="Şofore Borçlarımız (Kart Ödemeleri)"
+          value={stats.driverCredits}
+          icon={Users}
+          color="border-l-blue-500"
+        />
+      </div>
+
+      {/* Ek İstatistikler */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          title="Bekleyen Nakit Tahsilat"
+          value={stats.pendingCashPayments}
+          icon={DollarSign}
+          color="border-l-yellow-500"
         />
         
         <StatCard
           title="Tamamlanan Yolculuklar"
           value={stats.completedTrips}
-          icon={TrendingUp}
-          color="border-l-blue-500"
+          icon={CreditCard}
+          color="border-l-indigo-500"
+          prefix=""
+        />
+        
+        <StatCard
+          title="Aktif Şoförler"
+          value={stats.activeDrivers}
+          icon={Users}
+          color="border-l-emerald-500"
           prefix=""
         />
       </div>

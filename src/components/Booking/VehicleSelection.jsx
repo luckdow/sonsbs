@@ -24,7 +24,7 @@ const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Araçları getir
+        // Araçları getir (sadece aktif araçlar)
         const vehiclesQuery = query(
           collection(db, 'vehicles'),
           where('status', '==', 'active')
@@ -46,6 +46,9 @@ const VehicleSelection = ({ bookingData, setBookingData, onNext, onBack }) => {
           ...doc.data()
         }));
 
+        console.log('Firebase araçları yüklendi:', vehiclesData);
+        console.log('Firebase ekstra hizmetleri yüklendi:', servicesData);
+        
         setVehicles(vehiclesData);
         setExtraServices(servicesData);
       } catch (error) {

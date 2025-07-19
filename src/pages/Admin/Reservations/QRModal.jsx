@@ -7,18 +7,13 @@ const QRModal = ({ reservation, onClose }) => {
 
   React.useEffect(() => {
     if (reservation && qrRef.current) {
-      const qrData = {
-        reservationId: reservation.reservationId,
-        customerName: `${reservation.customerInfo?.firstName} ${reservation.customerInfo?.lastName}`,
-        date: reservation.tripDetails?.date,
-        time: reservation.tripDetails?.time,
-        pickup: reservation.tripDetails?.pickupLocation,
-        dropoff: reservation.tripDetails?.dropoffLocation,
-        passengerCount: reservation.tripDetails?.passengerCount,
-        totalPrice: reservation.totalPrice
-      };
+      // QR kod verisi olarak sadece rezervasyon ID'sini kullan
+      const qrData = reservation.reservationId || reservation.id;
+      
+      console.log('QR Modal: QR kod verisi:', qrData);
+      console.log('QR Modal: Rezervasyon bilgileri:', reservation);
 
-      QRCode.toCanvas(qrRef.current, JSON.stringify(qrData), {
+      QRCode.toCanvas(qrRef.current, qrData, {
         width: 200,
         margin: 2,
         color: {

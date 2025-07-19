@@ -12,7 +12,8 @@ import {
   CreditCard,
   ChevronDown,
   ChevronRight,
-  CheckCircle
+  CheckCircle,
+  Trash2
 } from 'lucide-react';
 import { StatusBadge, getStatusColor } from '../../../utils/statusUtils';
 
@@ -24,7 +25,8 @@ const ReservationTable = ({
   onDriverAssign, 
   onShowQR, 
   onStatusChange,
-  onCompleteReservation
+  onCompleteReservation,
+  onDeleteReservation
 }) => {
   const [expandedRows, setExpandedRows] = useState(new Set());
 
@@ -190,7 +192,7 @@ const ReservationTable = ({
                       </button>
 
                       {/* Tamamlama Butonu - Sadece atanmış ve tamamlanmamış rezervasyonlar için */}
-                      {reservation.status !== 'completed' && reservation.driverId && (
+                      {reservation.status !== 'completed' && (reservation.assignedDriver || reservation.assignedDriverId || reservation.driverId) && (
                         <button
                           onClick={() => onCompleteReservation(reservation.id)}
                           className="text-emerald-600 hover:text-emerald-800"
@@ -199,6 +201,15 @@ const ReservationTable = ({
                           <CheckCircle className="w-4 h-4" />
                         </button>
                       )}
+
+                      {/* Silme Butonu */}
+                      <button
+                        onClick={() => onDeleteReservation(reservation.id)}
+                        className="text-red-600 hover:text-red-800"
+                        title="Rezervasyonu Sil"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>

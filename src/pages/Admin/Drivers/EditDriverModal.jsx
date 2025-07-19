@@ -455,11 +455,15 @@ const EditDriverModal = ({
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Araç seçiniz</option>
-                    {vehicles.filter(v => v.status === 'available' || v.id === driver.assignedVehicle).map(vehicle => (
-                      <option key={vehicle.id} value={vehicle.id}>
-                        {vehicle.brand} {vehicle.model} ({vehicle.plateNumber})
-                      </option>
-                    ))}
+                    {vehicles && vehicles.length > 0 ? (
+                      vehicles.map(vehicle => (
+                        <option key={vehicle.id} value={vehicle.id}>
+                          {vehicle.brand} {vehicle.model} ({vehicle.plateNumber}) - {vehicle.status || 'Durum Belirtilmemiş'}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>Araç bulunamadı</option>
+                    )}
                   </select>
                 </div>
               </div>

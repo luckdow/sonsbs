@@ -28,7 +28,7 @@ export const ProtectedRoute = ({ children, requiredRole = null, redirectTo = '/g
       case USER_ROLES.DRIVER:
         return <Navigate to="/şoför/dashboard" replace />;
       case USER_ROLES.CUSTOMER:
-        return <Navigate to="/müşteri/dashboard" replace />;
+        return <Navigate to="/rezervasyonlarim" replace />;
       default:
         return <Navigate to="/giriş" replace />;
     }
@@ -58,7 +58,7 @@ export const PublicRoute = ({ children, redirectTo = null }) => {
         case USER_ROLES.DRIVER:
           return <Navigate to="/şoför/dashboard" replace />;
         case USER_ROLES.CUSTOMER:
-          return <Navigate to="/müşteri/dashboard" replace />;
+          return <Navigate to="/rezervasyonlarim" replace />;
         default:
           return <Navigate to="/" replace />;
       }

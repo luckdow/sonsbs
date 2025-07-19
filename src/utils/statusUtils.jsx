@@ -61,6 +61,12 @@ export const StatusBadge = ({ status, type = 'reservation' }) => {
             icon: User,
             label: 'Şoför Atandı'
           };
+        case 'trip-started':
+          return {
+            color: 'bg-orange-100 text-orange-800 border-orange-200',
+            icon: AlertCircle,
+            label: '🚗 Yolculuk Başladı'
+          };
         case 'pending':
           return {
             color: 'bg-yellow-100 text-yellow-800 border-yellow-200',

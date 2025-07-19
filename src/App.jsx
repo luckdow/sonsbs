@@ -8,14 +8,16 @@ import { AppProvider } from './context/AppContext'
 import Layout from './components/Layout/Layout'
 import AdminLayout from './components/Layout/AdminLayout'
 import DriverLayout from './components/Layout/DriverLayout'
-import CustomerLayout from './components/Layout/CustomerLayout'
 
 // Public Pages
 import HomePage from './pages/Public/HomePage'
+import TestPage from './pages/Public/TestPage'
 import VehicleSelectionPage from './pages/Public/VehicleSelectionPage'
 import CustomerInfoPage from './pages/Public/CustomerInfoPage'
 import PaymentPage from './pages/Public/PaymentPage'
 import ConfirmationPage from './pages/Public/ConfirmationPage'
+import MyReservations from './pages/Public/MyReservations'
+import CustomerProfile from './pages/Public/CustomerProfile'
 
 // Auth Pages
 import LoginPage from './pages/Auth/LoginPage'
@@ -37,11 +39,6 @@ import DriverDashboard from './pages/Driver/DriverDashboard'
 import MyTrips from './pages/Driver/MyTrips'
 import DriverProfile from './pages/Driver/DriverProfile'
 
-// Customer Pages
-import CustomerDashboard from './pages/Customer/CustomerDashboard'
-import MyReservations from './pages/Customer/MyReservations'
-import CustomerProfile from './pages/Customer/CustomerProfile'
-
 // Booking Components
 import BookingWizard from './components/Booking/BookingWizard'
 
@@ -62,11 +59,14 @@ function App() {
               {/* Public Routes */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
+                <Route path="test" element={<TestPage />} />
                 <Route path="rezervasyon" element={<BookingWizard />} />
                 <Route path="araç-seçimi" element={<VehicleSelectionPage />} />
                 <Route path="müşteri-bilgileri" element={<CustomerInfoPage />} />
                 <Route path="ödeme" element={<PaymentPage />} />
                 <Route path="onay" element={<ConfirmationPage />} />
+                <Route path="rezervasyonlarim" element={<MyReservations />} />
+                <Route path="profil" element={<CustomerProfile />} />
               </Route>
 
               {/* Auth Routes */}
@@ -113,18 +113,6 @@ function App() {
                 <Route path="dashboard" element={<DriverDashboard />} />
                 <Route path="seferlerim" element={<MyTrips />} />
                 <Route path="profil" element={<DriverProfile />} />
-              </Route>
-
-              {/* Customer Routes */}
-              <Route path="/müşteri" element={
-                <CustomerRoute>
-                  <CustomerLayout />
-                </CustomerRoute>
-              }>
-                <Route index element={<CustomerDashboard />} />
-                <Route path="dashboard" element={<CustomerDashboard />} />
-                <Route path="rezervasyonlar" element={<MyReservations />} />
-                <Route path="profil" element={<CustomerProfile />} />
               </Route>
 
               {/* 404 Route */}

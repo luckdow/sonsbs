@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { X, MapPin, Calendar, Clock, User, CreditCard, Plane } from 'lucide-react';
+import { X, MapPin, Calendar, Clock, User, CreditCard, Plane, Car } from 'lucide-react';
 import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 
 const libraries = ['places'];
 
-const QuickReservationModal = ({ onClose, onSubmit }) => {
+const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
   const [formData, setFormData] = useState({
     customerInfo: {
       firstName: '',
@@ -23,11 +23,14 @@ const QuickReservationModal = ({ onClose, onSubmit }) => {
     },
     transferDirection: 'to_airport', // 'to_airport' veya 'from_airport'
     paymentMethod: 'cash',
-    totalPrice: 0
+    selectedVehicle: '', // Seçilen araç ID'si
+    totalPrice: 0,
+    calculatedDistance: 0 // Hesaplanan mesafe
   });
   
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [calculating, setCalculating] = useState(false);
   const [autocompletePickup, setAutocompletePickup] = useState(null);
   const [autocompleteDropoff, setAutocompleteDropoff] = useState(null);
 
@@ -35,6 +38,85 @@ const QuickReservationModal = ({ onClose, onSubmit }) => {
     googleMapsApiKey: 'AIzaSyDa66vbuMgm_L4wdOgPutliu_PLzI3xqEw',
     libraries
   });
+
+  // Fiyat hesaplama fonksiyonu
+  const calculatePrice = async (pickup, dropoff, vehicleId) => {
+    if (!pickup || !dropoff || !vehicleId || !window.google) {
+      console.log('Fiyat hesaplama - eksik parametre:', { pickup, dropoff, vehicleId, google: !!window.google });
+      return { price: 0, distance: 0 };
+    }
+
+    try {
+      setCalculating(true);
+      
+      const service = new window.google.maps.DistanceMatrixService();
+      
+      return new Promise((resolve) => {
+        service.getDistanceMatrix({
+          origins: [pickup],
+          destinations: [dropoff],
+          travelMode: window.google.maps.TravelMode.DRIVING,
+          unitSystem: window.google.maps.UnitSystem.METRIC,
+        }, (response, status) => {
+          if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
+            const distance = response.rows[0].elements[0].distance.value / 1000; // km cinsinden
+            
+            // Seçilen aracın km başına fiyatını bul
+            const selectedVehicle = vehicles.find(v => v.id === vehicleId);
+            console.log('Araç bulundu:', selectedVehicle);
+            console.log('Mevcut tüm araçlar:', vehicles);
+            
+            const pricePerKm = selectedVehicle ? (selectedVehicle.kmRate || 3) : 3; // Sadece kmRate field'ını kullan
+            console.log('Kullanılan km fiyatı (kmRate):', pricePerKm);
+            
+            const calculatedPrice = Math.round(distance * pricePerKm);
+            console.log('Hesaplanan fiyat:', { distance, pricePerKm, calculatedPrice });
+            
+            resolve({ 
+              price: calculatedPrice, 
+              distance: Math.round(distance * 100) / 100 // 2 ondalık basamak
+            });
+          } else {
+            console.log('Google Maps API hatası:', status);
+            // Hata durumunda varsayılan hesaplama
+            const selectedVehicle = vehicles.find(v => v.id === vehicleId);
+            console.log('Hata durumunda araç:', selectedVehicle);
+            const basePrice = selectedVehicle ? (selectedVehicle.kmRate * 10 || 100) : 100;
+            console.log('Hata durumunda fiyat:', basePrice);
+            resolve({ price: basePrice, distance: 0 });
+          }
+          setCalculating(false);
+        });
+      });
+    } catch (error) {
+      console.error('Fiyat hesaplama hatası:', error);
+      setCalculating(false);
+      return { price: 100, distance: 0 }; // Varsayılan fiyat
+    }
+  };
+
+  // Lokasyon veya araç değiştiğinde fiyat hesapla
+  const updatePrice = async () => {
+    const { pickupLocation, dropoffLocation } = formData.tripDetails;
+    const { selectedVehicle } = formData;
+    
+    console.log('updatePrice çağrıldı:', { pickupLocation, dropoffLocation, selectedVehicle });
+    
+    if (pickupLocation && dropoffLocation && selectedVehicle) {
+      console.log('Fiyat hesaplanıyor...');
+      const { price, distance } = await calculatePrice(pickupLocation, dropoffLocation, selectedVehicle);
+      
+      console.log('Hesaplanan fiyat ve mesafe:', { price, distance });
+      
+      setFormData(prev => ({
+        ...prev,
+        totalPrice: price,
+        calculatedDistance: distance
+      }));
+    } else {
+      console.log('Fiyat hesaplanamadı - eksik veri:', { pickupLocation: !!pickupLocation, dropoffLocation: !!dropoffLocation, selectedVehicle: !!selectedVehicle });
+    }
+  };
 
   const handleInputChange = (section, field, value) => {
     setFormData(prev => ({
@@ -85,6 +167,8 @@ const QuickReservationModal = ({ onClose, onSubmit }) => {
           pickupLocation: place.formatted_address
         }
       }));
+      // Fiyat hesaplama için delay ekle
+      setTimeout(() => updatePrice(), 500);
     }
   };
 
@@ -98,6 +182,8 @@ const QuickReservationModal = ({ onClose, onSubmit }) => {
           dropoffLocation: place.formatted_address
         }
       }));
+      // Fiyat hesaplama için delay ekle
+      setTimeout(() => updatePrice(), 500);
     }
   };
 
@@ -131,6 +217,9 @@ const QuickReservationModal = ({ onClose, onSubmit }) => {
     if (!formData.tripDetails.dropoffLocation.trim()) {
       newErrors['tripDetails.dropoffLocation'] = 'Varış noktası zorunludur';
     }
+    if (!formData.selectedVehicle) {
+      newErrors['selectedVehicle'] = 'Araç seçimi zorunludur';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -144,14 +233,19 @@ const QuickReservationModal = ({ onClose, onSubmit }) => {
     setLoading(true);
     
     try {
-      // Fiyat hesaplama (basit)
-      const basePrice = 100;
-      const distance = Math.random() * 50 + 10; // Mock mesafe
-      const calculatedPrice = Math.round(basePrice + (distance * 2));
+      // Eğer fiyat hesaplanmamışsa, son bir kez hesapla
+      if (formData.totalPrice === 0 && formData.selectedVehicle) {
+        const { price } = await calculatePrice(
+          formData.tripDetails.pickupLocation,
+          formData.tripDetails.dropoffLocation,
+          formData.selectedVehicle
+        );
+        formData.totalPrice = price;
+      }
       
       const reservationData = {
         ...formData,
-        totalPrice: calculatedPrice,
+        totalPrice: formData.totalPrice || 100, // Minimum 100 TL
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -435,6 +529,62 @@ const QuickReservationModal = ({ onClose, onSubmit }) => {
                 )}
               </div>
               
+              {/* Araç Seçimi */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Car className="w-4 h-4 text-blue-600" />
+                  <label className="block text-sm font-medium text-gray-700">
+                    Araç Seçimi *
+                  </label>
+                </div>
+                <select
+                  value={formData.selectedVehicle}
+                  onChange={(e) => {
+                    console.log('Araç seçildi:', e.target.value);
+                    setFormData(prev => ({ ...prev, selectedVehicle: e.target.value }));
+                    // Araç değiştiğinde fiyat hesapla
+                    setTimeout(() => {
+                      console.log('Fiyat hesaplama başlatılıyor...');
+                      updatePrice();
+                    }, 100);
+                  }}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    errors['selectedVehicle'] ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Araç seçiniz...</option>
+                  {vehicles.map((vehicle) => (
+                    <option key={vehicle.id} value={vehicle.id}>
+                      {vehicle.brand} {vehicle.model} - {vehicle.plateNumber} 
+                      {vehicle.kmRate && ` (${vehicle.kmRate} TL/km)`}
+                    </option>
+                  ))}
+                </select>
+                {errors['selectedVehicle'] && (
+                  <p className="text-red-500 text-xs mt-1">{errors['selectedVehicle']}</p>
+                )}
+              </div>
+
+              {/* Fiyat Gösterimi */}
+              {formData.totalPrice > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-green-700">Hesaplanan Fiyat</p>
+                      <p className="text-2xl font-bold text-green-800">₺{formData.totalPrice}</p>
+                      {formData.calculatedDistance > 0 && (
+                        <p className="text-xs text-green-600">
+                          Mesafe: {formData.calculatedDistance} km
+                        </p>
+                      )}
+                    </div>
+                    {calculating && (
+                      <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

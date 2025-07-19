@@ -139,6 +139,12 @@ const HomePage = () => {
                 Hemen Rezervasyon Yap
               </Link>
               <Link 
+                to="/rezervasyonlarim"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                Rezervasyonlarım
+              </Link>
+              <Link 
                 to="/giriş"
                 className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/20 hover:border-white/30"
               >

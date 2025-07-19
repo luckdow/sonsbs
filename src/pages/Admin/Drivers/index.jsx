@@ -70,11 +70,16 @@ const DriverIndex = () => {
           }
         );
 
-        // Vehicles koleksiyonunu dinle
-        const unsubscribeVehicles = onSnapshot(
+        // Vehicles koleksiyonunu dinle (sadece aktif araçlar)
+        const vehiclesQuery = query(
           collection(db, 'vehicles'),
+          where('status', '==', 'active')
+        );
+        
+        const unsubscribeVehicles = onSnapshot(
+          vehiclesQuery,
           (snapshot) => {
-            console.log('Vehicles koleksiyonu güncellendi, döküman sayısı:', snapshot.docs.length);
+            console.log('Aktif araçlar güncellendi, döküman sayısı:', snapshot.docs.length);
             const vehicleData = snapshot.docs.map(doc => ({
               id: doc.id,
               ...doc.data()
@@ -194,8 +199,8 @@ const DriverIndex = () => {
   const handleUpdateDriver = async (driverId, updatedData) => {
     console.log('Şoför güncelleme başlatılıyor:', driverId, updatedData);
     try {
-      // Firebase'da güncelle
-      await updateDoc(doc(db, 'drivers', driverId), {
+      // Users koleksiyonunda güncelle (drivers değil!)
+      await updateDoc(doc(db, 'users', driverId), {
         ...updatedData,
         updatedAt: new Date().toISOString()
       });
@@ -230,8 +235,10 @@ const DriverIndex = () => {
   const handleStatusChange = async (driverId, newStatus) => {
     console.log('Durum değiştirme başlatılıyor:', driverId, newStatus);
     try {
-      // Firebase'da güncelle
-      await updateDoc(doc(db, 'drivers', driverId), {
+      // Users koleksiyonunda güncelle (drivers değil!)
+      const isActive = newStatus === 'active';
+      await updateDoc(doc(db, 'users', driverId), {
+        isActive: isActive,
         status: newStatus,
         updatedAt: new Date().toISOString()
       });

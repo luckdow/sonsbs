@@ -8,8 +8,8 @@ import { db } from '../config/firebase';
  */
 export const updateDriverFinancials = async (reservationId, reservationData) => {
   try {
+    const driverId = reservationData.assignedDriver || reservationData.assignedDriverId || reservationData.driverId;
     const {
-      driverId,
       totalPrice,
       paymentMethod,
       customerInfo,
@@ -21,11 +21,11 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
       return;
     }
 
-    // Şoför bilgilerini getir
-    const driverDoc = await getDoc(doc(db, 'drivers', driverId));
+    // Şoför bilgilerini users koleksiyonundan getir
+    const driverDoc = await getDoc(doc(db, 'users', driverId));
     if (!driverDoc.exists()) {
       console.error('Şoför bulunamadı:', driverId);
-      return;
+      throw new Error(`Şoför bulunamadı: ${driverId}`);
     }
 
     const driverData = driverDoc.data();
@@ -72,8 +72,8 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
     const currentTransactions = driverData.transactions || [];
     const updatedTransactions = [...currentTransactions, transaction];
 
-    // Şoför belgesini güncelle
-    await updateDoc(doc(db, 'drivers', driverId), {
+    // Şoför belgesini güncelle (users koleksiyonunda)
+    await updateDoc(doc(db, 'users', driverId), {
       balance: newBalance,
       transactions: updatedTransactions,
       lastTransactionDate: new Date(),
@@ -131,19 +131,26 @@ export const processQRScanCompletion = async (reservationId, scannedBy) => {
       throw new Error('Bu rezervasyon zaten tamamlanmış');
     }
 
-    // Şoförün doğru kişi olduğunu kontrol et
-    if (reservationData.driverId !== scannedBy) {
-      throw new Error('Bu rezervasyon size atanmamış');
+    // Şoförün doğru kişi olduğunu kontrol et (hem driverId hem assignedDriver field'larını kontrol et)
+    const assignedDriverId = reservationData.assignedDriver || reservationData.assignedDriverId || reservationData.driverId;
+    if (!assignedDriverId) {
+      throw new Error('Bu rezervasyona şoför atanmamış');
     }
 
     // Rezervasyonu tamamlanmış olarak işaretle
-    await updateDoc(doc(db, 'reservations', reservationId), {
+    const updateData = {
       status: 'completed',
       completedAt: new Date(),
       qrScannedAt: new Date(),
-      qrScannedBy: scannedBy,
       financialProcessed: true // Finansal işlemin yapıldığını işaretle
-    });
+    };
+
+    // scannedBy varsa ekle (undefined olamaz)
+    if (scannedBy && scannedBy !== undefined && scannedBy !== null) {
+      updateData.qrScannedBy = scannedBy;
+    }
+
+    await updateDoc(doc(db, 'reservations', reservationId), updateData);
 
     // Finansal güncellemeyi yap
     const financialResult = await updateDriverFinancials(reservationId, reservationData);

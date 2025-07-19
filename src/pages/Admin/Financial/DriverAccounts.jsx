@@ -53,8 +53,13 @@ const DriverAccounts = () => {
     try {
       setLoading(true);
       
-      // Şoförleri getir
-      const driversSnapshot = await getDocs(collection(db, 'drivers'));
+      // Şoförleri users koleksiyonundan getir (role = driver)
+      const driversQuery = query(
+        collection(db, 'users'),
+        where('role', '==', 'driver')
+      );
+      const driversSnapshot = await getDocs(driversQuery);
+      
       const driversData = await Promise.all(
         driversSnapshot.docs.map(async (driverDoc) => {
           const driverData = { id: driverDoc.id, ...driverDoc.data() };
@@ -62,7 +67,7 @@ const DriverAccounts = () => {
           // Bu şofore ait tüm tamamlanan rezervasyonları getir
           const reservationsQuery = query(
             collection(db, 'reservations'),
-            where('driverId', '==', driverData.id),
+            where('assignedDriver', '==', driverData.id),
             where('status', '==', 'completed')
           );
           const reservationsSnapshot = await getDocs(reservationsQuery);
@@ -76,24 +81,30 @@ const DriverAccounts = () => {
           let totalCommission = 0;
           let cashToCollect = 0; // Nakit ödemeli işlerden topladığı para
           let cashCommissionOwed = 0; // Nakit komisyon borcu
+          let cardEarnings = 0; // Kart ödemeli işlerden kazanç
 
           reservations.forEach(reservation => {
             const tripPrice = reservation.totalPrice || 0;
-            const commissionRate = driverData.commissionRate || 15; // %15 varsayılan
+            const commissionRate = driverData.commissionRate || driverData.commission || 15; // Komisyon oranı
             const commission = (tripPrice * commissionRate) / 100;
+            const driverEarning = tripPrice - commission;
             
-            totalEarnings += tripPrice - commission;
+            totalEarnings += driverEarning;
             totalCommission += commission;
 
             if (reservation.paymentMethod === 'cash') {
+              // Nakit ödeme: Şoför müşteriden parayı aldı, komisyon borcu var
               cashToCollect += tripPrice;
               cashCommissionOwed += commission;
+            } else if (reservation.paymentMethod === 'card' || reservation.paymentMethod === 'credit_card') {
+              // Kart ödeme: Firma müşteriden parayı aldı, şofore ödeme yapacak
+              cardEarnings += driverEarning;
             }
           });
 
-          // Cari hesap durumu
+          // Cari hesap durumu (Firebase'den gelen güncel bakiye)
           const currentBalance = driverData.balance || 0;
-          const pendingPayments = driverData.pendingPayments || 0;
+          const transactions = driverData.transactions || [];
 
           return {
             ...driverData,
@@ -101,10 +112,13 @@ const DriverAccounts = () => {
             totalCommission,
             cashToCollect,
             cashCommissionOwed,
+            cardEarnings,
             currentBalance,
-            pendingPayments,
             tripCount: reservations.length,
-            transactions: driverData.transactions || []
+            transactions: transactions,
+            // İstatistik alanları
+            completedTrips: driverData.completedTrips || reservations.length,
+            commissionRate: driverData.commissionRate || driverData.commission || 15
           };
         })
       );
@@ -152,10 +166,11 @@ const DriverAccounts = () => {
 
       const updatedTransactions = [...(selectedDriver.transactions || []), transaction];
 
-      // Firebase'i güncelle
-      await updateDoc(doc(db, 'drivers', selectedDriver.id), {
+      // Firebase'i güncelle - users koleksiyonunu kullan
+      await updateDoc(doc(db, 'users', selectedDriver.id), {
         balance: newBalance,
-        transactions: updatedTransactions
+        transactions: updatedTransactions,
+        lastTransactionDate: new Date()
       });
 
       // State'i güncelle

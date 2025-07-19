@@ -39,38 +39,82 @@ const DriverDashboard = () => {
 
   // Real-time reservations listener
   useEffect(() => {
-    if (!currentUser?.uid) return;
+    if (!currentUser?.uid && !user?.uid) {
+      console.log('DriverDashboard: User ID bulunamadı');
+      return;
+    }
 
-    const q = query(
+    // Kullanılacak UID'yi belirle
+    const userId = currentUser?.uid || user?.uid;
+
+    // Hem assignedDriverId hem de assignedDriver field'larını kontrol et
+    const q1 = query(
       collection(db, 'reservations'),
-      where('assignedDriverId', '==', currentUser.uid)
+      where('assignedDriverId', '==', userId)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const q2 = query(
+      collection(db, 'reservations'), 
+      where('assignedDriver', '==', userId)
+    );
+
+    // İki query'yi de dinle ve sonuçları birleştir
+    const unsubscribe1 = onSnapshot(q1, (snapshot) => {
+      handleReservationUpdate(snapshot, 'assignedDriverId');
+    }, (error) => {
+      console.error('DriverDashboard: assignedDriverId query error:', error);
+    });
+
+    const unsubscribe2 = onSnapshot(q2, (snapshot) => {
+      handleReservationUpdate(snapshot, 'assignedDriver');
+    }, (error) => {
+      console.error('DriverDashboard: assignedDriver query error:', error);
+    });
+
+    function handleReservationUpdate(snapshot, queryType) {
       const reservationList = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       
-      // Sort by date - most recent first
-      reservationList.sort((a, b) => {
-        if (a.date && b.date) {
-          return new Date(b.date) - new Date(a.date);
-        }
-        return 0;
-      });
+      // Rezervasyonları unique hale getir
+      setReservations(prevReservations => {
+        const uniqueReservations = [...prevReservations];
+        
+        reservationList.forEach(newRes => {
+          const existingIndex = uniqueReservations.findIndex(r => r.id === newRes.id);
+          if (existingIndex >= 0) {
+            uniqueReservations[existingIndex] = newRes;
+          } else {
+            uniqueReservations.push(newRes);
+          }
+        });
+        
+        // Tarihce sırala
+        uniqueReservations.sort((a, b) => {
+          const dateA = a.tripDetails?.date || a.date;
+          const dateB = b.tripDetails?.date || b.date;
+          if (dateA && dateB) {
+            return new Date(dateB) - new Date(dateA);
+          }
+          return 0;
+        });
 
-      setReservations(reservationList);
-      
-      // Find active trip
-      const activeTrip = reservationList.find(r => r.status === 'trip-started');
-      setActiveTrip(activeTrip);
+        // Aktif trip'i bul
+        const activeTrip = uniqueReservations.find(r => r.status === 'trip-started');
+        setActiveTrip(activeTrip);
+        
+        return uniqueReservations;
+      });
       
       setLoading(false);
-    });
+    }
 
-    return () => unsubscribe();
-  }, [currentUser]);
+    return () => {
+      unsubscribe1();
+      unsubscribe2();
+    };
+  }, [currentUser, user, userProfile]);
 
   // Get assigned reservations (not completed)
   const assignedReservations = reservations.filter(r => 
@@ -97,15 +141,21 @@ const DriverDashboard = () => {
   // Complete trip function
   const completeTrip = async (reservationId) => {
     try {
-      // Use financial integration
-      await processQRScanCompletion(reservationId);
+      const userId = currentUser?.uid || user?.uid;
+      if (!userId) {
+        toast.error('Kullanıcı bilgisi bulunamadı');
+        return;
+      }
+
+      // Use financial integration with proper driver ID
+      await processQRScanCompletion(reservationId, userId);
       
       toast.success('Yolculuk tamamlandı!');
       setActiveView('dashboard');
       setActiveTrip(null);
     } catch (error) {
       console.error('Error completing trip:', error);
-      toast.error('Yolculuk tamamlanırken hata oluştu');
+      toast.error('Yolculuk tamamlanırken hata oluştu: ' + error.message);
     }
   };
 
@@ -146,15 +196,28 @@ const DriverDashboard = () => {
               onScanSuccess={(result) => {
                 console.log('QR Scan Result:', result);
                 // QR kod sonucunda rezervasyon ID'sini al
-                const reservationId = result;
-                const reservation = reservations.find(r => r.id === reservationId);
+                const scannedReservationId = result;
+                
+                console.log('Mevcut rezervasyonlar ve ID\'leri:');
+                reservations.forEach(r => {
+                  console.log(`- Document ID: ${r.id}, ReservationID: ${r.reservationId}, Status: ${r.status}`);
+                });
+                
+                // Hem document ID'sine hem de reservationId field'ına bak
+                const reservation = reservations.find(r => 
+                  r.id === scannedReservationId || 
+                  r.reservationId === scannedReservationId
+                );
+                
+                console.log('Bulunan rezervasyon:', reservation);
                 
                 if (reservation) {
                   startTrip(reservation.id);
                   setIsQRScannerOpen(false);
-                  toast.success('QR kod başarıyla okundu!');
+                  toast.success(`QR kod başarıyla okundu! Rezervasyon: ${reservation.reservationId || reservation.id}`);
                 } else {
-                  toast.error('Bu QR koda ait rezervasyon bulunamadı');
+                  console.error('Rezervasyon bulunamadı. Aranan ID:', scannedReservationId);
+                  toast.error(`Bu QR koda ait rezervasyon bulunamadı: ${scannedReservationId}`);
                 }
               }}
               onScanError={(error) => {
@@ -195,7 +258,9 @@ const DriverDashboard = () => {
               </div>
               <div>
                 <p className="font-semibold text-green-900">Aktif Yolculuk</p>
-                <p className="text-sm text-green-700">{activeTrip.customerName}</p>
+                <p className="text-sm text-green-700">
+                  {activeTrip.customerInfo?.firstName} {activeTrip.customerInfo?.lastName}
+                </p>
               </div>
             </div>
             <button
@@ -263,8 +328,12 @@ const DriverDashboard = () => {
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <p className="font-semibold text-gray-900">{reservation.customerName}</p>
-                    <p className="text-sm text-blue-600 font-medium">{reservation.id}</p>
+                    <p className="font-semibold text-gray-900">
+                      {reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}
+                    </p>
+                    <p className="text-sm text-blue-600 font-medium">
+                      {reservation.reservationId || reservation.id}
+                    </p>
                   </div>
                   <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-lg text-xs font-medium">
                     Atandı
@@ -274,28 +343,38 @@ const DriverDashboard = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <MapPin className="w-4 h-4 text-green-500" />
-                    <span>{reservation.pickupLocation}</span>
+                    <span>{reservation.tripDetails?.pickupLocation || reservation.pickupLocation || 'Belirtilmemiş'}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <MapPin className="w-4 h-4 text-red-500" />
-                    <span>{reservation.dropoffLocation}</span>
+                    <span>{reservation.tripDetails?.dropoffLocation || reservation.dropoffLocation || 'Belirtilmemiş'}</span>
                   </div>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-4 h-4" />
-                      <span>{reservation.date}</span>
+                      <span>{reservation.tripDetails?.date || reservation.date || 'Belirtilmemiş'}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="w-4 h-4" />
-                      <span>{reservation.time}</span>
+                      <span>{reservation.tripDetails?.time || reservation.time || 'Belirtilmemiş'}</span>
                     </div>
                   </div>
-                  {reservation.flightNumber && (
+                  {(reservation.tripDetails?.flightNumber || reservation.flightNumber) && (
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <Plane className="w-4 h-4 text-blue-500" />
-                      <span>Uçuş: {reservation.flightNumber}</span>
+                      <span>Uçuş: {reservation.tripDetails?.flightNumber || reservation.flightNumber}</span>
                     </div>
                   )}
+                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <div className="flex items-center space-x-1">
+                      <Users className="w-4 h-4" />
+                      <span>{reservation.tripDetails?.passengerCount || reservation.passengerCount || 1} Yolcu</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Package className="w-4 h-4" />
+                      <span>{reservation.tripDetails?.luggageCount || reservation.luggageCount || 0} Bavul</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex space-x-2">
@@ -346,8 +425,12 @@ const DriverDashboard = () => {
                 <Car className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-xl font-bold text-green-900 mb-2">Yolculuk Devam Ediyor</h2>
-              <p className="text-green-700">{activeTrip.customerName}</p>
-              <p className="text-sm text-green-600 mt-1">{activeTrip.id}</p>
+              <p className="text-green-700">
+                {activeTrip.customerInfo?.firstName} {activeTrip.customerInfo?.lastName}
+              </p>
+              <p className="text-sm text-green-600 mt-1">
+                {activeTrip.reservationId || activeTrip.id}
+              </p>
             </div>
           </div>
 
@@ -356,13 +439,15 @@ const DriverDashboard = () => {
             <h3 className="font-bold text-gray-900 mb-4">Yolculuk Detayları</h3>
             
             <div className="space-y-4">
-              <div className="flex items-start space-x-3">
+                            <div className="flex items-start space-x-3">
                 <div className="bg-green-100 p-2 rounded-full">
                   <MapPin className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Alış Noktası</p>
-                  <p className="text-gray-600">{activeTrip.pickupLocation}</p>
+                  <p className="text-gray-600">
+                    {activeTrip.tripDetails?.pickupLocation || activeTrip.pickupLocation || 'Belirtilmemiş'}
+                  </p>
                 </div>
               </div>
 
@@ -372,7 +457,9 @@ const DriverDashboard = () => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Varış Noktası</p>
-                  <p className="text-gray-600">{activeTrip.dropoffLocation}</p>
+                  <p className="text-gray-600">
+                    {activeTrip.tripDetails?.dropoffLocation || activeTrip.dropoffLocation || 'Belirtilmemiş'}
+                  </p>
                 </div>
               </div>
 
@@ -382,22 +469,14 @@ const DriverDashboard = () => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Müşteri</p>
-                  <p className="text-gray-600">{activeTrip.customerName}</p>
-                  <p className="text-sm text-gray-500">{activeTrip.phone}</p>
+                  <p className="text-gray-600">
+                    {activeTrip.customerInfo?.firstName} {activeTrip.customerInfo?.lastName}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {activeTrip.customerInfo?.phone}
+                  </p>
                 </div>
               </div>
-
-              {activeTrip.passengerCount && (
-                <div className="flex items-start space-x-3">
-                  <div className="bg-purple-100 p-2 rounded-full">
-                    <Users className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">Yolcu Sayısı</p>
-                    <p className="text-gray-600">{activeTrip.passengerCount} kişi</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
@@ -406,7 +485,14 @@ const DriverDashboard = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => openNavigation(activeTrip.pickupLocation, activeTrip.dropoffLocation)}
+              onClick={() => {
+                const pickup = activeTrip.tripDetails?.pickupLocation || activeTrip.pickupLocation;
+                const dropoff = activeTrip.tripDetails?.dropoffLocation || activeTrip.dropoffLocation;
+                
+                const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(pickup || 'Başlangıç')}&destination=${encodeURIComponent(dropoff || 'Varış')}&travelmode=driving`;
+                window.open(mapsUrl, '_blank');
+                toast.success('Google Maps navigasyon açıldı!');
+              }}
               className="w-full bg-blue-500 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-3"
             >
               <Navigation className="w-6 h-6" />
@@ -453,7 +539,9 @@ const DriverDashboard = () => {
               <div className="flex items-center space-x-3">
                 <User className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="font-medium text-gray-900">{selectedReservation.customerName}</p>
+                  <p className="font-medium text-gray-900">
+                    {selectedReservation.customerInfo?.firstName} {selectedReservation.customerInfo?.lastName}
+                  </p>
                   <p className="text-sm text-gray-500">Müşteri</p>
                 </div>
               </div>
@@ -461,16 +549,16 @@ const DriverDashboard = () => {
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="font-medium text-gray-900">{selectedReservation.phone}</p>
+                  <p className="font-medium text-gray-900">{selectedReservation.customerInfo?.phone}</p>
                   <p className="text-sm text-gray-500">Telefon</p>
                 </div>
               </div>
 
-              {selectedReservation.email && (
+              {selectedReservation.customerInfo?.email && (
                 <div className="flex items-center space-x-3">
                   <Mail className="w-5 h-5 text-gray-400" />
                   <div>
-                    <p className="font-medium text-gray-900">{selectedReservation.email}</p>
+                    <p className="font-medium text-gray-900">{selectedReservation.customerInfo?.email}</p>
                     <p className="text-sm text-gray-500">E-posta</p>
                   </div>
                 </div>
@@ -489,7 +577,7 @@ const DriverDashboard = () => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Alış Noktası</p>
-                  <p className="text-gray-600">{selectedReservation.pickupLocation}</p>
+                  <p className="text-gray-600">{selectedReservation.tripDetails?.pickupLocation || selectedReservation.pickupLocation}</p>
                 </div>
               </div>
 
@@ -499,7 +587,7 @@ const DriverDashboard = () => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Varış Noktası</p>
-                  <p className="text-gray-600">{selectedReservation.dropoffLocation}</p>
+                  <p className="text-gray-600">{selectedReservation.tripDetails?.dropoffLocation || selectedReservation.dropoffLocation}</p>
                 </div>
               </div>
 
@@ -507,44 +595,44 @@ const DriverDashboard = () => {
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5 text-gray-400" />
                   <div>
-                    <p className="font-medium text-gray-900">{selectedReservation.date}</p>
+                    <p className="font-medium text-gray-900">{selectedReservation.tripDetails?.date || selectedReservation.date}</p>
                     <p className="text-sm text-gray-500">Tarih</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Clock className="w-5 h-5 text-gray-400" />
                   <div>
-                    <p className="font-medium text-gray-900">{selectedReservation.time}</p>
+                    <p className="font-medium text-gray-900">{selectedReservation.tripDetails?.time || selectedReservation.time}</p>
                     <p className="text-sm text-gray-500">Saat</p>
                   </div>
                 </div>
               </div>
 
-              {selectedReservation.flightNumber && (
+              {(selectedReservation.tripDetails?.flightNumber || selectedReservation.flightNumber) && (
                 <div className="flex items-center space-x-3">
                   <Plane className="w-5 h-5 text-blue-500" />
                   <div>
-                    <p className="font-medium text-gray-900">{selectedReservation.flightNumber}</p>
+                    <p className="font-medium text-gray-900">{selectedReservation.tripDetails?.flightNumber || selectedReservation.flightNumber}</p>
                     <p className="text-sm text-gray-500">Uçuş Numarası</p>
                   </div>
                 </div>
               )}
 
-              {selectedReservation.passengerCount && (
+              {(selectedReservation.tripDetails?.passengerCount || selectedReservation.passengerCount) && (
                 <div className="flex items-center space-x-3">
                   <Users className="w-5 h-5 text-purple-500" />
                   <div>
-                    <p className="font-medium text-gray-900">{selectedReservation.passengerCount} kişi</p>
+                    <p className="font-medium text-gray-900">{selectedReservation.tripDetails?.passengerCount || selectedReservation.passengerCount} kişi</p>
                     <p className="text-sm text-gray-500">Yolcu Sayısı</p>
                   </div>
                 </div>
               )}
 
-              {selectedReservation.luggageCount && (
+              {(selectedReservation.tripDetails?.luggageCount || selectedReservation.luggageCount) && (
                 <div className="flex items-center space-x-3">
                   <Package className="w-5 h-5 text-orange-500" />
                   <div>
-                    <p className="font-medium text-gray-900">{selectedReservation.luggageCount} adet</p>
+                    <p className="font-medium text-gray-900">{selectedReservation.tripDetails?.luggageCount || selectedReservation.luggageCount} adet</p>
                     <p className="text-sm text-gray-500">Bagaj</p>
                   </div>
                 </div>
@@ -610,8 +698,10 @@ const DriverDashboard = () => {
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <p className="font-semibold text-gray-900">{trip.customerName}</p>
-                      <p className="text-sm text-green-600 font-medium">{trip.id}</p>
+                      <p className="font-semibold text-gray-900">
+                        {trip.customerInfo?.firstName} {trip.customerInfo?.lastName}
+                      </p>
+                      <p className="text-sm text-green-600 font-medium">{trip.reservationId || trip.id}</p>
                     </div>
                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-medium">
                       Tamamlandı
@@ -621,20 +711,20 @@ const DriverDashboard = () => {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <MapPin className="w-4 h-4 text-green-500" />
-                      <span>{trip.pickupLocation}</span>
+                      <span>{trip.tripDetails?.pickupLocation || trip.pickupLocation}</span>
                     </div>
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <MapPin className="w-4 h-4 text-red-500" />
-                      <span>{trip.dropoffLocation}</span>
+                      <span>{trip.tripDetails?.dropoffLocation || trip.dropoffLocation}</span>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
                       <div className="flex items-center space-x-1">
                         <Calendar className="w-4 h-4" />
-                        <span>{trip.date}</span>
+                        <span>{trip.tripDetails?.date || trip.date}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="w-4 h-4" />
-                        <span>{trip.time}</span>
+                        <span>{trip.tripDetails?.time || trip.time}</span>
                       </div>
                     </div>
                   </div>

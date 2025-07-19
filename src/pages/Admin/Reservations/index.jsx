@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, RefreshCw, CheckCircle } from 'lucide-react';
-import { collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, query, where, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { USER_ROLES } from '../../../config/constants';
 import { manualCompleteReservation } from '../../../utils/financialIntegration';
@@ -26,143 +26,53 @@ const ReservationIndex = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
 
-  // Mock veriler - test için
-  const mockReservations = [
-    {
-      id: '1',
-      reservationId: 'SBS-001234',
-      customerInfo: {
-        firstName: 'Ahmet',
-        lastName: 'Yılmaz',
-        phone: '+90 555 123 45 67',
-        email: 'ahmet@example.com'
-      },
-      tripDetails: {
-        date: '2024-01-15',
-        time: '14:30',
-        pickupLocation: 'Lara Kundu Otelleri',
-        dropoffLocation: 'Antalya Havalimanı',
-        passengerCount: 2,
-        luggageCount: 3,
-        flightNumber: 'TK123'
-      },
-      status: 'pending',
-      paymentMethod: 'cash',
-      totalPrice: 150,
-      createdAt: '2024-01-10T10:00:00Z',
-      assignedDriver: null,
-      assignedVehicle: null
-    },
-    {
-      id: '2',
-      reservationId: 'SBS-001235',
-      customerInfo: {
-        firstName: 'Ayşe',
-        lastName: 'Demir',
-        phone: '+90 555 987 65 43',
-        email: 'ayse@example.com'
-      },
-      tripDetails: {
-        date: '2024-01-16',
-        time: '09:00',
-        pickupLocation: 'Kaleici Otelleri',
-        dropoffLocation: 'Antalya Havalimanı',
-        passengerCount: 1,
-        luggageCount: 2,
-        flightNumber: 'PC456'
-      },
-      status: 'confirmed',
-      paymentMethod: 'card',
-      totalPrice: 120,
-      createdAt: '2024-01-11T08:00:00Z',
-      assignedDriver: 'driver1',
-      assignedVehicle: 'vehicle1'
-    },
-    {
-      id: '3',
-      reservationId: 'SBS-001236',
-      customerInfo: {
-        firstName: 'Mehmet',
-        lastName: 'Özkan',
-        phone: '+90 555 333 44 55',
-        email: 'mehmet@example.com'
-      },
-      tripDetails: {
-        date: '2024-01-17',
-        time: '16:45',
-        pickupLocation: 'Antalya Havalimanı',
-        dropoffLocation: 'Belek Otelleri',
-        passengerCount: 4,
-        luggageCount: 6,
-        flightNumber: 'TK789'
-      },
-      status: 'assigned',
-      paymentMethod: 'card',
-      totalPrice: 180,
-      createdAt: '2024-01-12T14:00:00Z',
-      assignedDriver: 'driver2',
-      assignedVehicle: 'vehicle2'
-    }
-  ];
-
-  const mockDrivers = [
-    {
-      id: 'driver1',
-      firstName: 'Mehmet',
-      lastName: 'Şoför',
-      phone: '+90 555 111 22 33',
-      status: 'active',
-      assignedVehicle: 'vehicle1'
-    },
-    {
-      id: 'driver2',
-      firstName: 'Ali',
-      lastName: 'Karaca',
-      phone: '+90 555 444 55 66',
-      status: 'active',
-      assignedVehicle: 'vehicle2'
-    }
-  ];
-
-  const mockVehicles = [
-    {
-      id: 'vehicle1',
-      brand: 'Mercedes',
-      model: 'Vito',
-      plateNumber: '07ABC123',
-      capacity: 8,
-      status: 'active'
-    },
-    {
-      id: 'vehicle2',
-      brand: 'Ford',
-      model: 'Transit',
-      plateNumber: '07DEF456',
-      capacity: 12,
-      status: 'active'
-    }
-  ];
-
   // Firebase'den rezervasyonları dinle
   useEffect(() => {
-    // Mock verileri başlangıçta yükle
-    setReservations(mockReservations);
-    setDrivers(mockDrivers);
-    setVehicles(mockVehicles);
-    setLoading(false);
+    console.log('Rezervasyon index: Firebase listeners başlatılıyor...');
+    setLoading(true);
 
     // Firebase listener'ları
     const unsubscribeReservations = onSnapshot(
       collection(db, 'reservations'),
       (snapshot) => {
-        const reservationData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        // Eğer Firebase'den veri gelirse mock verilerle birleştir
-        if (reservationData.length > 0) {
-          setReservations([...mockReservations, ...reservationData]);
-        }
+        console.log('Rezervasyonlar güncellendi, döküman sayısı:', snapshot.docs.length);
+        const reservationData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          console.log('Rezervasyon verisi:', { id: doc.id, data }); // Detaylı log
+          return {
+            id: doc.id,
+            ...data,
+            // Eksik alanları varsayılan değerlerle doldur
+            reservationId: data.reservationId || `SBS-${doc.id.slice(-6)}`,
+            customerInfo: data.customerInfo || {
+              firstName: 'Belirtilmemiş',
+              lastName: '',
+              phone: '',
+              email: ''
+            },
+            tripDetails: data.tripDetails || {
+              date: '',
+              time: '',
+              pickupLocation: '',
+              dropoffLocation: '',
+              passengerCount: 1,
+              luggageCount: 0
+            },
+            status: data.status || 'pending',
+            paymentMethod: data.paymentMethod || 'cash',
+            totalPrice: data.totalPrice || 0,
+            createdAt: data.createdAt || new Date().toISOString()
+          };
+        });
+        
+        console.log('İşlenmiş rezervasyon verisi:', reservationData);
+        setReservations(reservationData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Rezervasyonlar yüklenirken hata:', error);
+        setReservations([]);
+        setLoading(false);
       }
     );
 
@@ -174,36 +84,51 @@ const ReservationIndex = () => {
     const unsubscribeDrivers = onSnapshot(
       driversQuery,
       (snapshot) => {
+        console.log('Rezervasyon index: Şoförler güncellendi, döküman sayısı:', snapshot.docs.length);
         const driverData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
-          // Eski format ile uyumlu olmak için alan adlarını ayarla
+          // DriverAssignModal ile uyumlu format
+          firstName: doc.data().firstName || '',
+          lastName: doc.data().lastName || '',
           name: doc.data().firstName && doc.data().lastName 
             ? `${doc.data().firstName} ${doc.data().lastName}`
             : doc.data().name || doc.data().email,
           phone: doc.data().phone || '',
           licenseNumber: doc.data().licenseNumber || 'Belirtilmemiş',
+          assignedVehicle: doc.data().assignedVehicle || null,
           vehicle: doc.data().assignedVehicle || 'Atanmamış',
-          status: doc.data().isActive ? 'active' : 'inactive'
+          status: doc.data().isActive !== false ? 'active' : 'inactive' // Default olarak active
         }));
-        if (driverData.length > 0) {
-          setDrivers([...mockDrivers, ...driverData]);
-        } else {
-          setDrivers(mockDrivers);
-        }
+        
+        console.log('Firebase şoförleri işlendi:', driverData);
+        setDrivers(driverData);
+      },
+      (error) => {
+        console.error('Şoförler yüklenirken hata:', error);
+        setDrivers([]);
       }
     );
 
-    const unsubscribeVehicles = onSnapshot(
+    const vehiclesQuery = query(
       collection(db, 'vehicles'),
+      where('status', '==', 'active')
+    );
+    
+    const unsubscribeVehicles = onSnapshot(
+      vehiclesQuery,
       (snapshot) => {
+        console.log('Aktif araçlar güncellendi, döküman sayısı:', snapshot.docs.length);
         const vehicleData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        if (vehicleData.length > 0) {
-          setVehicles([...mockVehicles, ...vehicleData]);
-        }
+        console.log('Aktif araç verileri:', vehicleData); // Debug için
+        setVehicles(vehicleData);
+      },
+      (error) => {
+        console.error('Araçlar yüklenirken hata:', error);
+        setVehicles([]);
       }
     );
 
@@ -303,28 +228,33 @@ const ReservationIndex = () => {
     try {
       const newReservation = {
         ...reservationData,
-        id: `temp-${Date.now()}`,
         reservationId: `SBS-${Date.now()}`,
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       
-      // Önce local state'e ekle
-      setReservations(prev => [newReservation, ...prev]);
+      // Firebase'a ekle (id alanı olmadan)
+      const docRef = await addDoc(collection(db, 'reservations'), newReservation);
       
-      // Firebase'a ekle
-      await addDoc(collection(db, 'reservations'), newReservation);
+      // Local state'e ekleme - Firebase listener otomatik güncelleyecek
+      // setReservations(prev => [reservationWithId, ...prev]); // Bu satırı kaldırıyoruz
+      
       setShowQuickModal(false);
+      toast.success('Rezervasyon başarıyla eklendi!');
+      
+      console.log('Yeni rezervasyon eklendi:', docRef.id);
     } catch (error) {
       console.error('Rezervasyon eklenirken hata:', error);
-      alert('Rezervasyon eklenirken bir hata oluştu');
+      toast.error('Rezervasyon eklenirken bir hata oluştu: ' + error.message);
     }
   };
 
-  // Şoför atama - Hata düzeltmesi
+  // Şoför atama - Sadece gerçek Firebase veriler
   const handleDriverAssign = async (reservationId, driverId, vehicleId) => {
     try {
+      console.log('Şoför atama başlatılıyor:', { reservationId, driverId, vehicleId });
+      
       // Rezervasyonu bul
       const reservationToUpdate = reservations.find(res => res.id === reservationId);
       if (!reservationToUpdate) {
@@ -333,77 +263,67 @@ const ReservationIndex = () => {
         return;
       }
 
-      // Önce local state'i güncelle
-      setReservations(prev => prev.map(res => 
-        res.id === reservationId 
-          ? { 
-              ...res, 
-              assignedDriver: driverId,
-              assignedDriverId: driverId, // Şoför dashboard uyumluluğu için
-              assignedVehicle: vehicleId, 
-              status: 'assigned' 
-            }
-          : res
-      ));
+      console.log('Güncellenecek rezervasyon:', reservationToUpdate);
+
+      // Güncellenecek veri
+      const updateData = {
+        assignedDriver: driverId,
+        assignedDriverId: driverId, // Şoför dashboard uyumluluğu için
+        assignedVehicle: vehicleId, 
+        status: 'assigned',
+        updatedAt: new Date().toISOString()
+      };
+
+      // Firebase'de güncelle
+      const cleanUpdateData = Object.keys(updateData).reduce((acc, key) => {
+        if (updateData[key] !== undefined && updateData[key] !== null) {
+          acc[key] = updateData[key];
+        }
+        return acc;
+      }, {});
+
+      console.log('Firebase güncellenecek temiz veri:', cleanUpdateData);
       
-      // Eğer gerçek Firebase ID'si varsa güncelle
-      if (reservationToUpdate.firebaseId) {
-        await updateDoc(doc(db, 'reservations', reservationToUpdate.firebaseId), {
-          assignedDriver: driverId,
-          assignedDriverId: driverId, // Şoför dashboard uyumluluğu için
-          assignedVehicle: vehicleId,
-          status: 'assigned',
-          updatedAt: new Date().toISOString()
-        });
-      }
+      await updateDoc(doc(db, 'reservations', reservationId), cleanUpdateData);
+      console.log('Firebase rezervasyon güncellendi:', reservationId);
       
       setShowDriverModal(false);
       setSelectedReservation(null);
+      toast.success('Şoför başarıyla atandı!');
+      
     } catch (error) {
       console.error('Şoför atama hatası:', error);
-      alert('Şoför atama sırasında bir hata oluştu: ' + error.message);
-      
-      // Hata durumunda local state'i geri al
-      setReservations(prev => prev.map(res => 
-        res.id === reservationId 
-          ? { ...res, assignedDriver: null, assignedVehicle: null, status: 'pending' }
-          : res
-      ));
+      toast.error('Şoför atama sırasında bir hata oluştu: ' + error.message);
     }
   };
 
-  // Rezervasyon güncelleme
+  // Rezervasyon güncelleme - Sadece gerçek Firebase veriler
   const handleReservationUpdate = async (reservationId, updatedData) => {
     try {
       // Rezervasyonu bul
       const reservationToUpdate = reservations.find(res => res.id === reservationId);
       if (!reservationToUpdate) {
         console.error('Rezervasyon bulunamadı:', reservationId);
-        alert('Rezervasyon bulunamadı');
+        toast.error('Rezervasyon bulunamadı');
         return;
       }
 
-      setReservations(prev => prev.map(res => 
-        res.id === reservationId ? { ...res, ...updatedData } : res
-      ));
-      
-      // Eğer gerçek Firebase ID'si varsa güncelle
-      if (reservationToUpdate.firebaseId) {
-        await updateDoc(doc(db, 'reservations', reservationToUpdate.firebaseId), {
-          ...updatedData,
-          updatedAt: new Date().toISOString()
-        });
-      }
+      // Firebase'de güncelle
+      await updateDoc(doc(db, 'reservations', reservationId), {
+        ...updatedData,
+        updatedAt: new Date().toISOString()
+      });
       
       setShowEditModal(false);
       setSelectedReservation(null);
+      toast.success('Rezervasyon başarıyla güncellendi!');
     } catch (error) {
       console.error('Rezervasyon güncelleme hatası:', error);
-      alert('Rezervasyon güncellenirken bir hata oluştu: ' + error.message);
+      toast.error('Rezervasyon güncellenirken bir hata oluştu: ' + error.message);
     }
   };
 
-  // Manuel rezervasyon tamamlama - CARİ HESAP ENTEGRASYONu
+  // Manuel rezervasyon tamamlama - Sadece gerçek Firebase veriler
   const handleCompleteReservation = async (reservationId) => {
     try {
       const reservation = reservations.find(r => r.id === reservationId);
@@ -417,21 +337,18 @@ const ReservationIndex = () => {
         return;
       }
 
-      if (!reservation.driverId) {
+      // Şoför atama kontrolü - assignedDriver veya assignedDriverId kullan
+      const driverId = reservation.assignedDriver || reservation.assignedDriverId || reservation.driverId;
+      if (!driverId) {
         toast.error('Rezervasyona şoför atanmamış');
         return;
       }
 
-      // Finansal entegrasyon ile tamamla
+      console.log('Rezervasyon tamamlanacak:', { reservation, driverId });
+
+      // Firebase rezervasyon için finansal entegrasyon
       const result = await manualCompleteReservation(reservationId, 'admin-user');
       
-      // Local state'i güncelle
-      setReservations(prev => prev.map(res => 
-        res.id === reservationId 
-          ? { ...res, status: 'completed', completedAt: new Date() }
-          : res
-      ));
-
       // Başarı mesajı
       const paymentMsg = reservation.paymentMethod === 'cash' 
         ? 'Şoför komisyon borcu eklendi' 
@@ -442,6 +359,26 @@ const ReservationIndex = () => {
     } catch (error) {
       console.error('Rezervasyon tamamlama hatası:', error);
       toast.error('Rezervasyon tamamlanırken hata oluştu: ' + error.message);
+    }
+  };
+
+  // Rezervasyon silme
+  const handleDeleteReservation = async (reservationId) => {
+    if (!window.confirm('Bu rezervasyonu silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    try {
+      // Firebase'den sil
+      await deleteDoc(doc(db, 'reservations', reservationId));
+      
+      // Local state'den kaldırma - Firebase listener otomatik güncelleyecek
+      // setReservations(prev => prev.filter(res => res.id !== reservationId)); // Bu satırı kaldırıyoruz
+      
+      toast.success('Rezervasyon başarıyla silindi!');
+    } catch (error) {
+      console.error('Rezervasyon silme hatası:', error);
+      toast.error('Rezervasyon silinirken bir hata oluştu: ' + error.message);
     }
   };
 
@@ -501,11 +438,11 @@ const ReservationIndex = () => {
           setShowQRModal(true);
         }}
         onStatusChange={(reservationId, newStatus) => {
-          setReservations(prev => prev.map(res => 
-            res.id === reservationId ? { ...res, status: newStatus } : res
-          ));
+          // Firebase listener otomatik güncelleyecek, manual güncelleme yapmayalım
+          console.log('Durum değişikliği:', reservationId, newStatus);
         }}
         onCompleteReservation={handleCompleteReservation}
+        onDeleteReservation={handleDeleteReservation}
       />
 
       {/* Modals */}
@@ -513,6 +450,7 @@ const ReservationIndex = () => {
         <QuickReservationModal
           onClose={() => setShowQuickModal(false)}
           onSubmit={handleQuickReservation}
+          vehicles={vehicles}
         />
       )}
 

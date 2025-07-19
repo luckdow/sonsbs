@@ -6,29 +6,39 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import toast from 'react-hot-toast';
 
-const QRScannerComponent = ({ driverId, onScanComplete }) => {
+const QRScannerComponent = ({ driverId, onScanComplete, onScanSuccess, onScanError }) => {
   const [scannedData, setScannedData] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [reservationDetails, setReservationDetails] = useState(null);
   const [manualReservationId, setManualReservationId] = useState('');
-  const [showManualInput, setShowManualInput] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(true); // Geliştirme için manual input
 
   const handleQRScan = async (qrData) => {
     try {
       setProcessing(true);
       
+      console.log('QRScanner: Okutulan veri:', qrData);
+      
       // QR kod verisini parse et
-      let reservationData;
+      let reservationId;
       try {
-        reservationData = JSON.parse(qrData);
+        const parsed = JSON.parse(qrData);
+        reservationId = parsed.reservationId || parsed.id;
       } catch (e) {
         // QR kod sadece rezervasyon ID'si içeriyorsa
-        reservationData = { reservationId: qrData };
+        reservationId = qrData;
       }
 
-      const reservationId = reservationData.reservationId;
+      console.log('QRScanner: Rezervasyon ID:', reservationId);
+
       if (!reservationId) {
         throw new Error('QR kodunda rezervasyon ID bulunamadı');
+      }
+
+      // onScanSuccess callback'ini çağır
+      if (onScanSuccess) {
+        onScanSuccess(reservationId);
+        return;
       }
 
       // Rezervasyon detaylarını getir
@@ -39,11 +49,15 @@ const QRScannerComponent = ({ driverId, onScanComplete }) => {
 
       const reservation = reservationDoc.data();
       setReservationDetails(reservation);
-      setScannedData(reservationData);
+      setScannedData({ reservationId });
 
     } catch (error) {
       console.error('QR scan error:', error);
-      toast.error('QR kod okuma hatası: ' + error.message);
+      if (onScanError) {
+        onScanError(error);
+      } else {
+        toast.error('QR kod okuma hatası: ' + error.message);
+      }
     } finally {
       setProcessing(false);
     }
@@ -55,25 +69,8 @@ const QRScannerComponent = ({ driverId, onScanComplete }) => {
       return;
     }
 
-    try {
-      setProcessing(true);
-      
-      // Rezervasyon ID'si ile arama yap
-      const reservationDoc = await getDoc(doc(db, 'reservations', manualReservationId));
-      if (!reservationDoc.exists()) {
-        throw new Error('Rezervasyon bulunamadı');
-      }
-
-      const reservation = reservationDoc.data();
-      setReservationDetails(reservation);
-      setScannedData({ reservationId: manualReservationId });
-
-    } catch (error) {
-      console.error('Manual lookup error:', error);
-      toast.error('Rezervasyon bulunamadı: ' + error.message);
-    } finally {
-      setProcessing(false);
-    }
+    console.log('QRScanner: Manuel arama:', manualReservationId);
+    handleQRScan(manualReservationId.trim());
   };
 
   const handleCompleteTrip = async () => {
@@ -127,20 +124,8 @@ const QRScannerComponent = ({ driverId, onScanComplete }) => {
       <div className="mb-6">
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
           <QrCode className="w-12 h-12 mx-auto text-gray-400 mb-2" />
-          <p className="text-gray-500">QR kod okutmak için tıklayın</p>
-          <button
-            onClick={() => {
-              // Demo için - gerçek uygulamada kamera açılır
-              const demoQR = JSON.stringify({
-                reservationId: 'SBS-001234',
-                customerName: 'Demo Müşteri'
-              });
-              handleQRScan(demoQR);
-            }}
-            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Demo QR Oku
-          </button>
+          <p className="text-gray-500">QR kod tarayıcı burada olacak</p>
+          <p className="text-sm text-gray-400 mt-2">Gerçek uygulamada kamera QR kod okuyacak</p>
         </div>
       </div>
 
@@ -166,12 +151,13 @@ const QRScannerComponent = ({ driverId, onScanComplete }) => {
               onChange={(e) => setManualReservationId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
+            
             <button
               onClick={handleManualReservationLookup}
               disabled={processing}
-              className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
-              {processing ? 'Aranıyor...' : 'Rezervasyon Bul'}
+              {processing ? 'Aranıyor...' : 'Rezervasyon Ara'}
             </button>
           </motion.div>
         )}

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Car, Phone, Mail, Menu, X } from 'lucide-react';
+import { Car, Phone, Mail, Menu, X, User, Calendar, LogOut } from 'lucide-react';
 import { APP_CONFIG } from '../../config/constants';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, userProfile, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,7 +58,8 @@ const Header = () => {
               { path: '/', label: 'Ana Sayfa' },
               { path: '/hakkımızda', label: 'Hakkımızda' },
               { path: '/hizmetler', label: 'Hizmetlerimiz' },
-              { path: '/iletişim', label: 'İletişim' }
+              { path: '/iletişim', label: 'İletişim' },
+              ...(user ? [{ path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }] : [])
             ].map((item) => (
               <motion.div key={item.path} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
@@ -115,26 +118,75 @@ const Header = () => {
               </motion.a>
             </div>
 
-            {/* Login Button */}
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/giriş"
-                className="btn btn-primary relative overflow-hidden group"
-              >
-                <motion.span
-                  className="relative z-10"
-                  whileHover={{ scale: 1.05 }}
+            {/* User Actions */}
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <div className="relative group">
+                  <motion.button
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-colors duration-300 ${
+                      isScrolled || location.pathname !== '/' 
+                        ? 'text-gray-700 hover:bg-gray-100' 
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <User className="w-4 h-4" />
+                    <span className="text-sm font-medium">
+                      {userProfile?.firstName || user.email?.split('@')[0]}
+                    </span>
+                  </motion.button>
+                  
+                  {/* Dropdown Menu */}
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-2">
+                      <Link
+                        to="/rezervasyonlarim"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Rezervasyonlarım
+                      </Link>
+                      <Link
+                        to="/profil"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Profil Ayarları
+                      </Link>
+                      <hr className="my-2" />
+                      <button
+                        onClick={signOut}
+                        className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Çıkış Yap
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link
+                  to="/giriş"
+                  className="btn btn-primary relative overflow-hidden group"
                 >
-                  Giriş Yap
-                </motion.span>
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"
-                  initial={{ x: '-100%' }}
-                  whileHover={{ x: 0 }}
-                  transition={{ duration: 0.3 }}
-                />
-              </Link>
-            </motion.div>
+                  <motion.span
+                    className="relative z-10"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    Giriş Yap
+                  </motion.span>
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </Link>
+              </motion.div>
+            )}
 
             {/* Mobile Menu Button */}
             <motion.button
@@ -167,7 +219,8 @@ const Header = () => {
               { path: '/', label: 'Ana Sayfa' },
               { path: '/hakkımızda', label: 'Hakkımızda' },
               { path: '/hizmetler', label: 'Hizmetlerimiz' },
-              { path: '/iletişim', label: 'İletişim' }
+              { path: '/iletişim', label: 'İletişim' },
+              ...(user ? [{ path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }] : [])
             ].map((item) => (
               <motion.div key={item.path} whileHover={{ x: 10 }} whileTap={{ scale: 0.95 }}>
                 <Link
@@ -183,6 +236,46 @@ const Header = () => {
                 </Link>
               </motion.div>
             ))}
+            
+            {/* Mobile User Actions */}
+            {user ? (
+              <div className="px-4 py-2 border-t border-gray-200/50 space-y-2">
+                <div className="flex items-center space-x-2 text-sm text-gray-600 mb-3">
+                  <User className="w-4 h-4" />
+                  <span>{userProfile?.firstName || user.email?.split('@')[0]}</span>
+                </div>
+                <Link
+                  to="/rezervasyonlarim"
+                  className="block w-full text-left px-2 py-2 text-gray-600 hover:bg-gray-50 rounded-lg text-sm"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  📅 Rezervasyonlarım
+                </Link>
+                <Link
+                  to="/profil"
+                  className="block w-full text-left px-2 py-2 text-gray-600 hover:bg-gray-50 rounded-lg text-sm"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  ⚙️ Profil Ayarları
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="w-full text-left px-2 py-1 text-red-600 hover:bg-red-50 rounded-lg text-sm"
+                >
+                  🚪 Çıkış Yap
+                </button>
+              </div>
+            ) : (
+              <div className="px-4 py-2 border-t border-gray-200/50">
+                <Link
+                  to="/giriş"
+                  className="block w-full text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Giriş Yap
+                </Link>
+              </div>
+            )}
             
             {/* Mobile Contact Info */}
             <div className="px-4 py-2 border-t border-gray-200/50">

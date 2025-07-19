@@ -296,6 +296,7 @@ export const AuthProvider = ({ children }) => {
     register,
     createCustomerAccount,
     logout,
+    signOut: logout, // Alias for logout
     resetPassword,
     sendVerificationEmail,
     updateUserProfile,

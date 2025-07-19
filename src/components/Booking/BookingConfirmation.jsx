@@ -218,7 +218,13 @@ Araç: ${bookingData.selectedVehicle?.name}
   };
 
   const handleGoHome = () => {
-    navigate('/');
+    if (membershipCreated) {
+      // Üyelik oluşturulmuşsa rezervasyonlar sayfasına yönlendir
+      navigate('/rezervasyonlarim');
+    } else {
+      // Üyelik oluşturulmamışsa ana sayfaya yönlendir
+      navigate('/');
+    }
   };
 
   const handleNewBooking = () => {
@@ -513,7 +519,7 @@ Araç: ${bookingData.selectedVehicle?.name}
             className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
           >
             <Home className="w-4 h-4" />
-            <span>Ana Sayfa</span>
+            <span>{membershipCreated ? 'Rezervasyonlarım' : 'Ana Sayfa'}</span>
           </motion.button>
 
           <motion.button
