@@ -26,14 +26,17 @@ import {
   Plane,
   User,
   Shield,
-  FileText
+  FileText,
+  ChevronDown,
+  Image,
+  FileType
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import toast from 'react-hot-toast';
-import { generateReservationPDF } from '../../utils/pdfGenerator';
+import { generateReservationPDF, generateBookingConfirmationPDF } from '../../utils/pdfGenerator';
 
 const BookingConfirmation = ({ bookingData, onComplete }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -43,6 +46,7 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
   const [passwordCopied, setPasswordCopied] = useState(false);
   const [companyInfo, setCompanyInfo] = useState(null);
   const [reservationData, setReservationData] = useState(null);
+  const [showPdfOptions, setShowPdfOptions] = useState(false);
   const navigate = useNavigate();
 
   // Lokasyon objesini stringe çeviren yardımcı fonksiyon
@@ -91,8 +95,28 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
     }
   };
 
-  // PDF indirme fonksiyonu
+  // PDF indirme fonksiyonu - Tam ekran görüntüsü
   const downloadPDF = async () => {
+    if (!reservationCode) {
+      toast.error('Rezervasyon bilgileri henüz hazır değil');
+      return;
+    }
+
+    try {
+      toast.loading('PDF oluşturuluyor...', { id: 'pdf-loading' });
+      
+      // Tam ekran görüntüsünü PDF'e çevir
+      await generateBookingConfirmationPDF(reservationCode);
+      
+      toast.success('PDF başarıyla indirildi!', { id: 'pdf-loading' });
+    } catch (error) {
+      console.error('PDF indirme hatası:', error);
+      toast.error('PDF indirirken bir hata oluştu', { id: 'pdf-loading' });
+    }
+  };
+
+  // Alternatif PDF indirme (metin bazlı)
+  const downloadTextPDF = async () => {
     if (!reservationData || !reservationCode) {
       toast.error('Rezervasyon bilgileri henüz hazır değil');
       return;
@@ -100,7 +124,7 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
 
     try {
       await generateReservationPDF(reservationData, companyInfo, qrCodeUrl);
-      toast.success('PDF başarıyla indirildi!');
+      toast.success('Metin PDF başarıyla indirildi!');
     } catch (error) {
       console.error('PDF indirme hatası:', error);
       toast.error('PDF indirirken bir hata oluştu');
@@ -253,6 +277,20 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
     }
   }, [reservationCode]);
 
+  // Dropdown menü dışına tıklanılan kapat
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showPdfOptions && !event.target.closest('.relative')) {
+        setShowPdfOptions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPdfOptions]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
       {/* Hero Section */}
@@ -277,6 +315,7 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
       {/* Main Content */}
       <div className="max-w-md lg:max-w-2xl xl:max-w-4xl mx-auto px-4 -mt-4">
         <motion.div
+          id="booking-confirmation-content"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-t-3xl shadow-xl p-6"
@@ -546,14 +585,50 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
             </div>
           </div>
           {/* Ana Sayfa ve Yönlendirme Butonları */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
-              onClick={downloadPDF}
-              className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-            >
-              <FileText className="w-5 h-5" />
-              PDF İndir
-            </button>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {/* PDF İndirme Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowPdfOptions(!showPdfOptions)}
+                className="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                <FileText className="w-5 h-5" />
+                PDF İndir
+                <ChevronDown className={`w-4 h-4 transition-transform ${showPdfOptions ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showPdfOptions && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
+                  <button
+                    onClick={() => {
+                      downloadPDF();
+                      setShowPdfOptions(false);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 rounded-t-xl"
+                  >
+                    <Image className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Tam Görüntü PDF</p>
+                      <p className="text-xs text-gray-500">Renkli, ikonlu tam tasarım</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      downloadTextPDF();
+                      setShowPdfOptions(false);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 rounded-b-xl border-t border-gray-100"
+                  >
+                    <FileType className="w-5 h-5 text-gray-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Metin PDF</p>
+                      <p className="text-xs text-gray-500">Sadece metin, yazıcı dostu</p>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button
               onClick={goToHome}
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2"

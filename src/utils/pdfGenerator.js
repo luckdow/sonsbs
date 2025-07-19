@@ -131,8 +131,73 @@ export const generateReservationPDF = async (reservationData, companyInfo, qrCod
   }
 };
 
-// HTML elementini PDF'e çevirme fonksiyonu
+// HTML elementini PDF'e çevirme fonksiyonu - Tam ekran görüntüsü
 export const generatePDFFromElement = async (elementId, fileName = 'document.pdf') => {
+  try {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      throw new Error('Element bulunamadı');
+    }
+    
+    // Daha yüksek kalitede görüntü için ayarlar
+    const canvas = await html2canvas(element, {
+      scale: 3, // Yüksek çözünürlük için scale artırıldı
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      height: element.scrollHeight,
+      width: element.scrollWidth,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight
+    });
+    
+    const imgData = canvas.toDataURL('image/png', 1.0); // Maksimum kalite
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pdfWidth - 20; // 10mm margin her taraftan
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+    let heightLeft = imgHeight;
+    let position = 10; // Üstten 10mm margin
+    
+    // İlk sayfa
+    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+    heightLeft -= (pdfHeight - 20); // Margin dahil
+    
+    // Eğer içerik birden fazla sayfaya sığmıyorsa
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight + 10; // Negatif position
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= (pdfHeight - 20);
+    }
+    
+    pdf.save(fileName);
+    return true;
+  } catch (error) {
+    console.error('PDF oluşturma hatası:', error);
+    throw error;
+  }
+};
+
+// Rezervasyon sayfasının tam ekran görüntüsünü PDF'e çevir
+export const generateBookingConfirmationPDF = async (reservationCode) => {
+  try {
+    const fileName = `SBS_Transfer_${reservationCode}_Onay.pdf`;
+    await generatePDFFromElement('booking-confirmation-content', fileName);
+    return true;
+  } catch (error) {
+    console.error('Rezervasyon PDF oluşturma hatası:', error);
+    throw error;
+  }
+};
+
+// HTML elementini PDF'e çevirme fonksiyonu - Eski versiyon (yedek)
+export const generatePDFFromElementOld = async (elementId, fileName = 'document.pdf') => {
   try {
     const element = document.getElementById(elementId);
     if (!element) {
