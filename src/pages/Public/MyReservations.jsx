@@ -60,12 +60,28 @@ const MyReservations = () => {
           ...doc.data()
         }));
         
-        // Email bazlı filtreleme
-        const userReservations = allReservations.filter(
-          r => r.personalInfo?.email?.toLowerCase() === user.email.toLowerCase()
-        );
+        // Email bazlı filtreleme - her iki format da kontrol et ama çifte kayıt engelle
+        const userEmail = user.email.toLowerCase();
+        const uniqueReservationIds = new Set(); // Çifte kayıt engelleme için
         
-        console.log('Kullanıcı rezervasyonları:', userReservations);
+        const userReservations = allReservations.filter(r => {
+          const email1 = r.personalInfo?.email?.toLowerCase();
+          const email2 = r.customerInfo?.email?.toLowerCase();
+          
+          // Email eşleşmesi kontrolü
+          const isUserReservation = email1 === userEmail || email2 === userEmail;
+          
+          // Çifte kayıt kontrolü - reservationId bazlı
+          const reservationId = r.reservationId || r.id;
+          if (isUserReservation && !uniqueReservationIds.has(reservationId)) {
+            uniqueReservationIds.add(reservationId);
+            return true;
+          }
+          
+          return false;
+        });
+        
+        console.log('Kullanıcı rezervasyonları (çifte kayıt temizlendi):', userReservations);
         setReservations(userReservations);
       },
       (error) => {
@@ -132,8 +148,10 @@ const MyReservations = () => {
     if (searchTerm) {
       filtered = filtered.filter(reservation =>
         reservation.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        formatLocation(reservation.pickupLocation)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        formatLocation(reservation.dropoffLocation)?.toLowerCase().includes(searchTerm.toLowerCase())
+        reservation.reservationId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        formatLocation(getPickupLocation(reservation))?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        formatLocation(getDropoffLocation(reservation))?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getCustomerName(reservation)?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -187,11 +205,38 @@ const MyReservations = () => {
     } : { brand: 'Bilinmeyen araç', model: '', plateNumber: '', full: 'Bilinmeyen araç' };
   };
 
-  const formatDateTime = (date, time) => {
+  const formatDateTime = (reservation) => {
+    // Hem yeni hem eski format için uyumlu
+    const date = reservation.tripDetails?.date || reservation.date;
+    const time = reservation.tripDetails?.time || reservation.time;
     if (!date) return 'Tarih belirtilmemiş';
     const dateObj = new Date(date);
     const formattedDate = dateObj.toLocaleDateString('tr-TR');
     return time ? `${formattedDate} - ${time}` : formattedDate;
+  };
+
+  const getPickupLocation = (reservation) => {
+    const location = reservation.tripDetails?.pickupLocation || reservation.pickupLocation;
+    return formatLocation(location);
+  };
+
+  const getDropoffLocation = (reservation) => {
+    const location = reservation.tripDetails?.dropoffLocation || reservation.dropoffLocation;
+    return formatLocation(location);
+  };
+
+  const getCustomerName = (reservation) => {
+    const firstName = reservation.customerInfo?.firstName || reservation.personalInfo?.firstName || '';
+    const lastName = reservation.customerInfo?.lastName || reservation.personalInfo?.lastName || '';
+    return `${firstName} ${lastName}`.trim() || 'İsimsiz';
+  };
+
+  const getCustomerPhone = (reservation) => {
+    return reservation.customerInfo?.phone || reservation.personalInfo?.phone || '';
+  };
+
+  const getPassengerCount = (reservation) => {
+    return reservation.tripDetails?.passengerCount || reservation.passengerCount || 1;
   };
 
   const formatLocation = (location) => {
@@ -381,7 +426,7 @@ const MyReservations = () => {
                         ₺{Number(reservation.totalPrice || 0).toLocaleString('tr-TR')}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {formatDateTime(reservation.date, reservation.time)}
+                        {formatDateTime(reservation)}
                       </p>
                     </div>
                   </div>
@@ -396,13 +441,13 @@ const MyReservations = () => {
                       <div className="flex items-center">
                         <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                         <p className="text-sm text-gray-900">
-                          {formatLocation(reservation.pickupLocation)}
+                          {formatLocation(getPickupLocation(reservation))}
                         </p>
                       </div>
                       <div className="flex items-center">
                         <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
                         <p className="text-sm text-gray-900">
-                          {formatLocation(reservation.dropoffLocation)}
+                          {formatLocation(getDropoffLocation(reservation))}
                         </p>
                       </div>
                     </div>

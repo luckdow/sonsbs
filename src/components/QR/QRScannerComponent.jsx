@@ -1,243 +1,191 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { QrCode, CheckCircle, AlertCircle, DollarSign, MapPin, User, Clock } from 'lucide-react';
-import { processQRScanCompletion } from '../../utils/financialIntegration';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import toast from 'react-hot-toast';
+import React, { useState, useRef, useEffect } from 'react';
+import jsQR from 'jsqr';
 
-const QRScannerComponent = ({ driverId, onScanComplete, onScanSuccess, onScanError }) => {
-  const [scannedData, setScannedData] = useState(null);
-  const [processing, setProcessing] = useState(false);
-  const [reservationDetails, setReservationDetails] = useState(null);
-  const [manualReservationId, setManualReservationId] = useState('');
-  const [showManualInput, setShowManualInput] = useState(true); // Geliştirme için manual input
+const QRScannerComponent = ({ isOpen, onClose, onScan }) => {
+  const [manualInput, setManualInput] = useState('');
+  const [cameraActive, setCameraActive] = useState(false);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const scanningRef = useRef(false);
 
-  const handleQRScan = async (qrData) => {
+  useEffect(() => {
+    console.log('🔥 useEffect çalışıyor - isOpen:', isOpen);
+    if (isOpen) {
+      // Video elementi render edilmesi için kısa bir gecikme
+      setTimeout(() => {
+        console.log('🔥 startCamera çağırılıyor (gecikme ile)...');
+        startCamera();
+      }, 100);
+    }
+    return () => {
+      scanningRef.current = false;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isOpen]);
+
+  const startCamera = async () => {
     try {
-      setProcessing(true);
-      
-      console.log('QRScanner: Okutulan veri:', qrData);
-      
-      // QR kod verisini parse et
-      let reservationId;
-      try {
-        const parsed = JSON.parse(qrData);
-        reservationId = parsed.reservationId || parsed.id;
-      } catch (e) {
-        // QR kod sadece rezervasyon ID'si içeriyorsa
-        reservationId = qrData;
-      }
-
-      console.log('QRScanner: Rezervasyon ID:', reservationId);
-
-      if (!reservationId) {
-        throw new Error('QR kodunda rezervasyon ID bulunamadı');
-      }
-
-      // onScanSuccess callback'ini çağır
-      if (onScanSuccess) {
-        onScanSuccess(reservationId);
-        return;
-      }
-
-      // Rezervasyon detaylarını getir
-      const reservationDoc = await getDoc(doc(db, 'reservations', reservationId));
-      if (!reservationDoc.exists()) {
-        throw new Error('Rezervasyon bulunamadı');
-      }
-
-      const reservation = reservationDoc.data();
-      setReservationDetails(reservation);
-      setScannedData({ reservationId });
-
-    } catch (error) {
-      console.error('QR scan error:', error);
-      if (onScanError) {
-        onScanError(error);
+      console.log('🎥 Kamera başlatılıyor...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      console.log('✅ Kamera stream alındı:', stream);
+      streamRef.current = stream;
+      console.log('🔍 videoRef.current:', videoRef.current);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        console.log('✅ Video element\'e stream atandı');
+        setCameraActive(true);
+        console.log('✅ setCameraActive(true) çağırıldı');
+        scanningRef.current = true;
       } else {
-        toast.error('QR kod okuma hatası: ' + error.message);
+        console.error('❌ videoRef.current null!');
       }
-    } finally {
-      setProcessing(false);
+    } catch (err) {
+      console.error('❌ Kamera hatası:', err);
+      setCameraActive(false);
     }
   };
 
-  const handleManualReservationLookup = async () => {
-    if (!manualReservationId.trim()) {
-      toast.error('Rezervasyon ID giriniz');
-      return;
-    }
-
-    console.log('QRScanner: Manuel arama:', manualReservationId);
-    handleQRScan(manualReservationId.trim());
-  };
-
-  const handleCompleteTrip = async () => {
-    if (!scannedData || !reservationDetails) {
-      toast.error('Önce QR kod okutun');
-      return;
-    }
-
-    try {
-      setProcessing(true);
-
-      // Finansal entegrasyon ile trip'i tamamla
-      const result = await processQRScanCompletion(scannedData.reservationId, driverId);
-
-      // Başarı mesajı - ödeme metoduna göre
-      let message = 'Yolculuk tamamlandı! ';
-      if (reservationDetails.paymentMethod === 'cash') {
-        message += `${reservationDetails.totalPrice}₺ nakit ödeme aldınız. Komisyon (${(reservationDetails.totalPrice * 0.15).toFixed(0)}₺) cari hesabınızdan düşüldü.`;
-      } else {
-        message += `Kazancınız (${(reservationDetails.totalPrice * 0.85).toFixed(0)}₺) cari hesabınıza eklendi.`;
-      }
-
-      toast.success(message);
+  const startQRScanning = () => {
+    const scanQR = () => {
+      if (!scanningRef.current || !videoRef.current || !cameraActive) return;
       
-      if (onScanComplete) {
-        onScanComplete(result);
+      const video = videoRef.current;
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      if (canvas.width > 0 && canvas.height > 0) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        
+        if (code) {
+          console.log('🎯 QR Kod bulundu:', code.data);
+          scanningRef.current = false;
+          onScan(code.data);
+          return;
+        }
       }
-
-      // State'i temizle
-      setScannedData(null);
-      setReservationDetails(null);
-      setManualReservationId('');
-
-    } catch (error) {
-      console.error('Trip completion error:', error);
-      toast.error('Yolculuk tamamlama hatası: ' + error.message);
-    } finally {
-      setProcessing(false);
+      
+      requestAnimationFrame(scanQR);
+    };
+    
+    if (videoRef.current && videoRef.current.readyState >= 2) {
+      scanQR();
+    } else if (videoRef.current) {
+      videoRef.current.addEventListener('loadeddata', scanQR, { once: true });
     }
   };
+
+  const handleManualSubmit = () => {
+    if (manualInput.trim()) {
+      console.log('✋ Manuel ID girişi:', manualInput.trim());
+      onScan(manualInput.trim());
+      setManualInput('');
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  console.log('🔥 QR Scanner Render - cameraActive:', cameraActive);
 
   return (
-    <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-6">
-      <div className="text-center mb-6">
-        <QrCode className="w-16 h-16 mx-auto text-blue-600 mb-4" />
-        <h2 className="text-2xl font-bold text-gray-800">Yolculuk Tamamla</h2>
-        <p className="text-gray-600">QR kod okutun veya rezervasyon ID girin</p>
-      </div>
-
-      {/* QR Scanner Placeholder - Gerçek uygulamada react-qr-scanner gibi bir kütüphane kullanılabilir */}
-      <div className="mb-6">
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <QrCode className="w-12 h-12 mx-auto text-gray-400 mb-2" />
-          <p className="text-gray-500">QR kod tarayıcı burada olacak</p>
-          <p className="text-sm text-gray-400 mt-2">Gerçek uygulamada kamera QR kod okuyacak</p>
-        </div>
-      </div>
-
-      {/* Manuel Rezervasyon ID Girişi */}
-      <div className="mb-6">
-        <button
-          onClick={() => setShowManualInput(!showManualInput)}
-          className="w-full text-blue-600 hover:text-blue-800 text-sm"
-        >
-          Manuel rezervasyon ID gir
-        </button>
-        
-        {showManualInput && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mt-3 space-y-3"
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-md w-full">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">QR Kod Tarayıcı</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
           >
-            <input
-              type="text"
-              placeholder="Rezervasyon ID (örn: SBS-001234)"
-              value={manualReservationId}
-              onChange={(e) => setManualReservationId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-            
-            <button
-              onClick={handleManualReservationLookup}
-              disabled={processing}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              {processing ? 'Aranıyor...' : 'Rezervasyon Ara'}
-            </button>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Rezervasyon Detayları */}
-      {reservationDetails && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gray-50 rounded-lg p-4 mb-6"
-        >
-          <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-            <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-            Rezervasyon Bulundu
-          </h3>
-          
-          <div className="space-y-3">
-            <div className="flex items-center">
-              <User className="w-4 h-4 text-gray-500 mr-2" />
-              <span className="text-sm">
-                {reservationDetails.customerInfo?.firstName} {reservationDetails.customerInfo?.lastName}
-              </span>
-            </div>
-            
-            <div className="flex items-center">
-              <MapPin className="w-4 h-4 text-gray-500 mr-2" />
-              <span className="text-sm">
-                {reservationDetails.tripDetails?.pickupLocation} → {reservationDetails.tripDetails?.dropoffLocation}
-              </span>
-            </div>
-            
-            <div className="flex items-center">
-              <Clock className="w-4 h-4 text-gray-500 mr-2" />
-              <span className="text-sm">
-                {reservationDetails.tripDetails?.date} - {reservationDetails.tripDetails?.time}
-              </span>
-            </div>
-            
-            <div className="flex items-center">
-              <DollarSign className="w-4 h-4 text-gray-500 mr-2" />
-              <span className="text-sm">
-                {reservationDetails.totalPrice}₺ - {reservationDetails.paymentMethod === 'cash' ? 'Nakit' : 'Kart'}
-              </span>
-            </div>
-
-            {/* Ödeme Uyarısı */}
-            {reservationDetails.paymentMethod === 'cash' ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2 mt-3">
-                <div className="flex items-center">
-                  <AlertCircle className="w-4 h-4 text-yellow-600 mr-2" />
-                  <span className="text-xs text-yellow-800">
-                    Nakit ödeme: Müşteriden {reservationDetails.totalPrice}₺ alacaksınız
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mt-3">
-                <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-blue-600 mr-2" />
-                  <span className="text-xs text-blue-800">
-                    Kart ödemesi: Kazancınız cari hesabınıza eklenecek
-                  </span>
+            ✕
+          </button>
+        </div>
+        
+        {/* QR Scanner Area */}
+        <div className="mb-4">
+          <div className="relative bg-black rounded-lg overflow-hidden" style={{ height: '300px' }}>
+            {!cameraActive && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                <div className="text-center text-white">
+                  <p className="text-lg">📷 Kamera açılıyor...</p>
+                  <p className="text-sm mt-2 opacity-70">
+                    Kamera izni gerekiyor
+                  </p>
                 </div>
               </div>
             )}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className={`w-full h-full object-cover ${!cameraActive ? 'opacity-0' : 'opacity-100'}`}
+              onLoadedMetadata={() => {
+                console.log('✅ Video metadata yüklendi');
+                if (scanningRef.current) {
+                  startQRScanning();
+                }
+              }}
+            />
+            {cameraActive && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-48 h-48 border-4 border-green-400 border-opacity-70 rounded-lg">
+                  <div className="w-full h-full border-2 border-white border-dashed rounded-lg animate-pulse"></div>
+                </div>
+              </div>
+            )}
+            {cameraActive && (
+              <div className="absolute bottom-3 left-3 right-3">
+                <p className="text-white text-sm text-center bg-black bg-opacity-50 p-2 rounded">
+                  📷 QR kodunu yeşil kare içinde tutun
+                </p>
+              </div>
+            )}
           </div>
-        </motion.div>
-      )}
+        </div>
 
-      {/* Tamamlama Butonu */}
-      {scannedData && reservationDetails && (
-        <button
-          onClick={handleCompleteTrip}
-          disabled={processing}
-          className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
-        >
-          {processing ? 'Tamamlanıyor...' : '✓ Yolculuğu Tamamla'}
-        </button>
-      )}
+        {/* Manual Input */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Manuel Rezervasyon ID
+          </label>
+          <input
+            type="text"
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-md"
+            placeholder="ID girin"
+          />
+        </div>
+
+        <div className="flex space-x-2">
+          <button
+            onClick={handleManualSubmit}
+            disabled={!manualInput.trim()}
+            className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            Gönder
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+          >
+            İptal
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

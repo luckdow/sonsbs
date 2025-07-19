@@ -5,6 +5,20 @@ import QRCode from 'qrcode';
 const QRModal = ({ reservation, onClose }) => {
   const qrRef = useRef(null);
 
+  // Location objelerini string'e dönüştürme helper
+  const formatLocation = (location) => {
+    if (!location) return 'Belirtilmemiş';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      if (location.address) return String(location.address);
+      if (location.name) return String(location.name);
+      if (location.formatted_address) return String(location.formatted_address);
+      if (location.description) return String(location.description);
+      return 'Lokasyon bilgisi mevcut';
+    }
+    return String(location);
+  };
+
   React.useEffect(() => {
     if (reservation && qrRef.current) {
       // QR kod verisi olarak sadece rezervasyon ID'sini kullan
@@ -95,11 +109,11 @@ const QRModal = ({ reservation, onClose }) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Kalkış:</span>
-                <span className="font-medium">{reservation.tripDetails?.pickupLocation}</span>
+                <span className="font-medium">{formatLocation(reservation.tripDetails?.pickupLocation)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Varış:</span>
-                <span className="font-medium">{reservation.tripDetails?.dropoffLocation}</span>
+                <span className="font-medium">{formatLocation(reservation.tripDetails?.dropoffLocation)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Yolcu:</span>

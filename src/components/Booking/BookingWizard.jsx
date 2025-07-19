@@ -12,6 +12,9 @@ import {
   Car,
   Clock
 } from 'lucide-react';
+import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import { FIREBASE_COLLECTIONS, RESERVATION_STATUS } from '../../config/constants';
 import { useAuth } from '../../contexts/AuthContext';
 import TransferDetails from './TransferDetails';
 import VehicleSelection from './VehicleSelection';
@@ -129,8 +132,120 @@ const BookingWizard = () => {
     }));
   };
 
-  const nextStep = () => {
+  const saveReservationToFirebase = async () => {
+    try {
+      console.log('🔍 BookingData before save:', bookingData);
+      
+      // Generate unique reservation ID
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const reservationId = `SBS${timestamp.toString().slice(-6)}${randomStr}`;
+
+      // Helper function to format locations
+      const formatLocation = (location) => {
+        if (!location) return '';
+        if (typeof location === 'string') return location;
+        if (typeof location === 'object') {
+          if (location.address) return String(location.address);
+          if (location.name) return String(location.name);
+          if (location.formatted_address) return String(location.formatted_address);
+          if (location.description) return String(location.description);
+          return 'Lokasyon belirtilmemiş';
+        }
+        return String(location);
+      };
+
+      // Create reservation data for Firebase - Admin panel uyumlu format
+      const reservationData = {
+        reservationId: reservationId,
+        status: RESERVATION_STATUS.PENDING,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        
+        // Admin panel beklenen format: tripDetails objesi
+        tripDetails: {
+          date: bookingData.date || '',
+          time: bookingData.time || '',
+          pickupLocation: formatLocation(bookingData.pickupLocation),
+          dropoffLocation: formatLocation(bookingData.dropoffLocation),
+          passengerCount: bookingData.personalInfo?.passengerCount || bookingData.passengerCount || 1,
+          luggageCount: bookingData.baggageCount || 1,
+          flightNumber: bookingData.personalInfo?.flightNumber || '',
+          direction: bookingData.direction || ''
+        },
+        
+        // Admin panel beklenen format: customerInfo objesi  
+        customerInfo: {
+          firstName: bookingData.personalInfo?.firstName || '',
+          lastName: bookingData.personalInfo?.lastName || '',
+          email: bookingData.personalInfo?.email || '',
+          phone: bookingData.personalInfo?.phone || ''
+        },
+        
+        // Diğer alanlar
+        selectedVehicle: bookingData.selectedVehicle || null,
+        selectedServices: bookingData.selectedServices || [],
+        paymentMethod: bookingData.paymentMethod || '',
+        totalPrice: bookingData.totalPrice || 0,
+        
+        // Route info
+        distance: bookingData.routeInfo?.distance || null,
+        duration: bookingData.routeInfo?.duration || null,
+        
+        // Müşteri paneli için backward compatibility
+        personalInfo: bookingData.personalInfo || {},
+        direction: bookingData.direction || '',
+        pickupLocation: formatLocation(bookingData.pickupLocation),
+        dropoffLocation: formatLocation(bookingData.dropoffLocation),
+        date: bookingData.date || '',
+        time: bookingData.time || '',
+        passengerCount: bookingData.personalInfo?.passengerCount || bookingData.passengerCount || 1,
+        
+        // Assignment fields
+        assignedDriver: null,
+        assignedDriverId: null,
+        assignedVehicle: null,
+        driverAssigned: null,
+        
+        // User info if logged in
+        userId: user?.uid || null,
+        userEmail: user?.email || bookingData.personalInfo?.email || ''
+      };
+
+      // Save to Firebase with reservationId as document ID
+      console.log('💾 Final reservation data to save:', reservationData);
+      const docRef = doc(db, FIREBASE_COLLECTIONS.RESERVATIONS, reservationId);
+      await setDoc(docRef, reservationData);
+      console.log('Reservation saved to Firebase with ID:', reservationId);
+      
+      // Update booking data with Firebase document ID and reservation ID
+      setBookingData(prev => ({
+        ...prev,
+        firebaseDocId: reservationId,
+        id: reservationId, // Firestore doküman ID'si = rezervasyon ID'si
+        reservationId: reservationId
+      }));
+      
+      toast.success('Rezervasyon başarıyla oluşturuldu!');
+      return true;
+      
+    } catch (error) {
+      console.error('Error saving reservation to Firebase:', error);
+      toast.error('Rezervasyon kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      return false;
+    }
+  };
+
+  const nextStep = async () => {
     if (validateCurrentStep()) {
+      // Eğer adım 4'ten adım 5'e geçiyorsak (ödeme -> onay), rezervasyonu kaydet
+      if (currentStep === 4) {
+        const saved = await saveReservationToFirebase();
+        if (!saved) {
+          return; // Rezervasyon kaydedilemezse adım geçişini engelle
+        }
+      }
+      
       if (currentStep < steps.length) {
         setCurrentStep(currentStep + 1);
       }

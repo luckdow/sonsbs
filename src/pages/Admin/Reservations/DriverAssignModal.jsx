@@ -5,6 +5,20 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
   const [selectedDriver, setSelectedDriver] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Location objelerini string'e dönüştürme helper
+  const formatLocation = (location) => {
+    if (!location) return 'Belirtilmemiş';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      if (location.address) return String(location.address);
+      if (location.name) return String(location.name);
+      if (location.formatted_address) return String(location.formatted_address);
+      if (location.description) return String(location.description);
+      return 'Lokasyon bilgisi mevcut';
+    }
+    return String(location);
+  };
+
   // Aktif şoförleri filtrele
   const activeDrivers = drivers.filter(driver => driver.status === 'active');
   
@@ -57,7 +71,7 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
           <div className="text-sm text-gray-600 space-y-1">
             <p><strong>Müşteri:</strong> {reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}</p>
             <p><strong>Tarih:</strong> {reservation.tripDetails?.date} - {reservation.tripDetails?.time}</p>
-            <p><strong>Rota:</strong> {reservation.tripDetails?.pickupLocation} → {reservation.tripDetails?.dropoffLocation}</p>
+            <p><strong>Rota:</strong> {formatLocation(reservation.tripDetails?.pickupLocation)} → {formatLocation(reservation.tripDetails?.dropoffLocation)}</p>
             <p><strong>Yolcu:</strong> {reservation.tripDetails?.passengerCount} kişi</p>
           </div>
         </div>

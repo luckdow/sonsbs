@@ -37,6 +37,21 @@ const DriverDashboard = () => {
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [activeTrip, setActiveTrip] = useState(null);
 
+  // Lokasyon objesini stringe çeviren yardımcı fonksiyon
+  const formatLocation = (location) => {
+    if (!location) return 'Belirtilmemiş';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      if (location.address) return location.address;
+      if (location.name) return location.name;
+      if (location.formatted_address) return location.formatted_address;
+      if (location.description) return location.description;
+      if (location.lat && location.lng) return `${location.lat}, ${location.lng}`;
+      return 'Lokasyon bilgisi mevcut';
+    }
+    return String(location);
+  };
+
   // Real-time reservations listener
   useEffect(() => {
     if (!currentUser?.uid && !user?.uid) {
@@ -76,6 +91,17 @@ const DriverDashboard = () => {
         id: doc.id,
         ...doc.data()
       }));
+      
+      console.log(`🚗 DriverDashboard: ${queryType} sorgusu sonucu:`, {
+        count: reservationList.length,
+        reservations: reservationList.map(r => ({ 
+          id: r.id, 
+          reservationId: r.reservationId,
+          status: r.status,
+          assignedDriver: r.assignedDriver,
+          assignedDriverId: r.assignedDriverId 
+        }))
+      });
       
       // Rezervasyonları unique hale getir
       setReservations(prevReservations => {
@@ -121,7 +147,7 @@ const DriverDashboard = () => {
     r.status === 'assigned' || r.status === 'confirmed'
   );
 
-  // Start trip function
+  // Start trip function - Sadece yolculuğu başlat, finansal işlem yapma
   const startTrip = async (reservationId) => {
     try {
       const reservationRef = doc(db, 'reservations', reservationId);
@@ -129,6 +155,10 @@ const DriverDashboard = () => {
         status: 'trip-started',
         tripStartTime: new Date().toISOString()
       });
+      
+      // Aktif yolculuğu set et
+      const reservation = reservations.find(r => r.id === reservationId);
+      setActiveTrip(reservation);
       
       toast.success('Yolculuk başlatıldı!');
       setActiveView('active-trip');
@@ -138,7 +168,7 @@ const DriverDashboard = () => {
     }
   };
 
-  // Complete trip function
+  // Complete trip function - ŞİMDİ finansal işlemler yapılsın
   const completeTrip = async (reservationId) => {
     try {
       const userId = currentUser?.uid || user?.uid;
@@ -147,10 +177,12 @@ const DriverDashboard = () => {
         return;
       }
 
-      // Use financial integration with proper driver ID
+      console.log('🏁 Yolculuk tamamlanıyor - Finansal işlemler başlatılıyor...');
+      
+      // Finansal entegrasyon ile rezervasyonu tamamla
       await processQRScanCompletion(reservationId, userId);
       
-      toast.success('Yolculuk tamamlandı!');
+      toast.success('Yolculuk tamamlandı! Finansal işlemler güncellendi.');
       setActiveView('dashboard');
       setActiveTrip(null);
     } catch (error) {
@@ -193,7 +225,9 @@ const DriverDashboard = () => {
             
             {/* Gerçek QR Scanner Component */}
             <QRScannerComponent
-              onScanSuccess={(result) => {
+              isOpen={true}
+              onClose={() => setIsQRScannerOpen(false)}
+              onScan={(result) => {
                 console.log('QR Scan Result:', result);
                 // QR kod sonucunda rezervasyon ID'sini al
                 const scannedReservationId = result;
@@ -219,10 +253,6 @@ const DriverDashboard = () => {
                   console.error('Rezervasyon bulunamadı. Aranan ID:', scannedReservationId);
                   toast.error(`Bu QR koda ait rezervasyon bulunamadı: ${scannedReservationId}`);
                 }
-              }}
-              onScanError={(error) => {
-                console.error('QR Scan Error:', error);
-                toast.error('QR kod okuma hatası');
               }}
             />
           </motion.div>
@@ -343,11 +373,11 @@ const DriverDashboard = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <MapPin className="w-4 h-4 text-green-500" />
-                    <span>{reservation.tripDetails?.pickupLocation || reservation.pickupLocation || 'Belirtilmemiş'}</span>
+                    <span>{formatLocation(reservation.tripDetails?.pickupLocation || reservation.pickupLocation)}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <MapPin className="w-4 h-4 text-red-500" />
-                    <span>{reservation.tripDetails?.dropoffLocation || reservation.dropoffLocation || 'Belirtilmemiş'}</span>
+                    <span>{formatLocation(reservation.tripDetails?.dropoffLocation || reservation.dropoffLocation)}</span>
                   </div>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
@@ -446,7 +476,7 @@ const DriverDashboard = () => {
                 <div>
                   <p className="font-medium text-gray-900">Alış Noktası</p>
                   <p className="text-gray-600">
-                    {activeTrip.tripDetails?.pickupLocation || activeTrip.pickupLocation || 'Belirtilmemiş'}
+                    {formatLocation(activeTrip.tripDetails?.pickupLocation || activeTrip.pickupLocation)}
                   </p>
                 </div>
               </div>
@@ -458,7 +488,7 @@ const DriverDashboard = () => {
                 <div>
                   <p className="font-medium text-gray-900">Varış Noktası</p>
                   <p className="text-gray-600">
-                    {activeTrip.tripDetails?.dropoffLocation || activeTrip.dropoffLocation || 'Belirtilmemiş'}
+                    {formatLocation(activeTrip.tripDetails?.dropoffLocation || activeTrip.dropoffLocation)}
                   </p>
                 </div>
               </div>
@@ -486,8 +516,8 @@ const DriverDashboard = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                const pickup = activeTrip.tripDetails?.pickupLocation || activeTrip.pickupLocation;
-                const dropoff = activeTrip.tripDetails?.dropoffLocation || activeTrip.dropoffLocation;
+                const pickup = formatLocation(activeTrip.tripDetails?.pickupLocation || activeTrip.pickupLocation);
+                const dropoff = formatLocation(activeTrip.tripDetails?.dropoffLocation || activeTrip.dropoffLocation);
                 
                 const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(pickup || 'Başlangıç')}&destination=${encodeURIComponent(dropoff || 'Varış')}&travelmode=driving`;
                 window.open(mapsUrl, '_blank');
@@ -577,7 +607,7 @@ const DriverDashboard = () => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Alış Noktası</p>
-                  <p className="text-gray-600">{selectedReservation.tripDetails?.pickupLocation || selectedReservation.pickupLocation}</p>
+                  <p className="text-gray-600">{formatLocation(selectedReservation.tripDetails?.pickupLocation || selectedReservation.pickupLocation)}</p>
                 </div>
               </div>
 
@@ -587,7 +617,7 @@ const DriverDashboard = () => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Varış Noktası</p>
-                  <p className="text-gray-600">{selectedReservation.tripDetails?.dropoffLocation || selectedReservation.dropoffLocation}</p>
+                  <p className="text-gray-600">{formatLocation(selectedReservation.tripDetails?.dropoffLocation || selectedReservation.dropoffLocation)}</p>
                 </div>
               </div>
 
@@ -711,11 +741,11 @@ const DriverDashboard = () => {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <MapPin className="w-4 h-4 text-green-500" />
-                      <span>{trip.tripDetails?.pickupLocation || trip.pickupLocation}</span>
+                      <span>{formatLocation(trip.tripDetails?.pickupLocation || trip.pickupLocation)}</span>
                     </div>
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <MapPin className="w-4 h-4 text-red-500" />
-                      <span>{trip.tripDetails?.dropoffLocation || trip.dropoffLocation}</span>
+                      <span>{formatLocation(trip.tripDetails?.dropoffLocation || trip.dropoffLocation)}</span>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
                       <div className="flex items-center space-x-1">

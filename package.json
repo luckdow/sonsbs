@@ -17,6 +17,7 @@
     "date-fns": "^3.6.0",
     "firebase": "^10.14.1",
     "framer-motion": "^11.3.19",
+    "jsqr": "^1.4.0",
     "lucide-react": "^0.400.0",
     "postcss": "^8.4.40",
     "qr-scanner": "^1.4.2",

@@ -52,6 +52,42 @@ const ReservationTable = ({
     return vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Araç yok';
   };
 
+  // Location objelerini string'e dönüştürme helper
+  const formatLocation = (location) => {
+    if (!location) return 'Belirtilmemiş';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      if (location.address) return String(location.address);
+      if (location.name) return String(location.name);
+      if (location.formatted_address) return String(location.formatted_address);
+      if (location.description) return String(location.description);
+      return 'Lokasyon bilgisi mevcut';
+    }
+    return String(location);
+  };
+
+  // Backward compatibility helper functions
+  const getCustomerInfo = (reservation) => {
+    return {
+      firstName: reservation.customerInfo?.firstName || reservation.personalInfo?.firstName || '',
+      lastName: reservation.customerInfo?.lastName || reservation.personalInfo?.lastName || '',
+      phone: reservation.customerInfo?.phone || reservation.personalInfo?.phone || '',
+      email: reservation.customerInfo?.email || reservation.personalInfo?.email || ''
+    };
+  };
+
+  const getTripDetails = (reservation) => {
+    return {
+      date: reservation.tripDetails?.date || reservation.date,
+      time: reservation.tripDetails?.time || reservation.time,
+      pickupLocation: formatLocation(reservation.tripDetails?.pickupLocation || reservation.pickupLocation),
+      dropoffLocation: formatLocation(reservation.tripDetails?.dropoffLocation || reservation.dropoffLocation),
+      passengerCount: reservation.tripDetails?.passengerCount || reservation.passengerCount || 1,
+      luggageCount: reservation.tripDetails?.luggageCount || reservation.baggageCount || 0,
+      flightNumber: reservation.tripDetails?.flightNumber || reservation.personalInfo?.flightNumber || ''
+    };
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -102,11 +138,11 @@ const ReservationTable = ({
                       <User className="w-4 h-4 text-gray-400 mr-2" />
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}
+                          {getCustomerInfo(reservation).firstName} {getCustomerInfo(reservation).lastName}
                         </div>
                         <div className="text-sm text-gray-500 flex items-center">
                           <Phone className="w-3 h-3 mr-1" />
-                          {reservation.customerInfo?.phone}
+                          {getCustomerInfo(reservation).phone}
                         </div>
                       </div>
                     </div>
@@ -116,8 +152,8 @@ const ReservationTable = ({
                     <div className="flex items-center text-sm text-gray-900">
                       <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                       <div>
-                        <div>{reservation.tripDetails?.date}</div>
-                        <div className="text-gray-500">{reservation.tripDetails?.time}</div>
+                        <div>{getTripDetails(reservation).date}</div>
+                        <div className="text-gray-500">{getTripDetails(reservation).time}</div>
                       </div>
                     </div>
                   </td>
@@ -126,8 +162,8 @@ const ReservationTable = ({
                     <div className="flex items-center text-sm text-gray-900">
                       <MapPin className="w-4 h-4 text-gray-400 mr-2" />
                       <div className="max-w-xs truncate">
-                        <div className="truncate">{reservation.tripDetails?.pickupLocation}</div>
-                        <div className="text-gray-500 truncate">↓ {reservation.tripDetails?.dropoffLocation}</div>
+                        <div className="truncate">{getTripDetails(reservation).pickupLocation}</div>
+                        <div className="text-gray-500 truncate">↓ {getTripDetails(reservation).dropoffLocation}</div>
                       </div>
                     </div>
                   </td>
@@ -225,15 +261,15 @@ const ReservationTable = ({
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center gap-2">
                               <User className="w-4 h-4 text-gray-400" />
-                              <span>{reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}</span>
+                              <span>{getCustomerInfo(reservation).firstName} {getCustomerInfo(reservation).lastName}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Phone className="w-4 h-4 text-gray-400" />
-                              <span>{reservation.customerInfo?.phone}</span>
+                              <span>{getCustomerInfo(reservation).phone}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-gray-400">@</span>
-                              <span>{reservation.customerInfo?.email}</span>
+                              <span>{getCustomerInfo(reservation).email}</span>
                             </div>
                           </div>
                         </div>
@@ -244,19 +280,19 @@ const ReservationTable = ({
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-gray-400" />
-                              <span>{reservation.tripDetails?.date} - {reservation.tripDetails?.time}</span>
+                              <span>{getTripDetails(reservation).date} - {getTripDetails(reservation).time}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <User className="w-4 h-4 text-gray-400" />
-                              <span>{reservation.tripDetails?.passengerCount} Yolcu</span>
+                              <span>{getTripDetails(reservation).passengerCount} Yolcu</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-gray-400">✈️</span>
-                              <span>{reservation.tripDetails?.flightNumber || 'Uçuş no yok'}</span>
+                              <span>{getTripDetails(reservation).flightNumber || 'Uçuş no yok'}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-gray-400">🧳</span>
-                              <span>{reservation.tripDetails?.luggageCount} Bagaj</span>
+                              <span>{getTripDetails(reservation).luggageCount} Bagaj</span>
                             </div>
                           </div>
                         </div>

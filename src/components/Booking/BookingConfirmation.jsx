@@ -1,3 +1,17 @@
+  // Lokasyon objesini stringe çeviren yardımcı fonksiyon
+  const formatLocation = (location) => {
+    if (!location) return 'Belirtilmemiş';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      if (location.address) return location.address;
+      if (location.name) return location.name;
+      if (location.formatted_address) return location.formatted_address;
+      if (location.description) return location.description;
+      if (location.lat && location.lng) return `${location.lat}, ${location.lng}`;
+      return 'Lokasyon bilgisi mevcut';
+    }
+    return String(location);
+  };
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -44,61 +58,80 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
   }, []);
 
   const generateReservationData = async () => {
-    // Generate unique reservation ID
-    const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const newReservationId = `SBS${timestamp.toString().slice(-6)}${randomStr}`;
+    // Use reservation ID from BookingWizard if available, otherwise generate new one
+    let newReservationId = bookingData.reservationId;
+    
+    if (!newReservationId) {
+      // Generate unique reservation ID as fallback
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
+      newReservationId = `SBS${timestamp.toString().slice(-6)}${randomStr}`;
+    }
+    
     setReservationId(newReservationId);
 
-    // Create reservation data for Firebase
+    // Create reservation data for Firebase - Admin panel uyumlu format
     const reservationData = {
-      id: newReservationId,
-      status: RESERVATION_STATUS.PENDING,
-      createdAt: new Date(),
+      reservationId: newReservationId,  // Admin panel için rezervasyon ID
+      status: 'pending',  // String format kullan
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       
-      // Transfer details
-      direction: bookingData.direction,
-      pickupLocation: bookingData.pickupLocation,
-      dropoffLocation: bookingData.dropoffLocation,
-      date: bookingData.date,
-      time: bookingData.time,
-      passengerCount: bookingData.passengerCount,
-      baggageCount: bookingData.baggageCount,
+      // Admin panel beklenen format: tripDetails objesi
+      tripDetails: {
+        date: bookingData.date,
+        time: bookingData.time,
+        pickupLocation: bookingData.pickupLocation,
+        dropoffLocation: bookingData.dropoffLocation,
+        passengerCount: bookingData.passengerCount || bookingData.personalInfo?.passengerCount || 1,
+        luggageCount: bookingData.baggageCount || 1,
+        flightNumber: bookingData.personalInfo?.flightNumber || '',
+        direction: bookingData.direction
+      },
+      
+      // Admin panel beklenen format: customerInfo objesi  
+      customerInfo: {
+        firstName: bookingData.personalInfo?.firstName || '',
+        lastName: bookingData.personalInfo?.lastName || '',
+        email: bookingData.personalInfo?.email || '',
+        phone: bookingData.personalInfo?.phone || ''
+      },
+      
+      // Diğer alanlar
+      selectedVehicle: bookingData.selectedVehicle,
+      selectedServices: bookingData.selectedServices || [],
+      paymentMethod: bookingData.paymentMethod,
+      totalPrice: bookingData.totalPrice,
       
       // Route info
       distance: bookingData.distance,
       duration: bookingData.duration,
       
-      // Vehicle and services
-      selectedVehicle: bookingData.selectedVehicle,
-      selectedServices: bookingData.selectedServices || [],
-      
-      // Personal info
+      // Müşteri paneli için backward compatibility
       personalInfo: bookingData.personalInfo,
+      direction: bookingData.direction,
+      pickupLocation: bookingData.pickupLocation,
+      dropoffLocation: bookingData.dropoffLocation,
+      date: bookingData.date,
+      time: bookingData.time,
       
-      // Payment info
-      paymentMethod: bookingData.paymentMethod,
-      totalPrice: bookingData.totalPrice,
-      
-      // Additional fields
-      driverAssigned: null,
-      specialRequests: bookingData.personalInfo?.specialRequests || '',
-      flightNumber: bookingData.personalInfo?.flightNumber || '',
-      flightTime: bookingData.personalInfo?.flightTime || ''
+      // Assignment fields
+      assignedDriver: null,
+      assignedDriverId: null,
+      assignedVehicle: null,
+      driverAssigned: null
     };
 
     try {
-      // Save reservation to Firebase
-      const docRef = await addDoc(collection(db, FIREBASE_COLLECTIONS.RESERVATIONS), reservationData);
-      console.log('Reservation saved with ID:', docRef.id);
-      toast.success('Rezervasyon başarıyla kaydedildi!');
+      // Rezervasyon zaten BookingWizard'da kaydedildi, sadece QR ve üyelik işlemleri
+      console.log('Booking confirmation - Rezervasyon zaten kaydedildi, QR ve üyelik oluşturuluyor');
       
       // Create automatic membership if not logged in
       await createAutomaticMembership();
       
     } catch (error) {
-      console.error('Error saving reservation:', error);
-      toast.error('Rezervasyon kaydedilemedi. Lütfen tekrar deneyin.');
+      console.error('Error in booking confirmation:', error);
+      toast.error('Rezervasyon onaylanırken bir hata oluştu.');
     }
 
     // Create QR code data
@@ -175,7 +208,7 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
       };
       
       // Firestore'a kullanıcı profili kaydet
-      await addDoc(collection(db, FIREBASE_COLLECTIONS.USERS), userProfileData);
+      await addDoc(collection(db, 'users'), userProfileData);
       
       setMembershipCreated(true);
       toast.success('Üyeliğiniz otomatik olarak oluşturuldu!');
@@ -274,6 +307,21 @@ Araç: ${bookingData.selectedVehicle?.name}
                   <p className="font-medium">
                     {new Date(bookingData.date).toLocaleDateString('tr-TR')} - {bookingData.time}
                   </p>
+              {/* Kalkış ve Varış Noktaları */}
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-600">Kalkış Noktası</p>
+                  <p className="font-medium">{formatLocation(bookingData.pickupLocation)}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-600">Varış Noktası</p>
+                  <p className="font-medium">{formatLocation(bookingData.dropoffLocation)}</p>
+                </div>
+              </div>
                 </div>
               </div>
 
