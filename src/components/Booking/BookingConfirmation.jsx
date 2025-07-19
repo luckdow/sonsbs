@@ -117,6 +117,7 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
   // QR kod oluştur
   const generateQRCode = async (code) => {
     try {
+      console.log('QR kod oluşturuluyor:', code);
       const qrText = `SBS Transfer - Rezervasyon: ${code}`;
       const qrCodeDataUrl = await QRCode.toDataURL(qrText, {
         width: 200,
@@ -127,6 +128,7 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
         }
       });
       setQrCodeUrl(qrCodeDataUrl);
+      console.log('QR kod oluşturuldu:', qrCodeDataUrl ? 'Başarılı' : 'Başarısız');
     } catch (error) {
       console.error('QR kod oluşturma hatası:', error);
     }
@@ -186,9 +188,6 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
       const docRef = await addDoc(collection(db, 'reservations'), newReservationData);
       console.log('Rezervasyon kaydedildi:', docRef.id);
 
-      // QR kod oluştur
-      await generateQRCode(code);
-
       toast.success('Rezervasyonunuz başarıyla oluşturuldu!');
       
       if (onComplete) {
@@ -246,6 +245,13 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
     loadCompanyInfo();
     handleConfirmReservation();
   }, []);
+
+  // Rezervasyon kodu değiştiğinde QR kod oluştur
+  useEffect(() => {
+    if (reservationCode) {
+      generateQRCode(reservationCode);
+    }
+  }, [reservationCode]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
@@ -466,21 +472,33 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
               <div className="lg:col-span-1">
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 sticky top-4 space-y-4">
                   {/* QR Kod */}
-                  {qrCodeUrl && (
-                    <div className="text-center">
-                      <h3 className="text-base font-semibold text-gray-900 mb-3">QR Kod</h3>
-                      <div className="bg-white p-4 rounded-xl border border-gray-200 inline-block">
-                        <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32 mx-auto" />
+                  <div className="text-center">
+                    <h3 className="text-base font-semibold text-gray-900 mb-3">QR Kod</h3>
+                    {reservationCode && (
+                      <p className="text-sm text-gray-600 mb-2">Kod: {reservationCode}</p>
+                    )}
+                    {qrCodeUrl ? (
+                      <div>
+                        <div className="bg-white p-4 rounded-xl border border-gray-200 inline-block">
+                          <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32 mx-auto" />
+                        </div>
+                        <button
+                          onClick={downloadQRCode}
+                          className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center gap-2 mx-auto"
+                        >
+                          <Download className="w-4 h-4" />
+                          QR Kodunu İndir
+                        </button>
                       </div>
-                      <button
-                        onClick={downloadQRCode}
-                        className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center gap-2 mx-auto"
-                      >
-                        <Download className="w-4 h-4" />
-                        QR Kodunu İndir
-                      </button>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="bg-gray-100 p-4 rounded-xl border border-gray-200">
+                        <div className="w-32 h-32 mx-auto flex items-center justify-center bg-gray-200 rounded">
+                          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-2">QR kod oluşturuluyor...</p>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Toplam Tutar */}
                   <div className="pt-4 border-t border-gray-200">
