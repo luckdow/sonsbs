@@ -139,42 +139,41 @@ export const generatePDFFromElement = async (elementId, fileName = 'document.pdf
       throw new Error('Element bulunamadı');
     }
     
+    // PDF özel layout için element'i görünür yap
+    const originalStyle = element.style.cssText;
+    element.style.cssText = 'position: static !important; top: auto !important; left: auto !important; transform: none !important;';
+    
+    // Kısa bir gecikme ver ki CSS uygulanabilsin
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Daha yüksek kalitede görüntü için ayarlar
     const canvas = await html2canvas(element, {
-      scale: 3, // Yüksek çözünürlük için scale artırıldı
+      scale: 2, // A4 için optimize edilmiş scale
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      height: element.scrollHeight,
-      width: element.scrollWidth,
+      width: 794, // A4 genişliği pixel cinsinden (210mm)
+      height: 1123, // A4 yüksekliği pixel cinsinden (297mm)
       scrollX: 0,
       scrollY: 0,
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight
+      logging: false
     });
+    
+    // Element'i tekrar gizle
+    element.style.cssText = originalStyle;
     
     const imgData = canvas.toDataURL('image/png', 1.0); // Maksimum kalite
     const pdf = new jsPDF('p', 'mm', 'a4');
     
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pdfWidth - 20; // 10mm margin her taraftan
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+    const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
     
-    let heightLeft = imgHeight;
-    let position = 10; // Üstten 10mm margin
+    // A4 sayfasına tam olarak sığacak şekilde boyutlandır
+    const imgWidth = pdfWidth;
+    const imgHeight = pdfHeight;
     
-    // İlk sayfa
-    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-    heightLeft -= (pdfHeight - 20); // Margin dahil
-    
-    // Eğer içerik birden fazla sayfaya sığmıyorsa
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight + 10; // Negatif position
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-      heightLeft -= (pdfHeight - 20);
-    }
+    // PDF'e ekle
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
     
     pdf.save(fileName);
     return true;
