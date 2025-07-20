@@ -241,11 +241,7 @@ const ReservationIndex = () => {
 
   // Hızlı rezervasyon ekleme - GEÇİCİ OLARAK KAPALI
   const handleQuickReservation = async (reservationData) => {
-    toast.info('Hızlı rezervasyon ekleme özelliği geçici olarak kapatılmıştır. Rezervasyonlar müşteri paneli üzerinden oluşturulmalıdır.');
-    setShowQuickModal(false);
-    return;
-    
-    /* try {
+    try {
       const newReservation = {
         ...reservationData,
         reservationId: `SBS-${Date.now()}`,
@@ -253,10 +249,8 @@ const ReservationIndex = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
       // Firebase'a ekle (id alanı olmadan)
       const docRef = await addDoc(collection(db, 'reservations'), newReservation);
-      
       setShowQuickModal(false);
       toast.success('Rezervasyon başarıyla eklendi!');
       
@@ -264,7 +258,7 @@ const ReservationIndex = () => {
     } catch (error) {
       console.error('Rezervasyon eklenirken hata:', error);
       toast.error('Rezervasyon eklenirken bir hata oluştu: ' + error.message);
-    } */
+    }
   };
 
   // Şoför atama - Sadece gerçek Firebase veriler
