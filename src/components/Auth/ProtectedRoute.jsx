@@ -24,11 +24,11 @@ export const ProtectedRoute = ({ children, requiredRole = null, redirectTo = '/g
     // Redirect based on user role
     switch (userProfile?.role) {
       case USER_ROLES.ADMIN:
-        return <Navigate to="/admin/dashboard" replace />;
+        return <Navigate to="/admin" replace />;
       case USER_ROLES.DRIVER:
-        return <Navigate to="/şoför/dashboard" replace />;
+        return <Navigate to="/driver" replace />;
       case USER_ROLES.CUSTOMER:
-        return <Navigate to="/rezervasyonlarim" replace />;
+        return <Navigate to="/" replace />;
       default:
         return <Navigate to="/giriş" replace />;
     }
@@ -54,11 +54,11 @@ export const PublicRoute = ({ children, redirectTo = null }) => {
     if (!redirectTo || redirectTo === 'auto') {
       switch (userProfile?.role) {
         case USER_ROLES.ADMIN:
-          return <Navigate to="/admin/dashboard" replace />;
+          return <Navigate to="/admin" replace />;
         case USER_ROLES.DRIVER:
-          return <Navigate to="/şoför/dashboard" replace />;
+          return <Navigate to="/driver" replace />;
         case USER_ROLES.CUSTOMER:
-          return <Navigate to="/rezervasyonlarim" replace />;
+          return <Navigate to="/" replace />;
         default:
           return <Navigate to="/" replace />;
       }

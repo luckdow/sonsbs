@@ -172,18 +172,18 @@ const QuickBookingForm = () => {
   ];
 
   return (
-    <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 lg:p-6 shadow-2xl relative overflow-hidden">
+    <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-3 sm:p-4 lg:p-6 shadow-2xl relative overflow-hidden">
       {/* Neon glow effect */}
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-xl"></div>
       <div className="absolute inset-0 rounded-2xl border border-blue-400/30 shadow-[0_0_20px_rgba(59,130,246,0.3)]"></div>
       
       <div className="relative z-10">
-        <div className="text-center mb-4">
-          <h3 className="text-xl lg:text-2xl font-bold text-white mb-1">
-            <Car className="w-5 h-5 inline mr-2" />
+        <div className="text-center mb-3 sm:mb-4">
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1">
+            <Car className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
             Hızlı Rezervasyon
           </h3>
-          <p className="text-gray-300 text-xs lg:text-sm">
+          <p className="text-gray-300 text-xs sm:text-sm lg:text-sm">
             {!quickBookingData.tripType ? 'Seyahat türünü seçin' :
              !quickBookingData.pickupLocation || !quickBookingData.dropoffLocation ? 'Lokasyonları girin' :
              !quickBookingData.date || !quickBookingData.time ? 'Tarih ve saat seçin' :
@@ -192,7 +192,7 @@ const QuickBookingForm = () => {
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Adım 1: Seyahat Türü */}
           <div>
             <label className="block text-white text-xs font-medium mb-2">
@@ -203,7 +203,7 @@ const QuickBookingForm = () => {
               <button
                 type="button"
                 onClick={() => setQuickBookingData(prev => ({...prev, tripType: 'one-way'}))}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+                className={`px-2 sm:px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                   quickBookingData.tripType === 'one-way'
                     ? 'bg-blue-600 text-white border border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]'
                     : 'bg-white/20 text-white border border-white/30 hover:bg-white/30'
@@ -214,7 +214,7 @@ const QuickBookingForm = () => {
               <button
                 type="button"
                 onClick={() => setQuickBookingData(prev => ({...prev, tripType: 'round-trip'}))}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+                className={`px-2 sm:px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                   quickBookingData.tripType === 'round-trip'
                     ? 'bg-blue-600 text-white border border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]'
                     : 'bg-white/20 text-white border border-white/30 hover:bg-white/30'
@@ -265,7 +265,7 @@ const QuickBookingForm = () => {
               transition={{ duration: 0.3 }}
               className="space-y-3"
             >
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-white text-xs font-medium mb-1">
                     <Calendar className="w-3 h-3 inline mr-1" />
@@ -301,7 +301,7 @@ const QuickBookingForm = () => {
 
               {/* Dönüş Tarih ve Saat - sadece gidiş-dönüş seçiliyse */}
               {quickBookingData.tripType === 'round-trip' && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-white text-xs font-medium mb-1">
                       <Calendar className="w-3 h-3 inline mr-1" />
@@ -412,8 +412,8 @@ const QuickBookingForm = () => {
           )}
 
           {/* Trust Badges - SSL ve Güvenlik */}
-          <div className="pt-4 border-t border-white/20">
-            <div className="flex justify-center space-x-4 text-xs">
+          <div className="pt-3 sm:pt-4 border-t border-white/20">
+            <div className="flex justify-center space-x-3 sm:space-x-4 text-xs">
               <div className="flex items-center space-x-1 text-green-400">
                 <Shield className="w-3 h-3" />
                 <span>SSL Güvenli</span>

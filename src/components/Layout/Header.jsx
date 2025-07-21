@@ -9,7 +9,108 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut, loading } = useAuth();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Auth skeleton component
+  const AuthSkeleton = () => (
+    <div className="flex items-center space-x-2">
+      <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>
+      <div className="w-20 h-4 bg-gray-300 rounded animate-pulse"></div>
+    </div>
+  );
+
+  // Render auth section with skeleton on loading
+  const renderAuthSection = () => {
+    // If loading and no cached user data, show skeleton
+    if (loading && !userProfile) {
+      return <AuthSkeleton />;
+    }
+
+    // If we have user profile (either from cache or fresh), show user menu
+    if (userProfile) {
+      return (
+        <div className="relative group">
+          <motion.button
+            className={`flex items-center space-x-3 px-3 py-2 rounded-xl transition-colors duration-300 ${
+              isScrolled || location.pathname !== '/' 
+                ? 'text-gray-700 hover:bg-gray-100' 
+                : 'text-white hover:bg-white/10'
+            }`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+              <span className="text-white text-xs font-bold">
+                {userProfile.firstName?.[0]?.toUpperCase() || 'U'}
+              </span>
+            </div>
+            <span className="text-sm font-medium">
+              {userProfile.firstName || 'Kullanıcı'}
+            </span>
+          </motion.button>
+          
+          {/* Dropdown Menu */}
+          <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <div className="py-2">
+              <Link
+                to="/rezervasyonlarim"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Rezervasyonlarım
+              </Link>
+              <Link
+                to="/profil"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Profil Ayarları
+              </Link>
+              <hr className="my-2" />
+              <button
+                onClick={signOut}
+                className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Çıkış Yap
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // If no user and not loading, show login button
+    return (
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Link
+          to="/giriş"
+          className="btn btn-primary relative overflow-hidden group"
+        >
+          <motion.span
+            className="relative z-10"
+            whileHover={{ scale: 1.05 }}
+          >
+            Giriş Yap
+          </motion.span>
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"
+            initial={{ x: '-100%' }}
+            whileHover={{ x: 0 }}
+            transition={{ duration: 0.3 }}
+          />
+        </Link>
+      </motion.div>
+    );
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -119,74 +220,7 @@ const Header = () => {
             </div>
 
             {/* User Actions */}
-            {user ? (
-              <div className="flex items-center space-x-2">
-                <div className="relative group">
-                  <motion.button
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-colors duration-300 ${
-                      isScrolled || location.pathname !== '/' 
-                        ? 'text-gray-700 hover:bg-gray-100' 
-                        : 'text-white hover:bg-white/10'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <User className="w-4 h-4" />
-                    <span className="text-sm font-medium">
-                      {userProfile?.firstName || user.email?.split('@')[0]}
-                    </span>
-                  </motion.button>
-                  
-                  {/* Dropdown Menu */}
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-2">
-                      <Link
-                        to="/rezervasyonlarim"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Rezervasyonlarım
-                      </Link>
-                      <Link
-                        to="/profil"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Profil Ayarları
-                      </Link>
-                      <hr className="my-2" />
-                      <button
-                        onClick={signOut}
-                        className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Çıkış Yap
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  to="/giriş"
-                  className="btn btn-primary relative overflow-hidden group"
-                >
-                  <motion.span
-                    className="relative z-10"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    Giriş Yap
-                  </motion.span>
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600"
-                    initial={{ x: '-100%' }}
-                    whileHover={{ x: 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </Link>
-              </motion.div>
-            )}
+            {renderAuthSection()}
 
             {/* Mobile Menu Button */}
             <motion.button

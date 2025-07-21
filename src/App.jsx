@@ -108,7 +108,7 @@ function App() {
               </Route>
 
               {/* Driver Routes */}
-              <Route path="/şoför" element={
+              <Route path="/driver" element={
                 <DriverRoute>
                   <DriverLayout />
                 </DriverRoute>

@@ -9,13 +9,10 @@ import {
   Lock, 
   ArrowRight,
   Chrome,
-  Shield,
-  Sparkles,
-  CheckCircle,
-  Settings
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { setupDemoEnvironment } from '../../utils/demoSetup';
+import { USER_ROLES } from '../../config/constants';
 import toast from 'react-hot-toast';
 
 const LoginPage = () => {
@@ -30,10 +27,31 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isDemoSetupLoading, setIsDemoSetupLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const from = location.state?.from?.pathname || '/';
+
+  // Role-based navigation function
+  const navigateBasedOnRole = (userProfile) => {
+    if (!userProfile) {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    switch (userProfile.role) {
+      case USER_ROLES.ADMIN:
+        navigate('/admin', { replace: true });
+        break;
+      case USER_ROLES.DRIVER:
+        navigate('/driver', { replace: true });
+        break;
+      case USER_ROLES.CUSTOMER:
+        navigate('/', { replace: true });
+        break;
+      default:
+        navigate('/', { replace: true });
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -74,11 +92,12 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password);
+      const { user, profile } = await login(formData.email, formData.password);
       toast.success('Başarıyla giriş yaptınız!');
       
-      // Redirect will be handled by AuthContext based on user role
-      navigate(from, { replace: true });
+      // Navigate based on user role immediately
+      navigateBasedOnRole(profile);
+      
     } catch (error) {
       console.error('Login error:', error);
       
@@ -89,7 +108,7 @@ const LoginPage = () => {
       } else if (error.code === 'auth/wrong-password') {
         errorMessage = 'Hatalı şifre';
       } else if (error.code === 'auth/invalid-credential') {
-        errorMessage = 'Geçersiz giriş bilgileri. Demo hesapları henüz oluşturulmamış olabilir.';
+        errorMessage = 'Geçersiz giriş bilgileri';
       } else if (error.code === 'auth/invalid-email') {
         errorMessage = 'Geçersiz e-posta adresi';
       } else if (error.code === 'auth/too-many-requests') {
@@ -106,12 +125,15 @@ const LoginPage = () => {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      await signInWithGoogle();
+      const { user, profile } = await signInWithGoogle();
       toast.success('Google ile başarıyla giriş yaptınız!', {
         icon: '🎉',
         duration: 3000,
       });
-      navigate(from, { replace: true });
+      
+      // Navigate based on user role immediately
+      navigateBasedOnRole(profile);
+      
     } catch (error) {
       console.error('Google sign-in error:', error);
       
@@ -345,33 +367,6 @@ const LoginPage = () => {
               </Link>
             </p>
           </div>
-
-          {/* Demo Accounts */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4"
-          >
-            <div className="flex items-center space-x-2 mb-3">
-              <Shield className="w-5 h-5 text-amber-600" />
-              <h4 className="text-sm font-semibold text-amber-800">Demo Hesapları</h4>
-            </div>
-            <div className="space-y-2 text-xs text-amber-700">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
-                <span><strong>Admin:</strong> admin@sbstransfer.com / admin123</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
-                <span><strong>Şoför:</strong> sofor@sbstransfer.com / sofor123</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
-                <span><strong>Müşteri:</strong> musteri@sbstransfer.com / musteri123</span>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
 
         {/* Back to Home */}

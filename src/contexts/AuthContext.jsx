@@ -29,6 +29,29 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [initialLoad, setInitialLoad] = useState(true);
+
+  // Cache user profile in localStorage for faster loading
+  const getCachedProfile = () => {
+    try {
+      const cached = localStorage.getItem('userProfile');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const setCachedProfile = (profile) => {
+    try {
+      if (profile) {
+        localStorage.setItem('userProfile', JSON.stringify(profile));
+      } else {
+        localStorage.removeItem('userProfile');
+      }
+    } catch (error) {
+      console.warn('Failed to cache user profile:', error);
+    }
+  };
 
   // Login function
   const login = async (email, password) => {
@@ -39,10 +62,13 @@ export const AuthProvider = ({ children }) => {
       // Get user profile from Firestore
       const userDoc = await getDoc(doc(db, FIREBASE_COLLECTIONS.USERS, result.user.uid));
       if (userDoc.exists()) {
-        setUserProfile(userDoc.data());
+        const profileData = userDoc.data();
+        setUserProfile(profileData);
+        setCachedProfile(profileData); // Cache the profile
+        return { user: result.user, profile: profileData }; // Return both user and profile
       }
       
-      return result;
+      return { user: result.user, profile: null };
     } catch (error) {
       setError(error.message);
       throw error;
@@ -81,6 +107,8 @@ export const AuthProvider = ({ children }) => {
 
         await setDoc(doc(db, FIREBASE_COLLECTIONS.USERS, result.user.uid), userProfile);
         setUserProfile(userProfile);
+        setCachedProfile(userProfile); // Cache the profile
+        return { user: result.user, profile: userProfile }; // Return both user and profile
       } else {
         // Update existing profile if needed
         const existingProfile = userDoc.data();
@@ -93,9 +121,10 @@ export const AuthProvider = ({ children }) => {
         
         await updateDoc(doc(db, FIREBASE_COLLECTIONS.USERS, result.user.uid), updatedProfile);
         setUserProfile(updatedProfile);
+        setCachedProfile(updatedProfile); // Cache the updated profile
+        return { user: result.user, profile: updatedProfile }; // Return both user and profile
       }
       
-      return result;
     } catch (error) {
       setError(error.message);
       throw error;
@@ -180,6 +209,7 @@ export const AuthProvider = ({ children }) => {
       await signOut(auth);
       setUser(null);
       setUserProfile(null);
+      setCachedProfile(null); // Clear cache on logout
     } catch (error) {
       setError(error.message);
       throw error;
@@ -225,6 +255,7 @@ export const AuthProvider = ({ children }) => {
         
         await updateDoc(doc(db, FIREBASE_COLLECTIONS.USERS, user.uid), updatedProfile);
         setUserProfile(updatedProfile);
+        setCachedProfile(updatedProfile); // Update cache
       }
     } catch (error) {
       setError(error.message);
@@ -248,39 +279,62 @@ export const AuthProvider = ({ children }) => {
 
   // Auth state listener
   useEffect(() => {
+    // Immediately load cached profile for faster initial render
+    const cachedProfile = getCachedProfile();
+    if (cachedProfile) {
+      setUserProfile(cachedProfile);
+      // Don't set loading to false yet - wait for Firebase auth check
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
         
-        // Get user profile from Firestore
-        try {
-          const userDoc = await getDoc(doc(db, FIREBASE_COLLECTIONS.USERS, firebaseUser.uid));
-          if (userDoc.exists()) {
-            setUserProfile(userDoc.data());
-          } else {
-            // Create basic profile if doesn't exist
-            const basicProfile = {
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              firstName: firebaseUser.displayName?.split(' ')[0] || '',
-              lastName: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
-              role: USER_ROLES.CUSTOMER,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              isActive: true
-            };
-            await setDoc(doc(db, FIREBASE_COLLECTIONS.USERS, firebaseUser.uid), basicProfile);
-            setUserProfile(basicProfile);
+        // If we have cached profile and user matches, use cached data
+        if (cachedProfile && cachedProfile.uid === firebaseUser.uid) {
+          setUserProfile(cachedProfile);
+          setLoading(false);
+          setInitialLoad(false);
+        } else {
+          // Fetch fresh data from Firestore
+          try {
+            const userDoc = await getDoc(doc(db, FIREBASE_COLLECTIONS.USERS, firebaseUser.uid));
+            if (userDoc.exists()) {
+              const profileData = userDoc.data();
+              setUserProfile(profileData);
+              setCachedProfile(profileData);
+            } else {
+              // Create basic profile if doesn't exist
+              const basicProfile = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                firstName: firebaseUser.displayName?.split(' ')[0] || '',
+                lastName: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
+                role: USER_ROLES.CUSTOMER,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isActive: true
+              };
+              await setDoc(doc(db, FIREBASE_COLLECTIONS.USERS, firebaseUser.uid), basicProfile);
+              setUserProfile(basicProfile);
+              setCachedProfile(basicProfile);
+            }
+            setLoading(false);
+            setInitialLoad(false);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            setError('Profile bilgileri alınamadı');
+            setLoading(false);
           }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-          setError('Profile bilgileri alınamadı');
         }
       } else {
+        // User is not logged in - clear everything
         setUser(null);
         setUserProfile(null);
+        setCachedProfile(null);
+        setLoading(false);
+        setInitialLoad(false);
       }
-      setLoading(false);
     });
 
     return unsubscribe;

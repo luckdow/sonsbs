@@ -1,43 +1,52 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, memo } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import LoadingScreen from '../../components/UI/LoadingScreen';
 import SEOComponent from '../../components/Homepage/sections/SEOComponent';
 
-// Lazy load components for better performance
-const HeroSection = lazy(() => import('../../components/Homepage/sections/HeroSection'));
-const ServicesSection = lazy(() => import('../../components/Homepage/sections/ServicesSection'));
-const TestimonialsSection = lazy(() => import('../../components/Homepage/sections/TestimonialsSection'));
-const FAQSection = lazy(() => import('../../components/Homepage/sections/FAQSection'));
+// Preload critical components immediately
+import HeroSection from '../../components/Homepage/sections/HeroSection';
 
-// Loading placeholder component
-const SectionLoader = () => (
-  <div className="w-full h-64 flex items-center justify-center bg-gray-50">
-    <div className="animate-pulse flex space-x-4">
-      <div className="rounded-full bg-gray-300 h-10 w-10"></div>
-      <div className="flex-1 space-y-2 py-1">
-        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-300 rounded"></div>
-          <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+// Lazy load non-critical components
+const ServicesSection = lazy(() => 
+  import('../../components/Homepage/sections/ServicesSection').then(module => ({
+    default: module.default
+  }))
 );
 
-const HomePage = () => {
+const TestimonialsSection = lazy(() => 
+  import('../../components/Homepage/sections/TestimonialsSection').then(module => ({
+    default: module.default
+  }))
+);
+
+const FAQSection = lazy(() => 
+  import('../../components/Homepage/sections/FAQSection').then(module => ({
+    default: module.default
+  }))
+);
+
+// Optimized loading placeholder
+const SectionLoader = memo(() => (
+  <div className="w-full h-32 flex items-center justify-center bg-gradient-to-r from-gray-50 to-gray-100">
+    <div className="flex space-x-2">
+      <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+      <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+      <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+    </div>
+  </div>
+));
+
+const HomePage = memo(() => {
   return (
     <HelmetProvider>
       <div className="min-h-screen">
         {/* SEO Meta Tags - Critical, load immediately */}
         <SEOComponent language="tr" page="homepage" />
         
-        {/* Hero Section - Critical, load immediately */}
-        <Suspense fallback={<LoadingScreen />}>
-          <HeroSection />
-        </Suspense>
+        {/* Hero Section - Critical, no lazy loading for immediate display */}
+        <HeroSection />
         
-        {/* Services Section - Lazy load with custom placeholder */}
+        {/* Services Section - Lazy load with intersection observer */}
         <Suspense fallback={<SectionLoader />}>
           <ServicesSection />
         </Suspense>
@@ -54,6 +63,6 @@ const HomePage = () => {
       </div>
     </HelmetProvider>
   );
-};
+});
 
 export default HomePage;
