@@ -16,6 +16,7 @@ import VehicleSelectionPage from './pages/Public/VehicleSelectionPage'
 import CustomerInfoPage from './pages/Public/CustomerInfoPage'
 import PaymentPage from './pages/Public/PaymentPage'
 import ConfirmationPage from './pages/Public/ConfirmationPage'
+import BookingConfirmationPage from './pages/Public/BookingConfirmationPage'
 import MyReservations from './pages/Public/MyReservations'
 import CustomerProfile from './pages/Public/CustomerProfile'
 
@@ -68,6 +69,9 @@ function App() {
                 <Route path="rezervasyonlarim" element={<MyReservations />} />
                 <Route path="profil" element={<CustomerProfile />} />
               </Route>
+
+              {/* Booking Confirmation - Standalone Route */}
+              <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
 
               {/* Auth Routes */}
               <Route path="/giriş" element={

@@ -15,13 +15,16 @@ import {
   Navigation,
   X,
   LogOut,
-  Settings
+  Settings,
+  Download,
+  QrCode
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { USER_ROLES } from '../../config/constants';
 import { useNavigate } from 'react-router-dom';
+import QRCode from 'qrcode';
 
 const MyReservations = () => {
   const { user, userProfile, signOut } = useAuth();
@@ -35,8 +38,47 @@ const MyReservations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedReservation, setSelectedReservation] = useState(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // QR kod oluştur
+  const generateQRCode = async (reservationCode, customerPhone) => {
+    try {
+      console.log('🔲 QR kod oluşturuluyor:', reservationCode);
+      
+      if (!customerPhone) {
+        console.log('❌ QR kod için telefon numarası yok');
+        return;
+      }
+      
+      const qrText = `SBS Transfer - Rezervasyon: ${reservationCode} - Tel: ${customerPhone}`;
+      const qrCodeDataUrl = await QRCode.toDataURL(qrText, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#1f2937',
+          light: '#ffffff'
+        }
+      });
+      
+      setQrCodeUrl(qrCodeDataUrl);
+      console.log('✅ QR kod oluşturuldu');
+      
+    } catch (error) {
+      console.error('❌ QR kod oluşturma hatası:', error);
+    }
+  };
+
+  // QR kodu indir
+  const downloadQRCode = () => {
+    if (qrCodeUrl && selectedReservation) {
+      const link = document.createElement('a');
+      link.download = `SBS-Transfer-${selectedReservation.reservationCode || selectedReservation.reservationId}.png`;
+      link.href = qrCodeUrl;
+      link.click();
+    }
+  };
 
   // Firebase listeners for real-time data
   useEffect(() => {
@@ -71,8 +113,8 @@ const MyReservations = () => {
           // Email eşleşmesi kontrolü
           const isUserReservation = email1 === userEmail || email2 === userEmail;
           
-          // Çifte kayıt kontrolü - reservationId bazlı
-          const reservationId = r.reservationId || r.id;
+          // Çifte kayıt kontrolü - reservationCode veya reservationId bazlı
+          const reservationId = r.reservationCode || r.reservationId || r.id;
           if (isUserReservation && !uniqueReservationIds.has(reservationId)) {
             uniqueReservationIds.add(reservationId);
             return true;
@@ -148,6 +190,7 @@ const MyReservations = () => {
     if (searchTerm) {
       filtered = filtered.filter(reservation =>
         reservation.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation.reservationCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reservation.reservationId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         formatLocation(getPickupLocation(reservation))?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         formatLocation(getDropoffLocation(reservation))?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -415,7 +458,7 @@ const MyReservations = () => {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        {String(reservation.id?.slice(-8) || 'Rezervasyon')}
+                        #{reservation.reservationCode || reservation.reservationId || reservation.id?.slice(-8) || 'Rezervasyon'}
                       </h3>
                       <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusInfo(reservation.status).color}`}>
                         {getStatusInfo(reservation.status).label}
@@ -505,6 +548,12 @@ const MyReservations = () => {
                       onClick={() => {
                         setSelectedReservation(reservation);
                         setShowModal(true);
+                        // QR kod oluştur
+                        const reservationCode = reservation.reservationCode || reservation.reservationId || reservation.id;
+                        const customerPhone = reservation.customerInfo?.phone || getCustomerPhone(reservation);
+                        if (reservationCode && customerPhone) {
+                          generateQRCode(reservationCode, customerPhone);
+                        }
                       }}
                       className="flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
@@ -565,8 +614,8 @@ const MyReservations = () => {
               <div className="p-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-gray-600">Rezervasyon ID</label>
-                    <p className="font-medium">{selectedReservation.id}</p>
+                    <label className="text-sm text-gray-600">Rezervasyon Kodu</label>
+                    <p className="font-medium">#{selectedReservation.reservationCode || selectedReservation.reservationId || selectedReservation.id}</p>
                   </div>
                   <div>
                     <label className="text-sm text-gray-600">Durum</label>
@@ -589,6 +638,71 @@ const MyReservations = () => {
                   <div>
                     <label className="text-sm text-gray-600">Toplam Ücret</label>
                     <p className="font-medium text-blue-600">₺{Number(selectedReservation.totalPrice || 0).toLocaleString('tr-TR')}</p>
+                  </div>
+                  
+                  {/* QR Kod Bölümü */}
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <QrCode className="w-5 h-5 text-purple-600" />
+                        <label className="text-sm text-gray-600 font-medium">QR Kod</label>
+                      </div>
+                    </div>
+                    {qrCodeUrl ? (
+                      <div className="text-center">
+                        <div className="bg-white p-3 rounded-lg border-2 border-purple-200 inline-block mb-3">
+                          <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32 mx-auto" />
+                        </div>
+                        <button
+                          onClick={downloadQRCode}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition-all duration-300 text-sm flex items-center justify-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                          QR Kodunu İndir
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="w-32 h-32 mx-auto flex items-center justify-center bg-gray-100 rounded-lg">
+                          <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-2">QR kod oluşturuluyor...</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* QR Kod Bölümü */}
+                  <div className="mt-6 p-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-purple-200">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
+                        <QrCode className="w-4 h-4 text-white" />
+                      </div>
+                      <h4 className="font-medium text-gray-900">QR Kod</h4>
+                    </div>
+                    
+                    {qrCodeUrl ? (
+                      <div className="text-center">
+                        <div className="bg-white p-3 rounded-xl border-2 border-purple-200 inline-block mb-4 shadow-lg">
+                          <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32 mx-auto" />
+                        </div>
+                        <button
+                          onClick={downloadQRCode}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition-all duration-300 text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                        >
+                          <Download className="w-4 h-4" />
+                          QR Kodunu İndir
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <div className="bg-white/50 backdrop-blur-sm p-6 rounded-xl border border-purple-200">
+                          <div className="w-32 h-32 mx-auto flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl">
+                            <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-4">QR kod oluşturuluyor...</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

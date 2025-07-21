@@ -27,6 +27,51 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://sbstransfer.com" />
     
+    <!-- Google Maps styling -->
+    <style>
+      /* Mobil responsive iyileştirmeler */
+      @media (max-width: 640px) {
+        .absolute.z-50.w-full {
+          left: 0 !important;
+          right: 0 !important;
+          max-width: 100% !important;
+          overflow: hidden !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+        }
+        
+        .truncate {
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+        
+        /* Google Places autocomplete mobile responsive */
+        .pac-container {
+          z-index: 9999 !important;
+          max-width: 100% !important;
+          left: 0 !important;
+          right: 0 !important;
+        }
+
+        /* Dropdown içerik responsive */
+        .space-x-3 {
+          gap: 0.5rem !important;
+        }
+        
+        .p-3 {
+          padding: 0.75rem !important;
+        }
+      }
+
+      /* Masaüstü için dropdown optimizasyonu */
+      @media (min-width: 641px) {
+        .absolute.z-50.w-full {
+          min-width: 350px;
+        }
+      }
+    </style>
+    
     <!-- Structured Data -->
     <script type="application/ld+json">
     {

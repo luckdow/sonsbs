@@ -4,6 +4,7 @@ import {
   User, 
   Phone, 
   Mail, 
+  MapPin,
   Plane, 
   Clock, 
   Users,
@@ -19,6 +20,7 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
     lastName: bookingData.personalInfo?.lastName || '',
     email: bookingData.personalInfo?.email || '',
     phone: bookingData.personalInfo?.phone || '',
+    address: bookingData.personalInfo?.address || '',
     passengerCount: bookingData.passengerCount || 1,
     flightNumber: bookingData.personalInfo?.flightNumber || '',
     flightTime: bookingData.personalInfo?.flightTime || '',
@@ -57,6 +59,13 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
       newErrors.phone = 'Telefon alanı zorunludur';
     } else if (!/^(\+90|0)?[0-9]{10}$/.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'Geçerli bir telefon numarası girin';
+    }
+
+    // Adres validasyonu
+    if (!formData.address.trim()) {
+      newErrors.address = 'Adres alanı zorunludur';
+    } else if (formData.address.trim().length < 10) {
+      newErrors.address = 'Adres en az 10 karakter olmalıdır';
     }
 
     // Uçuş numarası validasyonu (opsiyonel ama girilmişse format kontrolü)
@@ -111,8 +120,15 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
       const updatedData = {
         ...bookingData,
         personalInfo: {
-          ...formData,
-          passengerCount: bookingData.passengerCount || formData.passengerCount
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          flightNumber: formData.flightNumber,
+          flightTime: formData.flightTime,
+          specialRequests: formData.specialRequests,
+          acceptTerms: formData.acceptTerms
         }
       };
       console.log('Personal Info - Updated Data:', updatedData);
@@ -296,6 +312,37 @@ const PersonalInfo = ({ bookingData, setBookingData, onNext, onBack }) => {
                 </motion.div>
               )}
             </div>
+          </div>
+
+          {/* Adres Alanı */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Adres *
+            </label>
+            <div className="relative">
+              <div className="absolute left-4 top-4 z-10">
+                <MapPin className="w-5 h-5 text-gray-400" />
+              </div>
+              <textarea
+                value={formData.address}
+                onChange={(e) => handleInputChange('address', e.target.value)}
+                placeholder="Tam adresinizi girin..."
+                rows={3}
+                className={`w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium transition-all resize-none ${
+                  errors.address ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
+                }`}
+              />
+            </div>
+            {errors.address && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center space-x-2 text-red-500 text-xs"
+              >
+                <AlertCircle className="w-3 h-3" />
+                <span>{errors.address}</span>
+              </motion.div>
+            )}
           </div>
 
           {/* Yolcu Sayısı - Sadece Bilgi Amaçlı */}
