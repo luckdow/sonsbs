@@ -79,6 +79,40 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
   const directionsService = useRef(null);
   const directionsRenderer = useRef(null);
 
+  // Ana sayfadan gelen hızlı rezervasyon verilerini kontrol et
+  useEffect(() => {
+    if (bookingData.prefilledFromHome) {
+      console.log('Ana sayfadan gelen veriler:', bookingData);
+      
+      // Lokasyonları güncelle
+      if (bookingData.pickupLocation) {
+        setPickupLocation(bookingData.pickupLocation);
+      }
+      if (bookingData.dropoffLocation) {
+        setDropoffLocation(bookingData.dropoffLocation);
+      }
+      
+      // Tarih ve saati güncelle
+      if (bookingData.date) setDate(bookingData.date);
+      if (bookingData.time) setTime(bookingData.time);
+      
+      // Kişi ve bagaj sayısını güncelle
+      if (bookingData.passengerCount) setPassengerCount(bookingData.passengerCount);
+      if (bookingData.baggageCount) setBaggageCount(bookingData.baggageCount);
+      
+      // Eğer showVehicles flag'i varsa araçları direkt yükle ve göster
+      if (bookingData.showVehicles && bookingData.pickupLocation && bookingData.dropoffLocation) {
+        setShowVehicles(true);
+        // Araçları yükle
+        loadVehicles();
+        // Route hesaplama işlemlerini tetikle
+        setTimeout(() => {
+          calculateRoute(bookingData.pickupLocation, bookingData.dropoffLocation);
+        }, 1000);
+      }
+    }
+  }, [bookingData.prefilledFromHome]);
+
   // Google Places Autocomplete initialization
   useEffect(() => {
     const initPlaces = () => {
@@ -194,6 +228,24 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
   useEffect(() => {
     loadVehicles();
   }, []);
+
+  // Ana sayfadan gelen verileri kontrol et ve araç seçimini göster
+  useEffect(() => {
+    if (bookingData.prefilledFromHome && bookingData.showVehicles) {
+      // Picker/Dropoff lokasyon string formatını güncelle
+      if (bookingData.pickupLocation && typeof bookingData.pickupLocation === 'object') {
+        setPickupLocation(bookingData.pickupLocation.address || bookingData.pickupLocation.name || '');
+      }
+      if (bookingData.dropoffLocation && typeof bookingData.dropoffLocation === 'object') {
+        setDropoffLocation(bookingData.dropoffLocation.address || bookingData.dropoffLocation.name || '');
+      }
+      
+      // Ana sayfadan gelen veriler varsa direkt araç seçimini göster
+      setShowVehicles(true);
+      
+      console.log('Ana sayfadan gelen veriler yüklendi ve araç seçimi gösteriliyor');
+    }
+  }, [bookingData.prefilledFromHome, bookingData.showVehicles, bookingData.pickupLocation, bookingData.dropoffLocation]);
 
   const loadVehicles = async () => {
     setVehiclesLoading(true);

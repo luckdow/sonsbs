@@ -74,7 +74,7 @@ const MyReservations = () => {
   const downloadQRCode = () => {
     if (qrCodeUrl && selectedReservation) {
       const link = document.createElement('a');
-      link.download = `SBS-Transfer-${selectedReservation.reservationCode || selectedReservation.reservationId}.png`;
+      link.download = `SBS-Transfer-${selectedReservation?.reservationCode || selectedReservation?.reservationId}.png`;
       link.href = qrCodeUrl;
       link.click();
     }
@@ -189,9 +189,9 @@ const MyReservations = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(reservation =>
-        reservation.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reservation.reservationCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reservation.reservationId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation?.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation?.reservationCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation?.reservationId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         formatLocation(getPickupLocation(reservation))?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         formatLocation(getDropoffLocation(reservation))?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         getCustomerName(reservation)?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -199,13 +199,13 @@ const MyReservations = () => {
     }
 
     if (filterStatus !== 'all') {
-      filtered = filtered.filter(reservation => reservation.status === filterStatus);
+      filtered = filtered.filter(reservation => reservation?.status === filterStatus);
     }
 
     // Sort by date (newest first)
     filtered.sort((a, b) => {
-      const dateA = new Date(a.createdAt || a.date || 0);
-      const dateB = new Date(b.createdAt || b.date || 0);
+      const dateA = new Date(a?.createdAt || a?.date || 0);
+      const dateB = new Date(b?.createdAt || b?.date || 0);
       return dateB - dateA;
     });
 
@@ -250,8 +250,8 @@ const MyReservations = () => {
 
   const formatDateTime = (reservation) => {
     // Hem yeni hem eski format için uyumlu
-    const date = reservation.tripDetails?.date || reservation.date;
-    const time = reservation.tripDetails?.time || reservation.time;
+    const date = reservation?.tripDetails?.date || reservation?.date;
+    const time = reservation?.tripDetails?.time || reservation?.time;
     if (!date) return 'Tarih belirtilmemiş';
     const dateObj = new Date(date);
     const formattedDate = dateObj.toLocaleDateString('tr-TR');
@@ -259,12 +259,12 @@ const MyReservations = () => {
   };
 
   const getPickupLocation = (reservation) => {
-    const location = reservation.tripDetails?.pickupLocation || reservation.pickupLocation;
+    const location = reservation?.tripDetails?.pickupLocation || reservation?.pickupLocation;
     return formatLocation(location);
   };
 
   const getDropoffLocation = (reservation) => {
-    const location = reservation.tripDetails?.dropoffLocation || reservation.dropoffLocation;
+    const location = reservation?.tripDetails?.dropoffLocation || reservation?.dropoffLocation;
     return formatLocation(location);
   };
 
@@ -279,7 +279,7 @@ const MyReservations = () => {
   };
 
   const getPassengerCount = (reservation) => {
-    return reservation.tripDetails?.passengerCount || reservation.passengerCount || 1;
+    return reservation?.tripDetails?.passengerCount || reservation?.passengerCount || 1;
   };
 
   const formatLocation = (location) => {
@@ -297,7 +297,7 @@ const MyReservations = () => {
 
   const handleSignOut = async () => {
     try {
-      await logout();
+      await signOut();
       navigate('/');
     } catch (error) {
       console.error('Çıkış hatası:', error);
@@ -447,7 +447,7 @@ const MyReservations = () => {
           <div className="space-y-4">
             {filteredReservations.map((reservation, index) => (
               <motion.div
-                key={reservation.id}
+                key={reservation?.id || index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -458,15 +458,15 @@ const MyReservations = () => {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        #{reservation.reservationCode || reservation.reservationId || reservation.id?.slice(-8) || 'Rezervasyon'}
+                        #{reservation?.reservationCode || reservation?.reservationId || reservation?.id?.slice(-8) || 'Rezervasyon'}
                       </h3>
-                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusInfo(reservation.status).color}`}>
-                        {getStatusInfo(reservation.status).label}
+                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusInfo(reservation?.status).color}`}>
+                        {getStatusInfo(reservation?.status).label}
                       </span>
                     </div>
                     <div className="text-right">
                       <p className="text-xl font-bold text-gray-900">
-                        ₺{Number(reservation.totalPrice || 0).toLocaleString('tr-TR')}
+                        ₺{Number(reservation?.totalPrice || 0).toLocaleString('tr-TR')}
                       </p>
                       <p className="text-sm text-gray-500">
                         {formatDateTime(reservation)}
@@ -497,7 +497,7 @@ const MyReservations = () => {
                   </div>
 
                   {/* Driver & Vehicle Info */}
-                  {(reservation.status === 'ASSIGNED' || reservation.status === 'IN_PROGRESS' || reservation.status === 'COMPLETED') && (
+                  {(reservation?.status === 'ASSIGNED' || reservation?.status === 'IN_PROGRESS' || reservation?.status === 'COMPLETED') && (
                     <div className="bg-blue-50 rounded-lg p-4 mb-4">
                       <h4 className="font-medium text-blue-900 text-sm mb-3">🚗 Şoför & Araç Bilgileri</h4>
                       
@@ -549,8 +549,8 @@ const MyReservations = () => {
                         setSelectedReservation(reservation);
                         setShowModal(true);
                         // QR kod oluştur
-                        const reservationCode = reservation.reservationCode || reservation.reservationId || reservation.id;
-                        const customerPhone = reservation.customerInfo?.phone || getCustomerPhone(reservation);
+                        const reservationCode = reservation?.reservationCode || reservation?.reservationId || reservation?.id;
+                        const customerPhone = reservation?.customerInfo?.phone || getCustomerPhone(reservation);
                         if (reservationCode && customerPhone) {
                           generateQRCode(reservationCode, customerPhone);
                         }
@@ -573,9 +573,9 @@ const MyReservations = () => {
                     )}
 
                     {/* Map Button */}
-                    {reservation.pickupLocation && reservation.dropoffLocation && (
+                    {reservation?.pickupLocation && reservation?.dropoffLocation && (
                       <a
-                        href={`https://www.google.com/maps/dir/${encodeURIComponent(formatLocation(reservation.pickupLocation))}/${encodeURIComponent(formatLocation(reservation.dropoffLocation))}`}
+                        href={`https://www.google.com/maps/dir/${encodeURIComponent(formatLocation(reservation?.pickupLocation))}/${encodeURIComponent(formatLocation(reservation?.dropoffLocation))}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"

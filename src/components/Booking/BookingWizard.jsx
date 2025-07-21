@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check } from 'lucide-react';
@@ -46,6 +46,34 @@ const BookingWizard = () => {
     // Terms
     acceptedTerms: false
   });
+
+  // Ana sayfadan gelen hızlı rezervasyon verilerini kontrol et
+  useEffect(() => {
+    const quickBookingData = localStorage.getItem('quickBookingData');
+    if (quickBookingData) {
+      try {
+        const parsedData = JSON.parse(quickBookingData);
+        
+        // BookingData'yı güncelle
+        setBookingData(prev => ({
+          ...prev,
+          ...parsedData
+        }));
+        
+        // Eğer currentStep belirtilmişse o adıma geç
+        if (parsedData.currentStep) {
+          setCurrentStep(parsedData.currentStep);
+        }
+        
+        // localStorage'ı temizle
+        localStorage.removeItem('quickBookingData');
+        
+        console.log('Hızlı rezervasyon verileri yüklendi:', parsedData);
+      } catch (error) {
+        console.error('Hızlı rezervasyon verileri yüklenirken hata:', error);
+      }
+    }
+  }, []);
 
   const steps = [
     { id: 1, name: 'Güzergah', component: RouteStep },
