@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   MapPin, 
@@ -259,12 +258,7 @@ const QuickBookingForm = () => {
 
           {/* Adım 3: Gidiş Tarih ve Saat (Lokasyonlar girilmişse göster) */}
           {quickBookingData.tripType && quickBookingData.pickupLocation && quickBookingData.dropoffLocation && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              transition={{ duration: 0.3 }}
-              className="space-y-3"
-            >
+            <div className="space-y-3 animate-fade-in">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-white text-xs font-medium mb-1">
@@ -335,7 +329,7 @@ const QuickBookingForm = () => {
                   </div>
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
 
           {/* Adım 4: Kişi ve Bagaj Sayısı (Tarih-saat girilmişse göster) */}
@@ -345,11 +339,7 @@ const QuickBookingForm = () => {
            quickBookingData.date && 
            quickBookingData.time &&
            (quickBookingData.tripType === 'one-way' || (quickBookingData.returnDate && quickBookingData.returnTime)) && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              transition={{ duration: 0.3 }}
-            >
+            <div className="animate-fade-in">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-white text-xs font-medium mb-1">
@@ -386,7 +376,7 @@ const QuickBookingForm = () => {
                   </select>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Adım 5: Rezervasyon Butonu (Tüm bilgiler girilmişse aktif) */}
@@ -396,11 +386,7 @@ const QuickBookingForm = () => {
            quickBookingData.date && 
            quickBookingData.time &&
            (quickBookingData.tripType === 'one-way' || (quickBookingData.returnDate && quickBookingData.returnTime)) && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              transition={{ duration: 0.3 }}
-            >
+            <div className="animate-fade-in">
               <button
                 onClick={handleQuickBooking}
                 className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm lg:text-base shadow-[0_0_20px_rgba(34,197,94,0.4)]"
@@ -408,21 +394,21 @@ const QuickBookingForm = () => {
                 Araç Seçimi Yap
                 <ArrowRight className="w-4 h-4" />
               </button>
-            </motion.div>
+            </div>
           )}
 
           {/* Trust Badges - SSL ve Güvenlik */}
-          <div className="pt-3 sm:pt-4 border-t border-white/20">
+          <div className="pt-3 sm:pt-4 border-t border-white/25">
             <div className="flex justify-center space-x-3 sm:space-x-4 text-xs">
-              <div className="flex items-center space-x-1 text-green-400">
+              <div className="flex items-center space-x-1 text-green-300 bg-green-500/10 px-2 py-1 rounded backdrop-blur-sm">
                 <Shield className="w-3 h-3" />
                 <span>SSL Güvenli</span>
               </div>
-              <div className="flex items-center space-x-1 text-blue-400">
+              <div className="flex items-center space-x-1 text-blue-300 bg-blue-500/10 px-2 py-1 rounded backdrop-blur-sm">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Lisanslı</span>
               </div>
-              <div className="flex items-center space-x-1 text-purple-400">
+              <div className="flex items-center space-x-1 text-purple-300 bg-purple-500/10 px-2 py-1 rounded backdrop-blur-sm">
                 <Star className="w-3 h-3" />
                 <span>Güvenilir</span>
               </div>

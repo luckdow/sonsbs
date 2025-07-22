@@ -3,24 +3,35 @@ import { HelmetProvider } from 'react-helmet-async';
 import LoadingScreen from '../../components/UI/LoadingScreen';
 import SEOComponent from '../../components/Homepage/sections/SEOComponent';
 
-// Lazy load components for better performance
-const HeroSection = lazy(() => import('../../components/Homepage/sections/HeroSection'));
-const ServicesSection = lazy(() => import('../../components/Homepage/sections/ServicesSection'));
-const TestimonialsSection = lazy(() => import('../../components/Homepage/sections/TestimonialsSection'));
-const FAQSection = lazy(() => import('../../components/Homepage/sections/FAQSection'));
+// Import critical above-the-fold component immediately
+import HeroSection from '../../components/Homepage/sections/HeroSection';
 
-// Loading placeholder component
+// Lazy load below-the-fold components
+const ServicesSection = lazy(() => 
+  import('../../components/Homepage/sections/ServicesSection').then(module => ({
+    default: module.default
+  }))
+);
+
+const TestimonialsSection = lazy(() => 
+  import('../../components/Homepage/sections/TestimonialsSection').then(module => ({
+    default: module.default
+  }))
+);
+
+const FAQSection = lazy(() => 
+  import('../../components/Homepage/sections/FAQSection').then(module => ({
+    default: module.default
+  }))
+);
+
+// Optimized loading placeholder
 const SectionLoader = () => (
-  <div className="w-full h-64 flex items-center justify-center bg-gray-50">
-    <div className="animate-pulse flex space-x-4">
-      <div className="rounded-full bg-gray-300 h-10 w-10"></div>
-      <div className="flex-1 space-y-2 py-1">
-        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-300 rounded"></div>
-          <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-        </div>
-      </div>
+  <div className="w-full h-32 flex items-center justify-center bg-gray-50">
+    <div className="flex space-x-2">
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
     </div>
   </div>
 );
@@ -29,15 +40,13 @@ const HomePage = () => {
   return (
     <HelmetProvider>
       <div className="min-h-screen">
-        {/* SEO Meta Tags - Critical, load immediately */}
+        {/* SEO Meta Tags - Critical */}
         <SEOComponent language="tr" page="homepage" />
         
-        {/* Hero Section - Critical, load immediately */}
-        <Suspense fallback={<LoadingScreen />}>
-          <HeroSection />
-        </Suspense>
+        {/* Hero Section - Critical, no lazy loading */}
+        <HeroSection />
         
-        {/* Services Section - Lazy load with custom placeholder */}
+        {/* Services Section - Lazy load with intersection observer */}
         <Suspense fallback={<SectionLoader />}>
           <ServicesSection />
         </Suspense>

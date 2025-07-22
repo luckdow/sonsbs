@@ -10,7 +10,7 @@ import AdminLayout from './components/Layout/AdminLayout'
 import DriverLayout from './components/Layout/DriverLayout'
 
 // Public Pages
-import HomePage from './pages/Public/HomePage'
+import HomePage from './pages/Public/HomePage_OPTIMIZED'
 import TestPage from './pages/Public/TestPage'
 import VehicleSelectionPage from './pages/Public/VehicleSelectionPage'
 import CustomerInfoPage from './pages/Public/CustomerInfoPage'

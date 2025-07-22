@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 
 const FAQSection = () => {
@@ -46,13 +45,9 @@ const FAQSection = () => {
 
   return (
     <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          className="text-center mb-16 animate-fade-in"
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <HelpCircle className="w-8 h-8 text-blue-600" />
@@ -63,16 +58,12 @@ const FAQSection = () => {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Transfer hizmetimiz hakkında merak ettiğiniz her şey
           </p>
-        </motion.div>
+        </div>
 
         <div className="max-w-4xl mx-auto">
           {faqs.map((faq, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
               className="mb-4"
             >
               <button
@@ -93,35 +84,21 @@ const FAQSection = () => {
                 </div>
               </button>
               
-              <AnimatePresence>
-                {openFAQ === index && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="p-6 pt-0">
-                      <p className="text-gray-700 leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              {openFAQ === index && (
+                <div className="overflow-hidden">
+                  <div className="p-6 pt-0">
+                    <p className="text-gray-700 leading-relaxed">
+                      {faq.answer}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
 
         {/* Alt bilgi */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mt-12 p-8 bg-blue-50 rounded-2xl"
-        >
+        <div className="text-center mt-12 p-8 bg-blue-50 rounded-2xl animate-fade-in">
           <h3 className="text-xl font-semibold text-gray-900 mb-3">
             Sorunuz yoksa bizimle iletişime geçin
           </h3>
@@ -142,7 +119,7 @@ const FAQSection = () => {
               ✉️ info@antalyatransfer.com
             </a>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

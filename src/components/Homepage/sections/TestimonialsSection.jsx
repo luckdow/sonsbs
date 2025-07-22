@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Star, Quote, MapPin } from 'lucide-react';
 
 const TestimonialsSection = () => {
@@ -69,15 +68,9 @@ const TestimonialsSection = () => {
 
   return (
     <section className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
-      <div className="container mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Başlık */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16 animate-fade-in">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Star className="w-8 h-8 text-yellow-500 fill-current" />
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
@@ -87,18 +80,14 @@ const TestimonialsSection = () => {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Binlerce mutlu müşterimizin deneyimlerini paylaşıyoruz
           </p>
-        </motion.div>
+        </div>
 
         {/* İstatistikler */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {stats.map((stat, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-xl p-6 text-center shadow-lg"
+              className="bg-white rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
               <div className="text-2xl lg:text-3xl font-bold text-blue-600 mb-2">
                 {stat.number}
@@ -106,19 +95,15 @@ const TestimonialsSection = () => {
               <div className="text-gray-600 text-sm lg:text-base">
                 {stat.label}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Yorumlar Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <motion.div
+            <div
               key={testimonial.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
               className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 relative"
             >
               {/* Quote Icon */}
@@ -163,18 +148,12 @@ const TestimonialsSection = () => {
                   {testimonial.service}
                 </span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mt-16"
-        >
+        <div className="text-center mt-16 animate-fade-in">
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Siz de memnun müşterilerimize katılın!
@@ -183,25 +162,21 @@ const TestimonialsSection = () => {
               Antalya'da güvenli, konforlu ve uygun fiyatlı transfer hizmeti için hemen rezervasyon yapın.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.a
+              <a
                 href="/rezervasyon"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
               >
                 Hemen Rezervasyon Yap
-              </motion.a>
-              <motion.a
+              </a>
+              <a
                 href="tel:+905551234567"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-white hover:bg-gray-50 text-blue-600 px-8 py-4 rounded-lg font-semibold border border-blue-600 transition-all duration-300"
+                className="bg-white hover:bg-gray-50 text-blue-600 px-8 py-4 rounded-lg font-semibold border border-blue-600 transition-all duration-300 hover:scale-105"
               >
                 📞 Hemen Ara
-              </motion.a>
+              </a>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -13,6 +13,24 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: false, // Disable for production performance
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunk for large libraries
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          // UI library chunk
+          ui: ['framer-motion', 'lucide-react'],
+          // Firebase chunk
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+  },
+  // Performance optimizations
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom']
   }
 })
