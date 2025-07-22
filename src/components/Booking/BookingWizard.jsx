@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, MapPin, User, CreditCard } from 'lucide-react';
 
 // Import steps
 import RouteStep from './steps/RouteStep';
@@ -76,9 +76,9 @@ const BookingWizard = () => {
   }, []);
 
   const steps = [
-    { id: 1, name: 'Güzergah', component: RouteStep },
-    { id: 2, name: 'Bilgiler', component: PersonalStep },
-    { id: 3, name: 'Ödeme', component: PaymentStep }
+    { id: 1, name: 'Güzergah', component: RouteStep, icon: MapPin },
+    { id: 2, name: 'Bilgiler', component: PersonalStep, icon: User },
+    { id: 3, name: 'Ödeme', component: PaymentStep, icon: CreditCard }
   ];
 
   const updateBookingData = (newData) => {
@@ -135,59 +135,49 @@ const BookingWizard = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm">Ana Sayfa</span>
-            </button>
-            
-            <h1 className="text-xl font-bold text-gray-900">Transfer Rezervasyonu</h1>
-            
-            <div className="w-20"></div> {/* Spacer for centering */}
-          </div>
-
-          {/* Step Indicator */}
-          <div className="flex items-center justify-center space-x-2 md:space-x-8">
+        {/* Step Indicator - No Card Background */}
+        <div className="flex flex-col items-center space-y-3 mb-6">
+          {/* Step Icons */}
+          <div className="flex items-center justify-center space-x-1 sm:space-x-4 md:space-x-8">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                {/* Step Circle */}
+                {/* Step Circle - Smaller */}
                 <div className={`
-                  flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full text-sm md:text-base font-medium transition-colors
+                  flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full transition-all duration-300
                   ${currentStep > step.id 
-                    ? 'bg-green-600 text-white' 
+                    ? 'bg-green-500 text-white shadow-lg scale-105' 
                     : currentStep === step.id 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-200 text-gray-500'
+                      ? 'bg-blue-600 text-white shadow-lg scale-110' 
+                      : 'bg-white text-gray-500 border-2 border-gray-300'
                   }
                 `}>
                   {currentStep > step.id ? (
                     <Check className="w-4 h-4 md:w-5 md:h-5" />
                   ) : (
-                    step.id
+                    <step.icon className="w-4 h-4 md:w-5 md:h-5" />
                   )}
                 </div>
-                
-                {/* Step Name */}
-                <span className={`
-                  ml-2 text-xs md:text-sm font-medium hidden sm:inline
-                  ${currentStep >= step.id ? 'text-gray-900' : 'text-gray-500'}
-                `}>
-                  {step.name}
-                </span>
                 
                 {/* Connector Line */}
                 {index < steps.length - 1 && (
                   <div className={`
-                    hidden md:block w-12 lg:w-24 h-0.5 ml-4 transition-colors
-                    ${currentStep > step.id ? 'bg-green-600' : 'bg-gray-200'}
+                    w-8 sm:w-12 lg:w-20 h-0.5 ml-2 sm:ml-4 transition-colors
+                    ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-300'}
                   `} />
                 )}
               </div>
+            ))}
+          </div>
+          
+          {/* Step Names - Mobile Friendly */}
+          <div className="flex items-center justify-center space-x-8 sm:space-x-16 md:space-x-24">
+            {steps.map((step) => (
+              <span key={step.id} className={`
+                text-xs sm:text-sm font-medium transition-colors text-center
+                ${currentStep >= step.id ? 'text-gray-900' : 'text-gray-500'}
+              `}>
+                {step.name}
+              </span>
             ))}
           </div>
         </div>

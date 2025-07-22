@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, RefreshCw, CheckCircle } from 'lucide-react';
+import { Plus, RefreshCw, CheckCircle, Calendar, CalendarDays, Clock } from 'lucide-react';
 import { collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, query, where, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { USER_ROLES } from '../../../config/constants';
@@ -10,6 +10,8 @@ import ReservationTable from './ReservationTable';
 import ReservationFilters from './ReservationFilters';
 import DriverAssignModal from './DriverAssignModal';
 import QRModal from './QRModal';
+import { sendWhatsAppMessage, generateManualDriverWhatsAppMessage } from '../../../utils/whatsappService';
+import { generateManualDriverPDF } from '../../../utils/pdfGenerator';
 import toast from 'react-hot-toast';
 
 const ReservationIndex = () => {
@@ -19,12 +21,139 @@ const ReservationIndex = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReservation, setSelectedReservation] = useState(null);
+  const [activeTab, setActiveTab] = useState('today'); // Aktif tab
+  
+  // Yıllık takvim state'leri
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
   
   // Modal durumları
   const [showQuickModal, setShowQuickModal] = useState(false);
   const [showDriverModal, setShowDriverModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+
+  // Rezervasyonları kategorize etme fonksiyonu
+  const categorizeReservations = (reservations) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const oneWeekLater = new Date(today);
+    oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+    
+    const oneMonthLater = new Date(today);
+    oneMonthLater.setDate(oneMonthLater.getDate() + 30);
+
+    return {
+      today: reservations.filter(r => {
+        const reservationDate = new Date(r.tripDetails?.date || r.date);
+        reservationDate.setHours(0, 0, 0, 0);
+        return reservationDate.getTime() === today.getTime() && 
+               !['cancelled', 'completed'].includes(r.status);
+      }),
+      thisWeek: reservations.filter(r => {
+        const reservationDate = new Date(r.tripDetails?.date || r.date);
+        reservationDate.setHours(0, 0, 0, 0);
+        return reservationDate > today && 
+               reservationDate < oneWeekLater && 
+               !['cancelled', 'completed'].includes(r.status);
+      }),
+      thisMonth: reservations.filter(r => {
+        const reservationDate = new Date(r.tripDetails?.date || r.date);
+        reservationDate.setHours(0, 0, 0, 0);
+        return reservationDate >= oneWeekLater && 
+               reservationDate < oneMonthLater && 
+               !['cancelled', 'completed'].includes(r.status);
+      }),
+      completed: reservations.filter(r => r.status === 'completed'),
+      cancelled: reservations.filter(r => r.status === 'cancelled'),
+      pending: reservations.filter(r => r.status === 'pending' || r.status === 'confirmed'),
+      all: reservations.filter(r => !['cancelled', 'completed'].includes(r.status)) // Tüm aktif rezervasyonlar
+    };
+  };
+
+  // Yıllık takvim için rezervasyonları organize etme
+  const getReservationsByDate = (reservations) => {
+    const reservationsByDate = {};
+    
+    reservations.forEach(reservation => {
+      const date = reservation.tripDetails?.date || reservation.date;
+      if (date) {
+        const [year, month, day] = date.split('-');
+        
+        if (!reservationsByDate[year]) {
+          reservationsByDate[year] = {};
+        }
+        if (!reservationsByDate[year][month]) {
+          reservationsByDate[year][month] = {};
+        }
+        if (!reservationsByDate[year][month][day]) {
+          reservationsByDate[year][month] = reservationsByDate[year][month] || {};
+          reservationsByDate[year][month][day] = [];
+        }
+        
+        reservationsByDate[year][month][day].push(reservation);
+      }
+    });
+    
+    return reservationsByDate;
+  };
+
+  // Mevcut yılları al
+  const getAvailableYears = (reservations) => {
+    const years = new Set();
+    const currentYear = new Date().getFullYear();
+    
+    // En az mevcut yılı ekle
+    years.add(currentYear);
+    
+    reservations.forEach(reservation => {
+      const date = reservation.tripDetails?.date || reservation.date;
+      if (date) {
+        const year = parseInt(date.split('-')[0]);
+        years.add(year);
+      }
+    });
+    
+    return Array.from(years).sort((a, b) => a - b);
+  };
+
+  // Ay isimleri
+  const monthNames = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+  ];
+
+  // Seçili tarihe göre rezervasyonları filtrele
+  const getFilteredReservations = () => {
+    if (selectedDay && selectedMonth && selectedYear) {
+      // Belirli bir gün seçili
+      const targetDate = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}-${selectedDay.toString().padStart(2, '0')}`;
+      return reservations.filter(r => {
+        const reservationDate = r.tripDetails?.date || r.date;
+        return reservationDate === targetDate;
+      });
+    } else if (selectedMonth && selectedYear) {
+      // Belirli bir ay seçili
+      const targetYearMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+      return reservations.filter(r => {
+        const reservationDate = r.tripDetails?.date || r.date;
+        return reservationDate && reservationDate.startsWith(targetYearMonth);
+      });
+    } else if (selectedYear) {
+      // Belirli bir yıl seçili
+      const targetYear = selectedYear.toString();
+      return reservations.filter(r => {
+        const reservationDate = r.tripDetails?.date || r.date;
+        return reservationDate && reservationDate.startsWith(targetYear);
+      });
+    } else {
+      // Normal kategorize edilmiş rezervasyonlar
+      const categorized = categorizeReservations(reservations);
+      return categorized[activeTab] || [];
+    }
+  };
 
   // Firebase'den rezervasyonları dinle
   useEffect(() => {
@@ -150,95 +279,6 @@ const ReservationIndex = () => {
     };
   }, []);
 
-  // Filtreleme fonksiyonu
-  const handleFilterChange = (filters) => {
-    let filtered = [...reservations];
-
-    // Arama filtresi - hem yeni hem eski format için uyumlu
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filtered = filtered.filter(res => {
-        const customerFirstName = res.customerInfo?.firstName || res.personalInfo?.firstName || '';
-        const customerLastName = res.customerInfo?.lastName || res.personalInfo?.lastName || '';
-        const customerPhone = res.customerInfo?.phone || res.personalInfo?.phone || '';
-        const customerEmail = res.customerInfo?.email || res.personalInfo?.email || '';
-        
-        return res.reservationId?.toLowerCase().includes(searchTerm) ||
-               customerFirstName.toLowerCase().includes(searchTerm) ||
-               customerLastName.toLowerCase().includes(searchTerm) ||
-               customerPhone.includes(searchTerm) ||
-               customerEmail.toLowerCase().includes(searchTerm);
-      });
-    }
-
-    // Durum filtresi
-    if (filters.status !== 'all') {
-      filtered = filtered.filter(res => res.status === filters.status);
-    }
-
-    // Tarih filtresi
-    if (filters.dateRange !== 'all') {
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      
-      filtered = filtered.filter(res => {
-        const resDate = new Date(res.tripDetails?.date || res.date);
-        
-        switch (filters.dateRange) {
-          case 'today':
-            return resDate.toDateString() === today.toDateString();
-          case 'tomorrow':
-            return resDate.toDateString() === tomorrow.toDateString();
-          case 'this_week':
-            const weekStart = new Date(today);
-            weekStart.setDate(today.getDate() - today.getDay());
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
-            return resDate >= weekStart && resDate <= weekEnd;
-          case 'this_month':
-            return resDate.getMonth() === today.getMonth() && resDate.getFullYear() === today.getFullYear();
-          case 'next_month':
-            const nextMonth = new Date(today);
-            nextMonth.setMonth(today.getMonth() + 1);
-            return resDate.getMonth() === nextMonth.getMonth() && resDate.getFullYear() === nextMonth.getFullYear();
-          default:
-            return true;
-        }
-      });
-    }
-
-    // Şoför atama filtresi
-    if (filters.assignedDriver !== 'all') {
-      if (filters.assignedDriver === 'assigned') {
-        filtered = filtered.filter(res => res.assignedDriver);
-      } else if (filters.assignedDriver === 'unassigned') {
-        filtered = filtered.filter(res => !res.assignedDriver);
-      }
-    }
-
-    // Ödeme yöntemi filtresi
-    if (filters.paymentMethod !== 'all') {
-      filtered = filtered.filter(res => res.paymentMethod === filters.paymentMethod);
-    }
-
-    // Yolcu sayısı filtresi
-    if (filters.passengerCount !== 'all') {
-      if (filters.passengerCount === '5+') {
-        filtered = filtered.filter(res => res.tripDetails?.passengerCount >= 5);
-      } else {
-        filtered = filtered.filter(res => res.tripDetails?.passengerCount === parseInt(filters.passengerCount));
-      }
-    }
-
-    setFilteredReservations(filtered);
-  };
-
-  // Rezervasyonlar değiştiğinde filtrelenmiş listeyi de güncelle
-  useEffect(() => {
-    setFilteredReservations(reservations);
-  }, [reservations]);
-
   // Hızlı rezervasyon ekleme - GEÇİCİ OLARAK KAPALI
   const handleQuickReservation = async (reservationData) => {
     try {
@@ -261,10 +301,10 @@ const ReservationIndex = () => {
     }
   };
 
-  // Şoför atama - Sadece gerçek Firebase veriler
-  const handleDriverAssign = async (reservationId, driverId, vehicleId) => {
+  // Şoför atama - Sistemdeki şoförler ve manuel şoförler
+  const handleDriverAssign = async (reservationId, driverId, vehicleId, manualDriverInfo = null) => {
     try {
-      console.log('🔍 Şoför atama başlatılıyor:', { reservationId, driverId, vehicleId });
+      console.log('🔍 Şoför atama başlatılıyor:', { reservationId, driverId, vehicleId, manualDriverInfo });
       
       // Rezervasyonu bul
       const reservationToUpdate = reservations.find(res => res.id === reservationId);
@@ -283,32 +323,90 @@ const ReservationIndex = () => {
         currentAssignedDriverId: reservationToUpdate.assignedDriverId
       });
 
-      // Güncellenecek veri
-      const updateData = {
-        assignedDriver: driverId,
-        assignedDriverId: driverId, // Şoför dashboard uyumluluğu için
-        assignedVehicle: vehicleId, 
-        status: 'assigned',
-        updatedAt: new Date().toISOString()
-      };
+      if (manualDriverInfo) {
+        // Manuel şoför ataması
+        console.log('🚀 Manuel şoför ataması yapılıyor:', manualDriverInfo);
+        
+        // Güncellenecek veri
+        const updateData = {
+          assignedDriver: 'manual', // Manuel şoför işaretlemesi
+          assignedDriverId: 'manual',
+          manualDriverInfo: manualDriverInfo, // Manuel şoför bilgileri
+          assignedVehicle: manualDriverInfo.plateNumber, // Plaka bilgisi
+          status: 'assigned',
+          updatedAt: new Date().toISOString()
+        };
 
-      // Firebase'de güncelle
-      const cleanUpdateData = Object.keys(updateData).reduce((acc, key) => {
-        if (updateData[key] !== undefined && updateData[key] !== null) {
-          acc[key] = updateData[key];
+        // Firebase'de güncelle
+        await updateDoc(doc(db, 'reservations', reservationId), updateData);
+        console.log('✅ Manuel şoför Firebase rezervasyon güncellendi!');
+        
+        // WhatsApp mesajı gönder
+        try {
+          const whatsappMessage = generateManualDriverWhatsAppMessage(reservationToUpdate, manualDriverInfo);
+          sendWhatsAppMessage(manualDriverInfo.phone, whatsappMessage);
+          console.log('📱 WhatsApp mesajı gönderildi');
+        } catch (whatsappError) {
+          console.error('WhatsApp gönderim hatası:', whatsappError);
+          toast.error('WhatsApp gönderimi başarısız: ' + whatsappError.message);
         }
-        return acc;
-      }, {});
+        
+        // PDF oluştur ve indir
+        try {
+          const companyInfo = {
+            name: 'SONSBS Transfer Servisi',
+            address: 'Transfer Hizmeti',
+            phone: '+90 555 123 45 67',
+            email: 'info@sonsbs.com'
+          };
+          
+          const pdfData = await generateManualDriverPDF(reservationToUpdate, manualDriverInfo, companyInfo);
+          
+          // PDF'i indir
+          const link = document.createElement('a');
+          link.href = pdfData;
+          link.download = `manuel-sofor-${reservationToUpdate.reservationId}-${manualDriverInfo.name.replace(/\s+/g, '-')}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          console.log('📄 PDF oluşturuldu ve indirildi');
+        } catch (pdfError) {
+          console.error('PDF oluşturma hatası:', pdfError);
+          toast.error('PDF oluşturma başarısız: ' + pdfError.message);
+        }
+        
+        toast.success(`Manuel şoför (${manualDriverInfo.name}) atandı! WhatsApp gönderildi ve PDF indirildi.`);
+        
+      } else {
+        // Normal sistem şoförü ataması
+        const updateData = {
+          assignedDriver: driverId,
+          assignedDriverId: driverId,
+          assignedVehicle: vehicleId, 
+          status: 'assigned',
+          updatedAt: new Date().toISOString()
+        };
 
-      console.log('🔄 Firebase güncellenecek veri:', cleanUpdateData);
-      console.log('📍 Güncelleme yapılacak doküman ID:', reservationId);
-      
-      await updateDoc(doc(db, 'reservations', reservationId), cleanUpdateData);
-      console.log('✅ Firebase rezervasyon başarıyla güncellendi!');
+        // Firebase'de güncelle
+        const cleanUpdateData = Object.keys(updateData).reduce((acc, key) => {
+          if (updateData[key] !== undefined && updateData[key] !== null) {
+            acc[key] = updateData[key];
+          }
+          return acc;
+        }, {});
+
+        console.log('🔄 Firebase güncellenecek veri:', cleanUpdateData);
+        console.log('📍 Güncelleme yapılacak doküman ID:', reservationId);
+        
+        await updateDoc(doc(db, 'reservations', reservationId), cleanUpdateData);
+        console.log('✅ Firebase rezervasyon başarıyla güncellendi!');
+        
+        toast.success('Şoför başarıyla atandı!');
+      }
       
       setShowDriverModal(false);
       setSelectedReservation(null);
-      toast.success('Şoför başarıyla atandı!');
       
     } catch (error) {
       console.error('Şoför atama hatası:', error);
@@ -412,6 +510,24 @@ const ReservationIndex = () => {
     );
   }
 
+  const categorizedReservations = categorizeReservations(reservations);
+  const reservationsByDate = getReservationsByDate(reservations);
+  const availableYears = getAvailableYears(reservations);
+  
+  // Aktif tab'daki rezervasyonları filtrele
+  const currentReservations = getFilteredReservations();
+
+  const tabConfig = [
+    { key: 'today', label: 'Bugün', count: categorizedReservations.today.length, color: 'text-red-600 bg-red-50' },
+    { key: 'thisWeek', label: 'Bu Hafta', count: categorizedReservations.thisWeek.length, color: 'text-purple-600 bg-purple-50' },
+    { key: 'thisMonth', label: 'Bu Ay', count: categorizedReservations.thisMonth.length, color: 'text-indigo-600 bg-indigo-50' },
+    { key: 'calendar', label: 'Yıllık Takvim', count: 0, color: 'text-blue-600 bg-blue-50', isSpecial: true, icon: Calendar },
+    { key: 'all', label: 'Tüm Rezervasyonlar', count: categorizedReservations.all.length, color: 'text-slate-600 bg-slate-50' },
+    { key: 'pending', label: 'Bekleyen', count: categorizedReservations.pending.length, color: 'text-yellow-600 bg-yellow-50' },
+    { key: 'completed', label: 'Tamamlanan', count: categorizedReservations.completed.length, color: 'text-green-600 bg-green-50' },
+    { key: 'cancelled', label: 'İptal', count: categorizedReservations.cancelled.length, color: 'text-gray-600 bg-gray-50' }
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -420,7 +536,7 @@ const ReservationIndex = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Rezervasyon Yönetimi</h1>
             <p className="text-gray-600 mt-1">
-              Toplam {reservations.length} rezervasyon • Filtrelenmiş {filteredReservations.length} rezervasyon
+              Toplam {reservations.length} rezervasyon • {currentReservations.length} {tabConfig.find(t => t.key === activeTab)?.label.toLowerCase()} rezervasyon
             </p>
           </div>
           <button
@@ -433,36 +549,349 @@ const ReservationIndex = () => {
         </div>
       </div>
 
-      {/* Filtreleme */}
-      <ReservationFilters 
-        onFilterChange={handleFilterChange}
-        reservations={reservations}
-      />
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+        <div className="flex flex-wrap gap-1">
+          {tabConfig.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => {
+                setActiveTab(tab.key);
+                if (tab.key !== 'calendar') {
+                  // Normal tab seçildi, takvim seçimlerini temizle
+                  setSelectedYear(null);
+                  setSelectedMonth(null);
+                  setSelectedDay(null);
+                }
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                activeTab === tab.key
+                  ? `${tab.color} border-2 border-current`
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              {tab.icon && <tab.icon className="w-4 h-4" />}
+              <span>{tab.label}</span>
+              {!tab.isSpecial && (
+                <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                  activeTab === tab.key ? 'bg-white bg-opacity-80' : 'bg-gray-200'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Yıllık Takvim Navigasyonu */}
+      {activeTab === 'calendar' && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+          {/* Yıl Seçimi */}
+          {!selectedYear && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Yıl Seçin</h3>
+              </div>
+              <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                {availableYears.map(year => {
+                  const yearReservations = reservationsByDate[year] || {};
+                  const yearCount = Object.values(yearReservations).reduce((total, months) => {
+                    if (typeof months === 'object' && months !== null) {
+                      return total + Object.values(months).reduce((monthTotal, days) => {
+                        if (typeof days === 'object' && days !== null) {
+                          return monthTotal + Object.values(days).reduce((dayTotal, reservations) => {
+                            return dayTotal + (Array.isArray(reservations) ? reservations.length : 0);
+                          }, 0);
+                        }
+                        return monthTotal;
+                      }, 0);
+                    }
+                    return total;
+                  }, 0);
+                  
+                  return (
+                    <button
+                      key={year}
+                      onClick={() => setSelectedYear(year)}
+                      className="group relative overflow-hidden bg-white border border-gray-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                          <CalendarDays className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="text-lg font-bold text-gray-900 group-hover:text-blue-600">
+                          {year}
+                        </div>
+                        <div className="text-xs text-gray-500 group-hover:text-blue-500 font-medium">
+                          {yearCount || 0} rezervasyon
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Ay Seçimi */}
+          {selectedYear && !selectedMonth && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {selectedYear} - Ay Seçin
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setSelectedYear(null)}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-sm px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  ← Yıllara Dön
+                </button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {monthNames.map((monthName, index) => {
+                  const monthNum = index + 1;
+                  const monthStr = monthNum.toString().padStart(2, '0');
+                  const monthReservations = reservationsByDate[selectedYear]?.[monthStr] || {};
+                  const monthCount = Object.values(monthReservations).reduce((total, dayReservations) => 
+                    total + (Array.isArray(dayReservations) ? dayReservations.length : 0), 0);
+                  
+                  // Ay renkleri - rezervasyon sayısına göre
+                  let iconBgColor = 'bg-gray-100';
+                  let iconColor = 'text-gray-500';
+                  let borderColor = 'border-gray-200';
+                  let bgColor = 'bg-white';
+                  let textColor = 'text-gray-900';
+                  let countColor = 'text-gray-500';
+                  
+                  if (monthCount > 0) {
+                    if (monthCount >= 10) {
+                      iconBgColor = 'bg-red-100';
+                      iconColor = 'text-red-600';
+                      borderColor = 'border-red-200';
+                      bgColor = 'bg-red-50';
+                      textColor = 'text-red-800';
+                      countColor = 'text-red-600';
+                    } else if (monthCount >= 5) {
+                      iconBgColor = 'bg-yellow-100';
+                      iconColor = 'text-yellow-600';
+                      borderColor = 'border-yellow-200';
+                      bgColor = 'bg-yellow-50';
+                      textColor = 'text-yellow-800';
+                      countColor = 'text-yellow-600';
+                    } else {
+                      iconBgColor = 'bg-green-100';
+                      iconColor = 'text-green-600';
+                      borderColor = 'border-green-200';
+                      bgColor = 'bg-green-50';
+                      textColor = 'text-green-800';
+                      countColor = 'text-green-600';
+                    }
+                  }
+                  
+                  return (
+                    <button
+                      key={monthNum}
+                      onClick={() => setSelectedMonth(monthNum)}
+                      className={`group relative overflow-hidden ${bgColor} border ${borderColor} rounded-xl p-4 hover:shadow-md transition-all duration-200`}
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <div className={`p-2 ${iconBgColor} rounded-lg transition-colors`}>
+                          <CalendarDays className={`w-4 h-4 ${iconColor}`} />
+                        </div>
+                        <div className={`text-sm font-bold ${textColor} group-hover:text-blue-600`}>
+                          {monthName}
+                        </div>
+                        <div className={`text-xs font-semibold ${countColor} group-hover:text-blue-500`}>
+                          {monthCount || 0} rezervasyon
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Gün Seçimi */}
+          {selectedYear && selectedMonth && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {selectedYear} {monthNames[selectedMonth - 1]} - Gün Seçin
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setSelectedMonth(null)}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-sm px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  ← Aylara Dön
+                </button>
+              </div>
+              
+              {(() => {
+                // Ay içindeki rezervasyonlu günleri bul
+                const monthStr = selectedMonth.toString().padStart(2, '0');
+                const monthReservations = reservationsByDate[selectedYear]?.[monthStr] || {};
+                const reservedDays = Object.keys(monthReservations).filter(day => 
+                  Array.isArray(monthReservations[day]) && monthReservations[day].length > 0
+                );
+                
+                if (reservedDays.length === 0) {
+                  // Hiç rezervasyon yoksa sadece bilgilendirme mesajı
+                  return (
+                    <div className="text-center py-12">
+                      <div className="flex justify-center mb-4">
+                        <div className="p-4 bg-gray-100 rounded-full">
+                          <Calendar className="w-12 h-12 text-gray-400" />
+                        </div>
+                      </div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-2">
+                        Rezervasyon Bulunamadı
+                      </h4>
+                      <p className="text-gray-600">
+                        {monthNames[selectedMonth - 1]} {selectedYear} ayında rezervasyon bulunmuyor.
+                      </p>
+                    </div>
+                  );
+                }
+                
+                // Rezervasyonu olan günleri göster
+                return (
+                  <>
+                    {/* Gün listesi */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {reservedDays.sort((a, b) => parseInt(a) - parseInt(b)).map(dayStr => {
+                        const day = parseInt(dayStr);
+                        const dayReservations = monthReservations[dayStr] || [];
+                        const formattedDate = `${dayStr}/${monthStr}/${selectedYear}`;
+                        
+                        return (
+                          <button
+                            key={day}
+                            onClick={() => setSelectedDay(day)}
+                            className={`group relative overflow-hidden border rounded-xl p-4 transition-all duration-200 ${
+                              selectedDay === day
+                                ? 'border-blue-300 bg-blue-50 shadow-md'
+                                : 'border-green-200 bg-green-50 hover:bg-green-100 hover:shadow-md'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className={`p-2 rounded-lg ${
+                                selectedDay === day 
+                                  ? 'bg-blue-100' 
+                                  : 'bg-green-100 group-hover:bg-green-200'
+                              } transition-colors`}>
+                                <Clock className={`w-4 h-4 ${
+                                  selectedDay === day 
+                                    ? 'text-blue-600' 
+                                    : 'text-green-600'
+                                }`} />
+                              </div>
+                              <div className="flex-1 text-left">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {formattedDate}
+                                </div>
+                                <div className={`text-xs font-semibold ${
+                                  selectedDay === day ? 'text-blue-600' : 'text-green-600'
+                                }`}>
+                                  {dayReservations.length} rezervasyon
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Tüm ay rezervasyonlarını göster butonu */}
+                    <div className="mt-6 text-center">
+                      <button
+                        onClick={() => {
+                          setSelectedDay(null);
+                          // Ay rezervasyonlarını göstermek için selectedMonth'u koru
+                        }}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Tüm {monthNames[selectedMonth - 1]} Rezervasyonlarını Göster
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Rezervasyon Tablosu */}
-      <ReservationTable
-        reservations={filteredReservations}
-        drivers={drivers}
-        vehicles={vehicles}
-        onEdit={(reservation) => {
-          setSelectedReservation(reservation);
-          setShowEditModal(true);
-        }}
-        onDriverAssign={(reservation) => {
-          setSelectedReservation(reservation);
-          setShowDriverModal(true);
-        }}
-        onShowQR={(reservation) => {
-          setSelectedReservation(reservation);
-          setShowQRModal(true);
-        }}
-        onStatusChange={(reservationId, newStatus) => {
-          // Firebase listener otomatik güncelleyecek, manual güncelleme yapmayalım
-          console.log('Durum değişikliği:', reservationId, newStatus);
-        }}
-        onCompleteReservation={handleCompleteReservation}
-        onDeleteReservation={handleDeleteReservation}
-      />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+        {(activeTab !== 'calendar' || (selectedYear && (selectedMonth || selectedDay))) && (
+          <ReservationTable
+            reservations={getFilteredReservations()}
+            drivers={drivers}
+            vehicles={vehicles}
+            onEdit={(reservation) => {
+              setSelectedReservation(reservation);
+              setShowEditModal(true);
+            }}
+            onDriverAssign={(reservation) => {
+              setSelectedReservation(reservation);
+              setShowDriverModal(true);
+            }}
+            onShowQR={(reservation) => {
+              setSelectedReservation(reservation);
+              setShowQRModal(true);
+            }}
+            onStatusChange={(reservationId, newStatus) => {
+              // Firebase listener otomatik güncelleyecek, manual güncelleme yapmayalım
+              console.log('Durum değişikliği:', reservationId, newStatus);
+            }}
+          />
+        )}
+        
+        {/* Takvim tabında henüz seçim yapılmamışsa */}
+        {activeTab === 'calendar' && !selectedYear && (
+          <div className="p-12 text-center">
+            <div className="flex justify-center mb-6">
+              <div className="p-6 bg-blue-100 rounded-full">
+                <Calendar className="w-16 h-16 text-blue-600" />
+              </div>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Yıllık Rezervasyon Takvimi
+            </h3>
+            <p className="text-gray-600">
+              Rezervasyonlarınızı yıl, ay ve gün bazında görüntüleyebilirsiniz.
+              <br />
+              Başlamak için yukarıdan bir yıl seçin.
+            </p>
+          </div>
+        )}
+        
+        {/* Yıl seçildi ama ay seçilmedi */}
+        {activeTab === 'calendar' && selectedYear && !selectedMonth && (
+          <div className="p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-blue-100 rounded-full">
+                <CalendarDays className="w-12 h-12 text-blue-600" />
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {selectedYear} Yılı Seçildi
+            </h3>
+            <p className="text-gray-600">
+              Rezervasyonları görüntülemek için bir ay seçin.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Modals */}
       {showQuickModal && (

@@ -99,7 +99,7 @@ const Header = () => {
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
+        isScrolled || location.pathname !== '/'
           ? 'bg-gradient-to-r from-blue-600/95 via-purple-600/95 to-blue-700/95 backdrop-blur-xl shadow-xl border-b border-white/20' 
           : 'bg-transparent'
       }`}

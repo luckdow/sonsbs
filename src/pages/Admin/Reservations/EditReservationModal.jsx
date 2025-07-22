@@ -12,6 +12,9 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
     tripDetails: {
       date: '',
       time: '',
+      returnDate: '',
+      returnTime: '',
+      tripType: 'one-way',
       pickupLocation: '',
       dropoffLocation: '',
       passengerCount: 1,
@@ -51,6 +54,9 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
         tripDetails: reservation.tripDetails || {
           date: '',
           time: '',
+          returnDate: '',
+          returnTime: '',
+          tripType: 'one-way',
           pickupLocation: '',
           dropoffLocation: '',
           passengerCount: 1,
@@ -125,13 +131,8 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
     setLoading(true);
     
     try {
-      const updatedReservation = {
-        ...reservation,
-        ...formData,
-        updatedAt: new Date().toISOString()
-      };
-      
-      await onUpdate(updatedReservation);
+      // Sadece formData'yı gönder, reservation.id'yi onUpdate fonksiyonunda kullan
+      await onUpdate(reservation.id, formData);
     } catch (error) {
       console.error('Rezervasyon güncelleme hatası:', error);
       alert('Rezervasyon güncellenirken hata oluştu');
@@ -231,8 +232,23 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">Seyahat Bilgileri</h3>
               
               <div className="grid grid-cols-2 gap-4">
+                {/* Seyahat Türü */}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Seyahat Türü</label>
+                  <select
+                    value={formData.tripDetails.tripType}
+                    onChange={(e) => handleInputChange('tripDetails', 'tripType', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="one-way">Tek Yön</option>
+                    <option value="round-trip">Gidiş-Dönüş</option>
+                  </select>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tarih *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {formData.tripDetails.tripType === 'round-trip' ? 'Gidiş Tarihi *' : 'Tarih *'}
+                  </label>
                   <input
                     type="date"
                     value={formData.tripDetails.date}
@@ -247,7 +263,9 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Saat *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {formData.tripDetails.tripType === 'round-trip' ? 'Gidiş Saati *' : 'Saat *'}
+                  </label>
                   <input
                     type="time"
                     value={formData.tripDetails.time}
@@ -260,23 +278,61 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
                     <p className="text-red-500 text-xs mt-1">{errors['tripDetails.time']}</p>
                   )}
                 </div>
+
+                {/* Dönüş Bilgileri - Sadece Gidiş-Dönüş için */}
+                {formData.tripDetails.tripType === 'round-trip' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Dönüş Tarihi</label>
+                      <input
+                        type="date"
+                        value={formData.tripDetails.returnDate}
+                        onChange={(e) => handleInputChange('tripDetails', 'returnDate', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          errors['tripDetails.returnDate'] ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors['tripDetails.returnDate'] && (
+                        <p className="text-red-500 text-xs mt-1">{errors['tripDetails.returnDate']}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Dönüş Saati</label>
+                      <input
+                        type="time"
+                        value={formData.tripDetails.returnTime}
+                        onChange={(e) => handleInputChange('tripDetails', 'returnTime', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          errors['tripDetails.returnTime'] ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors['tripDetails.returnTime'] && (
+                        <p className="text-red-500 text-xs mt-1">{errors['tripDetails.returnTime']}</p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Kalkış Noktası *</label>
-                <select
+                <input
+                  type="text"
+                  list="pickup-locations"
                   value={formData.tripDetails.pickupLocation}
                   onChange={(e) => handleInputChange('tripDetails', 'pickupLocation', e.target.value)}
+                  placeholder="Kalkış noktasını yazın veya listeden seçin"
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors['tripDetails.pickupLocation'] ? 'border-red-500' : 'border-gray-300'
                   }`}
-                >
-                  <option value="">Kalkış noktası seçin</option>
-                  <option value="Antalya Havalimanı">Antalya Havalimanı</option>
+                />
+                <datalist id="pickup-locations">
+                  <option value="Antalya Havalimanı" />
                   {popularLocations.map((location) => (
-                    <option key={location} value={location}>{location}</option>
+                    <option key={location} value={location} />
                   ))}
-                </select>
+                </datalist>
                 {errors['tripDetails.pickupLocation'] && (
                   <p className="text-red-500 text-xs mt-1">{errors['tripDetails.pickupLocation']}</p>
                 )}
@@ -284,19 +340,22 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Varış Noktası *</label>
-                <select
+                <input
+                  type="text"
+                  list="dropoff-locations"
                   value={formData.tripDetails.dropoffLocation}
                   onChange={(e) => handleInputChange('tripDetails', 'dropoffLocation', e.target.value)}
+                  placeholder="Varış noktasını yazın veya listeden seçin"
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors['tripDetails.dropoffLocation'] ? 'border-red-500' : 'border-gray-300'
                   }`}
-                >
-                  <option value="">Varış noktası seçin</option>
-                  <option value="Antalya Havalimanı">Antalya Havalimanı</option>
+                />
+                <datalist id="dropoff-locations">
+                  <option value="Antalya Havalimanı" />
                   {popularLocations.map((location) => (
-                    <option key={location} value={location}>{location}</option>
+                    <option key={location} value={location} />
                   ))}
-                </select>
+                </datalist>
                 {errors['tripDetails.dropoffLocation'] && (
                   <p className="text-red-500 text-xs mt-1">{errors['tripDetails.dropoffLocation']}</p>
                 )}
