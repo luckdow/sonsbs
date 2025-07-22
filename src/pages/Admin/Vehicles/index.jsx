@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, RefreshCw, Car, Settings, Grid, List } from 'lucide-react';
+import { Plus, RefreshCw, Car } from 'lucide-react';
 import { collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import VehicleTable from './VehicleTable';
-import VehicleGrid from './VehicleGrid';
-import VehicleFilters from './VehicleFilters';
 import AddVehicleModal from './AddVehicleModal';
 import EditVehicleModal from './EditVehicleModal';
 import VehicleDetailsModal from './VehicleDetailsModal';
@@ -12,16 +10,8 @@ import VehicleFeaturesModal from './VehicleFeaturesModal';
 
 const VehicleIndex = () => {
   const [vehicles, setVehicles] = useState([]);
-  const [filteredVehicles, setFilteredVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'grid'
-  
-  // Filtreleme state'leri
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [capacityFilter, setCapacityFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
   
   // Modal durumları
   const [showAddModal, setShowAddModal] = useState(false);
@@ -43,7 +33,6 @@ const VehicleIndex = () => {
           ...doc.data()
         }));
         setVehicles(vehicleData);
-        setFilteredVehicles(vehicleData);
         setLoading(false);
       },
       (error) => {
@@ -54,38 +43,6 @@ const VehicleIndex = () => {
 
     return () => unsubscribeVehicles();
   }, []);
-
-  // Filtreleme işlemleri
-  useEffect(() => {
-    let filtered = vehicles;
-
-    // Arama filtresi
-    if (searchTerm) {
-      filtered = filtered.filter(vehicle => 
-        vehicle.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehicle.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehicle.plateNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Durum filtresi
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(vehicle => vehicle.status === statusFilter);
-    }
-
-    // Kapasite filtresi
-    if (capacityFilter !== 'all') {
-      const capacity = parseInt(capacityFilter);
-      filtered = filtered.filter(vehicle => vehicle.capacity >= capacity);
-    }
-
-    // Tip filtresi
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(vehicle => vehicle.type === typeFilter);
-    }
-
-    setFilteredVehicles(filtered);
-  }, [vehicles, searchTerm, statusFilter, capacityFilter, typeFilter]);
 
   // Araç ekleme
   const handleAddVehicle = async (vehicleData) => {
@@ -190,7 +147,7 @@ const VehicleIndex = () => {
             Araç Yönetimi
           </h1>
           <p className="text-gray-600 mt-1">
-            {vehicles.length} araç kayıtlı • {filteredVehicles.length} gösteriliyor
+            {vehicles.length} araç kayıtlı
           </p>
         </div>
         <button
@@ -202,72 +159,15 @@ const VehicleIndex = () => {
         </button>
       </div>
 
-      {/* Filtreler */}
-      <VehicleFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        capacityFilter={capacityFilter}
-        setCapacityFilter={setCapacityFilter}
-        typeFilter={typeFilter}
-        setTypeFilter={setTypeFilter}
-      />
-
-      {/* Görünüm Değiştirme */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Car className="w-5 h-5 text-gray-500" />
-            <span className="text-sm text-gray-600">Görünüm</span>
-          </div>
-          <div className="flex rounded-lg border border-gray-200 p-1">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex items-center gap-2 px-3 py-1 rounded text-sm transition-colors ${
-                viewMode === 'table' 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <List className="w-4 h-4" />
-              Tablo
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-2 px-3 py-1 rounded text-sm transition-colors ${
-                viewMode === 'grid' 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Grid className="w-4 h-4" />
-              Kart
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Araç Listesi */}
-      {viewMode === 'table' ? (
-        <VehicleTable
-          vehicles={filteredVehicles}
-          onShowDetails={handleShowDetails}
-          onEditVehicle={handleEditVehicle}
-          onDeleteVehicle={handleDeleteVehicle}
-          onStatusChange={handleStatusChange}
-          onManageFeatures={handleManageFeatures}
-        />
-      ) : (
-        <VehicleGrid
-          vehicles={filteredVehicles}
-          onShowDetails={handleShowDetails}
-          onEditVehicle={handleEditVehicle}
-          onDeleteVehicle={handleDeleteVehicle}
-          onStatusChange={handleStatusChange}
-          onManageFeatures={handleManageFeatures}
-        />
-      )}
+      <VehicleTable
+        vehicles={vehicles}
+        onShowDetails={handleShowDetails}
+        onEditVehicle={handleEditVehicle}
+        onDeleteVehicle={handleDeleteVehicle}
+        onStatusChange={handleStatusChange}
+        onManageFeatures={handleManageFeatures}
+      />
 
       {/* Modaller */}
       {showAddModal && (

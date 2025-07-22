@@ -24,8 +24,6 @@ const QRModal = ({ reservation, onClose }) => {
       // QR kod verisi olarak sadece rezervasyon ID'sini kullan
       const qrData = reservation.reservationId || reservation.id;
       
-      console.log('QR Modal: QR kod verisi:', qrData);
-      console.log('QR Modal: Rezervasyon bilgileri:', reservation);
 
       QRCode.toCanvas(qrRef.current, qrData, {
         width: 200,

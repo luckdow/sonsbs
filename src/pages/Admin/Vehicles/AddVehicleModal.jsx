@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Car, Save, Upload, AlertCircle, Calculator, Info, Plus, Trash2 } from 'lucide-react';
+import { X, Car, Save, Upload, AlertCircle, Calculator, Info, Plus, Trash2, Settings, DollarSign } from 'lucide-react';
 import { getDefaultPricingForType, generatePricingExample, createCustomPricing, validatePricing } from '../../../utils/vehiclePricing';
 
 const AddVehicleModal = ({ onClose, onSubmit }) => {
+  const [activeTab, setActiveTab] = useState('basic');
   const [formData, setFormData] = useState({
     brand: '',
     model: '',
@@ -66,9 +67,23 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
   }, [formData.type]);
 
   const handleInputChange = (field, value) => {
+    // Sayısal alanlar için özel işlem
+    let processedValue = value;
+    
+    if (['capacity', 'year', 'kmRate'].includes(field)) {
+      // Boş string ise string olarak bırak, sayı ise parseFloat/parseInt yap
+      if (value === '') {
+        processedValue = '';
+      } else if (!isNaN(parseFloat(value))) {
+        processedValue = field === 'year' ? parseInt(value) : parseFloat(value);
+      } else {
+        processedValue = value; // Geçersiz giriş için mevcut değeri koru
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: processedValue
     }));
     
     // Hata temizle
@@ -82,7 +97,14 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
 
   // Fiyat aralığı güncelleme
   const handleRangeChange = (index, field, value) => {
-    const newValue = field === 'isFixed' ? value : parseFloat(value) || 0;
+    let newValue;
+    
+    if (field === 'isFixed') {
+      newValue = value;
+    } else {
+      // Boş string ise string olarak bırak, sayı ise parseFloat yap
+      newValue = value === '' ? '' : (isNaN(parseFloat(value)) ? value : parseFloat(value));
+    }
     
     setFormData(prev => ({
       ...prev,
@@ -150,7 +172,7 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
     if (!formData.brand.trim()) newErrors.brand = 'Marka gerekli';
     if (!formData.model.trim()) newErrors.model = 'Model gerekli';
     if (!formData.plateNumber.trim()) newErrors.plateNumber = 'Plaka gerekli';
-    if (!formData.capacity || formData.capacity < 1) newErrors.capacity = 'Geçerli kapasite gerekli';
+    if (!formData.capacity || formData.capacity === '' || formData.capacity < 1) newErrors.capacity = 'Geçerli kapasite gerekli';
     if (!formData.color.trim()) newErrors.color = 'Renk gerekli';
 
     // Dinamik fiyatlandırma validasyonu
@@ -163,10 +185,10 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
 
     // Her aralık için validasyon
     formData.pricing.ranges.forEach((range, index) => {
-      if (range.from >= range.to) {
+      if (range.from === '' || range.to === '' || range.from >= range.to) {
         newErrors[`pricing.ranges.${index}.to`] = 'Bitiş km başlangıçtan büyük olmalı';
       }
-      if (range.price <= 0) {
+      if (range.price === '' || range.price <= 0) {
         newErrors[`pricing.ranges.${index}.price`] = 'Fiyat 0\'dan büyük olmalı';
       }
     });
@@ -191,9 +213,9 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
     try {
       const vehicleData = {
         ...formData,
-        capacity: parseInt(formData.capacity),
-        kmRate: parseFloat(formData.kmRate), // Backward compatibility
-        year: parseInt(formData.year),
+        capacity: formData.capacity === '' ? 0 : parseInt(formData.capacity),
+        kmRate: formData.kmRate === '' ? 25 : parseFloat(formData.kmRate), // Backward compatibility
+        year: formData.year === '' ? new Date().getFullYear() : parseInt(formData.year),
         plateNumber: formData.plateNumber.toUpperCase().replace(/\s/g, ''),
         brand: formData.brand.trim(),
         model: formData.model.trim(),
@@ -242,163 +264,259 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
           </button>
         </div>
 
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200">
+          <div className="flex">
+            <button
+              type="button"
+              onClick={() => setActiveTab('basic')}
+              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'basic'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Info className="w-4 h-4" />
+              Temel Bilgiler
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('pricing')}
+              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'pricing'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <DollarSign className="w-4 h-4" />
+              Fiyatlandırma
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('features')}
+              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'features'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              Araç Özellikleri
+            </button>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Temel Bilgiler */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
-                Temel Bilgiler
-              </h3>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Marka <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.brand}
-                  onChange={(e) => handleInputChange('brand', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.brand ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="Marka giriniz"
-                />
-                {errors.brand && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.brand}
-                  </p>
-                )}
-              </div>
+          {/* Temel Bilgiler Sekmesi */}
+          {activeTab === 'basic' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Temel Bilgiler */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Marka <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.brand}
+                      onChange={(e) => handleInputChange('brand', e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.brand ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Marka giriniz"
+                    />
+                    {errors.brand && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.brand}
+                      </p>
+                    )}
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Model <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.model}
-                  onChange={(e) => handleInputChange('model', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.model ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="Model giriniz"
-                />
-                {errors.model && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.model}
-                  </p>
-                )}
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Model <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.model}
+                      onChange={(e) => handleInputChange('model', e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.model ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Model giriniz"
+                    />
+                    {errors.model && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.model}
+                      </p>
+                    )}
+                  </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Yıl
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.year}
-                    onChange={(e) => handleInputChange('year', e.target.value)}
-                    min="1990"
-                    max={new Date().getFullYear() + 1}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Yıl
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.year}
+                        onChange={(e) => handleInputChange('year', e.target.value)}
+                        min="1990"
+                        max={new Date().getFullYear() + 1}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tip
+                      </label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) => handleInputChange('type', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="sedan">Sedan</option>
+                        <option value="suv">SUV</option>
+                        <option value="minibus">Minibüs</option>
+                        <option value="midibus">Midibüs</option>
+                        <option value="bus">Otobüs</option>
+                        <option value="vip">VIP</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Plaka <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.plateNumber}
+                      onChange={(e) => handleInputChange('plateNumber', e.target.value.toUpperCase())}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.plateNumber ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="06ABC123"
+                    />
+                    {errors.plateNumber && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.plateNumber}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Renk <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.color}
+                      onChange={(e) => handleInputChange('color', e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.color ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Renk giriniz"
+                    />
+                    {errors.color && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.color}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tip
-                  </label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => handleInputChange('type', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="sedan">Sedan</option>
-                    <option value="suv">SUV</option>
-                    <option value="minibus">Minibüs</option>
-                    <option value="midibus">Midibüs</option>
-                    <option value="bus">Otobüs</option>
-                    <option value="vip">VIP</option>
-                  </select>
+
+                {/* Teknik Bilgiler */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+                    Teknik Bilgiler
+                  </h3>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Kapasite <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.capacity}
+                      onChange={(e) => handleInputChange('capacity', e.target.value)}
+                      min="1"
+                      max="50"
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.capacity ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Kişi sayısı"
+                    />
+                    {errors.capacity && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.capacity}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Yakıt Türü
+                      </label>
+                      <select
+                        value={formData.fuelType}
+                        onChange={(e) => handleInputChange('fuelType', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="benzin">Benzin</option>
+                        <option value="dizel">Dizel</option>
+                        <option value="lpg">LPG</option>
+                        <option value="elektrik">Elektrik</option>
+                        <option value="hibrit">Hibrit</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Şanzıman
+                      </label>
+                      <select
+                        value={formData.transmission}
+                        onChange={(e) => handleInputChange('transmission', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="otomatik">Otomatik</option>
+                        <option value="manuel">Manuel</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Araç Resmi (URL)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.imageUrl}
+                      onChange={(e) => handleInputChange('imageUrl', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    <p className="mt-1 text-sm text-gray-500">
+                      Araç fotoğrafının URL'ini girin (opsiyonel)
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Plaka <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.plateNumber}
-                  onChange={(e) => handleInputChange('plateNumber', e.target.value.toUpperCase())}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.plateNumber ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="06ABC123"
-                />
-                {errors.plateNumber && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.plateNumber}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Renk <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.color}
-                  onChange={(e) => handleInputChange('color', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.color ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="Renk giriniz"
-                />
-                {errors.color && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.color}
-                  </p>
-                )}
               </div>
             </div>
+          )}
 
-            {/* Teknik Bilgiler */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
-                Teknik Bilgiler
-              </h3>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kapasite <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={formData.capacity}
-                  onChange={(e) => handleInputChange('capacity', e.target.value)}
-                  min="1"
-                  max="50"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.capacity ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="Kişi sayısı"
-                />
-                {errors.capacity && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.capacity}
-                  </p>
-                )}
-              </div>
-
+          {/* Fiyatlandırma Sekmesi */}
+          {activeTab === 'pricing' && (
+            <div className="space-y-6">
               {/* Dinamik Fiyatlandırma Sistemi */}
-              <div className="col-span-2 bg-green-50 rounded-lg p-4 border border-green-200">
+              <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-green-600" />
@@ -530,97 +648,51 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
                 )}
               </div>
             </div>
+          )}
 
-            {/* Teknik Detaylar */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Yakıt Türü
-                  </label>
-                  <select
-                    value={formData.fuelType}
-                    onChange={(e) => handleInputChange('fuelType', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="benzin">Benzin</option>
-                    <option value="dizel">Dizel</option>
-                    <option value="lpg">LPG</option>
-                    <option value="elektrik">Elektrik</option>
-                    <option value="hibrit">Hibrit</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Şanzıman
-                  </label>
-                  <select
-                    value={formData.transmission}
-                    onChange={(e) => handleInputChange('transmission', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="otomatik">Otomatik</option>
-                    <option value="manuel">Manuel</option>
-                  </select>
-                </div>
-              </div>
-
+          {/* Araç Özellikleri Sekmesi */}
+          {activeTab === 'features' && (
+            <div className="space-y-6">
+              {/* Özellikler */}
               <div>
+                <h3 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">
+                  Araç Özellikleri
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {availableFeatures.map((feature) => (
+                    <label
+                      key={feature}
+                      className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.features.includes(feature)}
+                        onChange={() => handleFeatureToggle(feature)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">{feature}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Açıklama */}
+              <div className="mt-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Araç Resmi (URL)
+                  Açıklama
                 </label>
-                <input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => handleInputChange('imageUrl', e.target.value)}
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  rows="3"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="Araç hakkında ek bilgiler..."
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  Araç fotoğrafının URL'ini girin (opsiyonel)
-                </p>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Özellikler */}
-          <div className="mt-6">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">
-              Araç Özellikleri
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {availableFeatures.map((feature) => (
-                <label
-                  key={feature}
-                  className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.features.includes(feature)}
-                    onChange={() => handleFeatureToggle(feature)}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">{feature}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Açıklama */}
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Açıklama
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Araç hakkında ek bilgiler..."
-            />
-          </div>
-
-          {/* Butonlar */}
+          {/* Butonlar - Tüm sekmelerde göster */}
           <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
             <button
               type="button"

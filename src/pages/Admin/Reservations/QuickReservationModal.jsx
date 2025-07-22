@@ -45,7 +45,6 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
   // Fiyat hesaplama fonksiyonu
   const calculatePrice = async (pickup, dropoff, vehicleId, isRoundTrip = false) => {
     if (!pickup || !dropoff || !vehicleId || !window.google) {
-      console.log('Fiyat hesaplama - eksik parametre:', { pickup, dropoff, vehicleId, google: !!window.google });
       return { price: 0, distance: 0 };
     }
 
@@ -66,11 +65,8 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
             
             // Seçilen aracın km başına fiyatını bul
             const selectedVehicle = vehicles.find(v => v.id === vehicleId);
-            console.log('Araç bulundu:', selectedVehicle);
-            console.log('Mevcut tüm araçlar:', vehicles);
             
             const pricePerKm = selectedVehicle ? (selectedVehicle.kmRate || 3) : 3; // Sadece kmRate field'ını kullan
-            console.log('Kullanılan km fiyatı (kmRate):', pricePerKm);
             
             let calculatedPrice = Math.round(distance * pricePerKm);
             
@@ -79,17 +75,14 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
               calculatedPrice = calculatedPrice * 2;
             }
             
-            console.log('Hesaplanan fiyat:', { distance, pricePerKm, calculatedPrice, isRoundTrip });
             
             resolve({ 
               price: calculatedPrice, 
               distance: Math.round(distance * 100) / 100 // 2 ondalık basamak
             });
           } else {
-            console.log('Google Maps API hatası:', status);
             // Hata durumunda varsayılan hesaplama
             const selectedVehicle = vehicles.find(v => v.id === vehicleId);
-            console.log('Hata durumunda araç:', selectedVehicle);
             let basePrice = selectedVehicle ? (selectedVehicle.kmRate * 10 || 100) : 100;
             
             // Gidiş-dönüş ise fiyatı iki katına çıkar
@@ -97,7 +90,6 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
               basePrice = basePrice * 2;
             }
             
-            console.log('Hata durumunda fiyat:', basePrice);
             resolve({ price: basePrice, distance: 0 });
           }
           setCalculating(false);
@@ -116,14 +108,11 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
     const { pickupLocation, dropoffLocation, tripType } = formData.tripDetails;
     const { selectedVehicle } = formData;
     
-    console.log('updatePrice çağrıldı:', { pickupLocation, dropoffLocation, selectedVehicle, tripType });
     
     if (pickupLocation && dropoffLocation && selectedVehicle) {
-      console.log('Fiyat hesaplanıyor...');
       const isRoundTrip = tripType === 'round-trip';
       const { price, distance } = await calculatePrice(pickupLocation, dropoffLocation, selectedVehicle, isRoundTrip);
       
-      console.log('Hesaplanan fiyat ve mesafe:', { price, distance, isRoundTrip });
       
       setFormData(prev => ({
         ...prev,
@@ -131,7 +120,6 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
         calculatedDistance: distance
       }));
     } else {
-      console.log('Fiyat hesaplanamadı - eksik veri:', { pickupLocation: !!pickupLocation, dropoffLocation: !!dropoffLocation, selectedVehicle: !!selectedVehicle });
     }
   };
 
@@ -581,11 +569,9 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
                 <select
                   value={formData.selectedVehicle}
                   onChange={(e) => {
-                    console.log('Araç seçildi:', e.target.value);
                     setFormData(prev => ({ ...prev, selectedVehicle: e.target.value }));
                     // Araç değiştiğinde fiyat hesapla
                     setTimeout(() => {
-                      console.log('Fiyat hesaplama başlatılıyor...');
                       updatePrice();
                     }, 100);
                   }}

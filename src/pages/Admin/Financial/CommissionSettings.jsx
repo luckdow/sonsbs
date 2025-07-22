@@ -73,7 +73,6 @@ const CommissionSettings = () => {
       
       // Global ayarları kaydet (gerçek implementasyonda ayrı bir doc'a kaydedilecek)
       // Şimdilik console'a log atıyoruz
-      console.log('Global ayarlar kaydedildi:', globalSettings);
       
       alert('Genel ayarlar başarıyla kaydedildi');
     } catch (error) {

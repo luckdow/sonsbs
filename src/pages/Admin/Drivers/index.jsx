@@ -70,7 +70,6 @@ const DriverIndex = () => {
         const unsubscribeVehicles = onSnapshot(
           vehiclesQuery,
           (snapshot) => {
-            console.log('Aktif araçlar güncellendi, döküman sayısı:', snapshot.docs.length);
             const vehicleData = snapshot.docs.map(doc => ({
               id: doc.id,
               ...doc.data()
@@ -162,7 +161,6 @@ const DriverIndex = () => {
 
   // Şoför ekleme
   const handleAddDriver = async (driverData) => {
-    console.log('Şoför ekleme başlatılıyor:', driverData);
     try {
       const newDriver = {
         ...driverData,
@@ -173,10 +171,8 @@ const DriverIndex = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      console.log('Firebase\'a eklenecek veri:', newDriver);
       // Firebase'a users koleksiyonuna ekle
       const docRef = await addDoc(collection(db, 'users'), newDriver);
-      console.log('Yeni şoför eklendi, ID:', docRef.id);
       setShowAddModal(false);
       alert('Şoför başarıyla eklendi!');
     } catch (error) {
@@ -187,7 +183,6 @@ const DriverIndex = () => {
 
   // Şoför güncelleme
   const handleUpdateDriver = async (driverId, updatedData) => {
-    console.log('Şoför güncelleme başlatılıyor:', driverId, updatedData);
     try {
       // Users koleksiyonunda güncelle (drivers değil!)
       await updateDoc(doc(db, 'users', driverId), {
@@ -195,7 +190,6 @@ const DriverIndex = () => {
         updatedAt: new Date().toISOString()
       });
       
-      console.log('Şoför güncellendi:', driverId);
       setShowEditModal(false);
       setSelectedDriver(null);
       alert('Şoför bilgileri başarıyla güncellendi!');
@@ -211,7 +205,6 @@ const DriverIndex = () => {
       try {
         // Firebase'dan sil (users koleksiyonu)
         await deleteDoc(doc(db, 'users', driverId));
-        console.log('Şoför silindi:', driverId);
         alert('Şoför başarıyla silindi!');
       } catch (error) {
         console.error('Şoför silinirken hata:', error);
@@ -222,7 +215,6 @@ const DriverIndex = () => {
 
   // Durum değiştirme
   const handleStatusChange = async (driverId, newStatus) => {
-    console.log('Durum değiştirme başlatılıyor:', driverId, newStatus);
     try {
       // Users koleksiyonunda güncelle (drivers değil!)
       const isActive = newStatus === 'active';
@@ -232,7 +224,6 @@ const DriverIndex = () => {
         updatedAt: new Date().toISOString()
       });
       
-      console.log('Şoför durumu güncellendi:', driverId, newStatus);
     } catch (error) {
       console.error('Durum güncellenirken hata:', error);
       alert('Durum güncellenirken bir hata oluştu: ' + error.message);
@@ -263,7 +254,6 @@ const DriverIndex = () => {
           </div>
           <button
             onClick={() => {
-              console.log('Yeni Şoför Ekle butonuna tıklandı');
               setShowAddModal(true);
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
@@ -340,7 +330,6 @@ const DriverIndex = () => {
         drivers={filteredDrivers}
         vehicles={vehicles}
         onEdit={(driver) => {
-          console.log('Şoför düzenleme başlatılıyor:', driver);
           setSelectedDriver(driver);
           setShowEditModal(true);
         }}

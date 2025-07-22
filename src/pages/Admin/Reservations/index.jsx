@@ -157,55 +157,20 @@ const ReservationIndex = () => {
 
   // Firebase'den rezervasyonları dinle
   useEffect(() => {
-    console.log('Rezervasyon index: Firebase listeners başlatılıyor...');
     setLoading(true);
 
     // Firebase listener'ları
     const unsubscribeReservations = onSnapshot(
       collection(db, 'reservations'),
       (snapshot) => {
-        console.log('🔄 Admin Panel: Rezervasyonlar güncellendi, döküman sayısı:', snapshot.docs.length);
         const reservationData = snapshot.docs.map(doc => {
           const data = doc.data();
-          console.log(`📋 Rezervasyon ${doc.id}:`, { 
-            id: doc.id, 
-            status: data.status,
-            reservationId: data.reservationId,
-            assignedDriver: data.assignedDriver,
-            assignedDriverId: data.assignedDriverId 
-          }); 
           return {
             id: doc.id,
-            ...data,
-            // Eksik alanları varsayılan değerlerle doldur
-            reservationId: data.reservationId || `SBS-${doc.id.slice(-6)}`,
-            customerInfo: data.customerInfo || {
-              firstName: 'Belirtilmemiş',
-              lastName: '',
-              phone: '',
-              email: ''
-            },
-            tripDetails: data.tripDetails || {
-              date: '',
-              time: '',
-              pickupLocation: '',
-              dropoffLocation: '',
-              passengerCount: 1,
-              luggageCount: 0
-            },
-            status: data.status || 'pending',
-            paymentMethod: data.paymentMethod || 'cash',
-            totalPrice: data.totalPrice || 0,
-            createdAt: data.createdAt || new Date().toISOString()
+            ...data
           };
         });
         
-        console.log('✅ Admin Panel: İşlenmiş rezervasyonlar:', reservationData.map(r => ({
-          id: r.id,
-          reservationId: r.reservationId,
-          status: r.status,
-          customer: `${r.customerInfo?.firstName} ${r.customerInfo?.lastName}`
-        })));
         setReservations(reservationData);
         setLoading(false);
       },
@@ -224,7 +189,6 @@ const ReservationIndex = () => {
     const unsubscribeDrivers = onSnapshot(
       driversQuery,
       (snapshot) => {
-        console.log('Rezervasyon index: Şoförler güncellendi, döküman sayısı:', snapshot.docs.length);
         const driverData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
@@ -241,7 +205,6 @@ const ReservationIndex = () => {
           status: doc.data().isActive !== false ? 'active' : 'inactive' // Default olarak active
         }));
         
-        console.log('Firebase şoförleri işlendi:', driverData);
         setDrivers(driverData);
       },
       (error) => {
@@ -258,12 +221,10 @@ const ReservationIndex = () => {
     const unsubscribeVehicles = onSnapshot(
       vehiclesQuery,
       (snapshot) => {
-        console.log('Aktif araçlar güncellendi, döküman sayısı:', snapshot.docs.length);
         const vehicleData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        console.log('Aktif araç verileri:', vehicleData); // Debug için
         setVehicles(vehicleData);
       },
       (error) => {
@@ -294,7 +255,6 @@ const ReservationIndex = () => {
       setShowQuickModal(false);
       toast.success('Rezervasyon başarıyla eklendi!');
       
-      console.log('Yeni rezervasyon eklendi:', docRef.id);
     } catch (error) {
       console.error('Rezervasyon eklenirken hata:', error);
       toast.error('Rezervasyon eklenirken bir hata oluştu: ' + error.message);
@@ -304,18 +264,16 @@ const ReservationIndex = () => {
   // Şoför atama - Sistemdeki şoförler ve manuel şoförler
   const handleDriverAssign = async (reservationId, driverId, vehicleId, manualDriverInfo = null) => {
     try {
-      console.log('🔍 Şoför atama başlatılıyor:', { reservationId, driverId, vehicleId, manualDriverInfo });
       
       // Rezervasyonu bul
       const reservationToUpdate = reservations.find(res => res.id === reservationId);
       if (!reservationToUpdate) {
         console.error('❌ Rezervasyon bulunamadı:', reservationId);
-        console.log('📋 Mevcut rezervasyonlar:', reservations.map(r => ({ id: r.id, reservationId: r.reservationId })));
         toast.error('Rezervasyon bulunamadı');
         return;
       }
 
-      console.log('✅ Güncellenecek rezervasyon bulundu:', {
+      setSelectedReservation({
         id: reservationToUpdate.id,
         reservationId: reservationToUpdate.reservationId,
         currentStatus: reservationToUpdate.status,
@@ -325,7 +283,6 @@ const ReservationIndex = () => {
 
       if (manualDriverInfo) {
         // Manuel şoför ataması
-        console.log('🚀 Manuel şoför ataması yapılıyor:', manualDriverInfo);
         
         // Güncellenecek veri
         const updateData = {
@@ -339,13 +296,11 @@ const ReservationIndex = () => {
 
         // Firebase'de güncelle
         await updateDoc(doc(db, 'reservations', reservationId), updateData);
-        console.log('✅ Manuel şoför Firebase rezervasyon güncellendi!');
         
         // WhatsApp mesajı gönder
         try {
           const whatsappMessage = generateManualDriverWhatsAppMessage(reservationToUpdate, manualDriverInfo);
           sendWhatsAppMessage(manualDriverInfo.phone, whatsappMessage);
-          console.log('📱 WhatsApp mesajı gönderildi');
         } catch (whatsappError) {
           console.error('WhatsApp gönderim hatası:', whatsappError);
           toast.error('WhatsApp gönderimi başarısız: ' + whatsappError.message);
@@ -370,7 +325,6 @@ const ReservationIndex = () => {
           link.click();
           document.body.removeChild(link);
           
-          console.log('📄 PDF oluşturuldu ve indirildi');
         } catch (pdfError) {
           console.error('PDF oluşturma hatası:', pdfError);
           toast.error('PDF oluşturma başarısız: ' + pdfError.message);
@@ -396,11 +350,8 @@ const ReservationIndex = () => {
           return acc;
         }, {});
 
-        console.log('🔄 Firebase güncellenecek veri:', cleanUpdateData);
-        console.log('📍 Güncelleme yapılacak doküman ID:', reservationId);
         
         await updateDoc(doc(db, 'reservations', reservationId), cleanUpdateData);
-        console.log('✅ Firebase rezervasyon başarıyla güncellendi!');
         
         toast.success('Şoför başarıyla atandı!');
       }
@@ -461,7 +412,6 @@ const ReservationIndex = () => {
         return;
       }
 
-      console.log('Rezervasyon tamamlanacak:', { reservation, driverId });
 
       // Firebase rezervasyon için finansal entegrasyon
       const result = await manualCompleteReservation(reservationId, 'admin-user');
@@ -851,7 +801,6 @@ const ReservationIndex = () => {
             }}
             onStatusChange={(reservationId, newStatus) => {
               // Firebase listener otomatik güncelleyecek, manual güncelleme yapmayalım
-              console.log('Durum değişikliği:', reservationId, newStatus);
             }}
           />
         )}
