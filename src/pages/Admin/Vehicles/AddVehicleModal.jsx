@@ -173,9 +173,7 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
     if (!formData.model.trim()) newErrors.model = 'Model gerekli';
     if (!formData.plateNumber.trim()) newErrors.plateNumber = 'Plaka gerekli';
     if (!formData.capacity || formData.capacity === '' || formData.capacity < 1) newErrors.capacity = 'Geçerli kapasite gerekli';
-    if (!formData.color.trim()) newErrors.color = 'Renk gerekli';
-
-    // Dinamik fiyatlandırma validasyonu
+    if (!formData.color.trim()) newErrors.color = 'Renk gerekli';    // Dinamik fiyatlandırma validasyonu
     const pricingValidation = validatePricing(formData.pricing);
     if (!pricingValidation.isValid) {
       pricingValidation.errors.forEach((error, index) => {

@@ -85,15 +85,19 @@ const EditVehicleModal = ({ vehicle, onClose, onSubmit }) => {
     }
   }, [vehicle]);
 
-  // Araç tipi değiştiğinde varsayılan fiyatları güncelle
+  // Araç tipi değiştiğinde varsayılan fiyatları güncelle (sadece yeni araç eklerken)
   useEffect(() => {
-    const defaultPricing = getDefaultPricingForType(formData.type);
-    setFormData(prev => ({
-      ...prev,
-      pricing: defaultPricing,
-      kmRate: defaultPricing.ranges?.[1]?.price || 25 // İkinci aralığın fiyatını backward compatibility için kullan
-    }));
-  }, [formData.type]);
+    // Bu useEffect'i sadece araç tipini manuel değiştirdiğimizde çalıştır
+    // Mevcut araç düzenlerken varsayılan fiyatları yükleme
+    if (!vehicle?.id) {
+      const defaultPricing = getDefaultPricingForType(formData.type);
+      setFormData(prev => ({
+        ...prev,
+        pricing: defaultPricing,
+        kmRate: defaultPricing.ranges?.[1]?.price || 25
+      }));
+    }
+  }, [formData.type, vehicle?.id]);
 
   const handleInputChange = (field, value) => {
     // Sayısal alanlar için özel işlem
