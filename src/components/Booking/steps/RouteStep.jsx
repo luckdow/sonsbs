@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
-import { calculateDistanceBasedPrice } from '../../../utils/distancePricing';
+import { calculateVehiclePrice as calculateVehiclePricing, getDefaultPricingForType } from '../../../utils/vehiclePricing';
 
 const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
   // Trip type
@@ -272,12 +272,15 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
           description: data.description || `${data.year} model ${data.brand} ${data.model}`,
           capacity: data.capacity || 4,
           luggage: data.baggage || 2, // baggage alanı luggage olarak kullanılıyor
-          basePrice: data.kmRate || 100, // kmRate admin panelindeki temel fiyat
+          basePrice: data.kmRate || 25, // EUR cinsinden
           pricePerKm: data.pricePerKm || (data.kmRate ? data.kmRate / 10 : 2),
           status: data.isActive ? 'active' : 'inactive', // isActive boolean değeri
           image: data.imageUrl || data.image || '',
           features: data.features || [],
           type: data.type || 'sedan',
+          // Yeni dinamik fiyatlandırma sistemi
+          pricing: data.pricing || getDefaultPricingForType(data.type || 'sedan'),
+          kmRate: data.kmRate || 25, // Fallback için
           rating: data.rating || 4.0,
           brand: data.brand || '',
           model: data.model || '',
@@ -484,15 +487,24 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
   const calculateVehiclePrice = (vehicle) => {
     if (!routeInfo || !routeInfo.distanceValue) {
       // Eğer rota yoksa minimum fiyat göster
-      return 1250; // Base price for 0-20km
+      return 25; // Base price for sedan 1-20km
     }
     
     const distanceKm = routeInfo.distanceValue / 1000; // metre cinsinden km'ye çevir
-    const vehicleType = vehicle.type || 'sedan';
     const isRoundTrip = tripType === 'round-trip';
     
-    // Yeni basamaklı fiyatlandırma sistemini kullan
-    const priceData = calculateDistanceBasedPrice(distanceKm, vehicleType, isRoundTrip);
+    console.log('Fiyat hesaplama:', {
+      distanceMeters: routeInfo.distanceValue,
+      distanceKm,
+      isRoundTrip,
+      vehicleType: vehicle.type,
+      hasPricing: !!vehicle.pricing
+    });
+    
+    // Yeni dinamik fiyatlandırma sistemini kullan
+    const priceData = calculateVehiclePricing(distanceKm, vehicle, isRoundTrip);
+    
+    console.log('Hesaplanan fiyat:', priceData.totalPrice, '€');
     
     return priceData.totalPrice;
   };
