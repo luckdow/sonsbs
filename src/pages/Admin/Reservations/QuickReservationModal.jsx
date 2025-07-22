@@ -614,7 +614,7 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
                       <p className="text-sm text-green-700">
                         Hesaplanan Fiyat {formData.tripDetails.tripType === 'round-trip' ? '(Gidiş-Dönüş)' : '(Tek Yön)'}
                       </p>
-                      <p className="text-2xl font-bold text-green-800">₺{formData.totalPrice}</p>
+                      <p className="text-2xl font-bold text-green-800">€{formData.totalPrice}</p>
                       {formData.calculatedDistance > 0 && (
                         <p className="text-xs text-green-600">
                           Mesafe: {formData.calculatedDistance} km 

@@ -967,7 +967,7 @@ const TransferDetailsNew = ({ bookingData, setBookingData, onNext }) => {
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className="text-lg font-bold text-green-600">
-                          ₺{calculateVehiclePrice(vehicle)}
+                          €{calculateVehiclePrice(vehicle)}
                         </div>
                         <div className="text-xs text-gray-500">
                           {tripType === 'round-trip' ? 'Gidiş-Dönüş' : 'Tek Yön'}

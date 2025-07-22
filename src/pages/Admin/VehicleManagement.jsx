@@ -245,7 +245,7 @@ const VehicleManagement = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">KM Ücreti</span>
-                      <span className="font-semibold text-gray-900">₺{vehicle.kmRate}/km</span>
+                      <span className="font-semibold text-gray-900">€{vehicle.kmRate}/km</span>
                     </div>
                     {vehicle.color && (
                       <div className="flex items-center justify-between">
@@ -421,7 +421,7 @@ const VehicleManagement = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      KM Başı Ücret (₺) *
+                      KM Başı Ücret (€) *
                     </label>
                     <input
                       type="number"

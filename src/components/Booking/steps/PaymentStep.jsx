@@ -203,7 +203,7 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
           <div className="border-t border-gray-200 pt-2 mt-2">
             <div className="flex justify-between items-center">
               <span className="font-semibold text-gray-900 text-sm">Toplam:</span>
-              <span className="text-base font-bold text-blue-600">₺{bookingData.totalPrice || 0}</span>
+              <span className="text-base font-bold text-blue-600">€{bookingData.totalPrice || 0}</span>
             </div>
           </div>
         </div>
@@ -502,7 +502,7 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
                 <div className="text-xs text-blue-700 space-y-1">
                   <div className="flex justify-between">
                     <span>Tutar:</span>
-                    <span className="font-bold">₺{bookingData.totalPrice || 0}</span>
+                    <span className="font-bold">€{bookingData.totalPrice || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Zaman:</span>

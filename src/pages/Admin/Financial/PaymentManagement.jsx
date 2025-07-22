@@ -169,11 +169,11 @@ const PaymentManagement = () => {
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <p className="text-sm text-gray-600">Yolculuk Ücreti</p>
-          <p className="text-lg font-bold text-gray-800">₺{payment.tripPrice.toLocaleString()}</p>
+          <p className="text-lg font-bold text-gray-800">€{payment.tripPrice.toLocaleString()}</p>
         </div>
         <div>
           <p className="text-sm text-gray-600">Komisyon (%{payment.commissionRate})</p>
-          <p className="text-lg font-bold text-red-600">₺{payment.commission.toLocaleString()}</p>
+          <p className="text-lg font-bold text-red-600">€{payment.commission.toLocaleString()}</p>
         </div>
       </div>
 
@@ -181,7 +181,7 @@ const PaymentManagement = () => {
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-green-800">Şoför Kazancı</span>
           <span className="text-xl font-bold text-green-600">
-            ₺{payment.driverEarning.toLocaleString()}
+            €{payment.driverEarning.toLocaleString()}
           </span>
         </div>
       </div>
@@ -265,7 +265,7 @@ const PaymentManagement = () => {
             <div>
               <p className="text-sm text-gray-600">Bekleyen Tutar</p>
               <p className="text-2xl font-bold text-blue-600">
-                ₺{pendingPayments.reduce((sum, p) => sum + p.driverEarning, 0).toLocaleString()}
+                €{pendingPayments.reduce((sum, p) => sum + p.driverEarning, 0).toLocaleString()}
               </p>
             </div>
           </div>

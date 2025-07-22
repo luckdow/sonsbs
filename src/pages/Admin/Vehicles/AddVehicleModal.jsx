@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Car, Save, Upload, AlertCircle } from 'lucide-react';
+import { X, Car, Save, Upload, AlertCircle, Calculator, Info, Plus, Trash2 } from 'lucide-react';
+import { getDefaultPricingForType, generatePricingExample, createCustomPricing, validatePricing } from '../../../utils/vehiclePricing';
 
 const AddVehicleModal = ({ onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -9,18 +10,28 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
     year: new Date().getFullYear(),
     plateNumber: '',
     capacity: '',
-    kmRate: '',
+    kmRate: 25, // Backward compatibility (euro cinsinden)
     color: '',
     fuelType: 'benzin',
     transmission: 'otomatik',
     type: 'sedan',
     imageUrl: '',
     features: [],
-    description: ''
+    description: '',
+    // Yeni dinamik fiyatlandırma
+    pricing: {
+      ranges: [
+        { from: 1, to: 20, price: 25, isFixed: true }, // 1-20km sabit 25€
+        { from: 20, to: 40, price: 1.5, isFixed: false }, // 20-40km arası 1.5€/km
+        { from: 40, to: 80, price: 1, isFixed: false }, // 40-80km arası 1€/km  
+        { from: 80, to: 150, price: 0.8, isFixed: false } // 80-150km arası 0.8€/km
+      ]
+    }
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showPricingExample, setShowPricingExample] = useState(false);
 
   // Özellik seçenekleri
   const availableFeatures = [
@@ -44,6 +55,16 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
     'Kamera Sistemi'
   ];
 
+  // Araç tipi değiştiğinde varsayılan fiyatları güncelle
+  useEffect(() => {
+    const defaultPricing = getDefaultPricingForType(formData.type);
+    setFormData(prev => ({
+      ...prev,
+      pricing: defaultPricing,
+      kmRate: defaultPricing.ranges?.[1]?.price || 25 // İkinci aralığın fiyatını backward compatibility için kullan
+    }));
+  }, [formData.type]);
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -55,6 +76,61 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
       setErrors(prev => ({
         ...prev,
         [field]: ''
+      }));
+    }
+  };
+
+  // Fiyat aralığı güncelleme
+  const handleRangeChange = (index, field, value) => {
+    const newValue = field === 'isFixed' ? value : parseFloat(value) || 0;
+    
+    setFormData(prev => ({
+      ...prev,
+      pricing: {
+        ...prev.pricing,
+        ranges: prev.pricing.ranges.map((range, i) => 
+          i === index ? { ...range, [field]: newValue } : range
+        )
+      }
+    }));
+
+    // Hata temizle
+    if (errors[`pricing.ranges.${index}.${field}`]) {
+      setErrors(prev => ({
+        ...prev,
+        [`pricing.ranges.${index}.${field}`]: ''
+      }));
+    }
+  };
+
+  // Yeni aralık ekleme
+  const addPriceRange = () => {
+    const lastRange = formData.pricing.ranges[formData.pricing.ranges.length - 1];
+    const newFrom = lastRange ? lastRange.to : 1;
+    
+    setFormData(prev => ({
+      ...prev,
+      pricing: {
+        ...prev.pricing,
+        ranges: [...prev.pricing.ranges, {
+          from: newFrom,
+          to: newFrom + 20,
+          price: 1,
+          isFixed: false
+        }]
+      }
+    }));
+  };
+
+  // Aralık silme
+  const removePriceRange = (index) => {
+    if (formData.pricing.ranges.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        pricing: {
+          ...prev.pricing,
+          ranges: prev.pricing.ranges.filter((_, i) => i !== index)
+        }
       }));
     }
   };
@@ -75,8 +151,25 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
     if (!formData.model.trim()) newErrors.model = 'Model gerekli';
     if (!formData.plateNumber.trim()) newErrors.plateNumber = 'Plaka gerekli';
     if (!formData.capacity || formData.capacity < 1) newErrors.capacity = 'Geçerli kapasite gerekli';
-    if (!formData.kmRate || formData.kmRate < 0) newErrors.kmRate = 'KM başı ücret gerekli';
     if (!formData.color.trim()) newErrors.color = 'Renk gerekli';
+
+    // Dinamik fiyatlandırma validasyonu
+    const pricingValidation = validatePricing(formData.pricing);
+    if (!pricingValidation.isValid) {
+      pricingValidation.errors.forEach((error, index) => {
+        newErrors[`pricing.general.${index}`] = error;
+      });
+    }
+
+    // Her aralık için validasyon
+    formData.pricing.ranges.forEach((range, index) => {
+      if (range.from >= range.to) {
+        newErrors[`pricing.ranges.${index}.to`] = 'Bitiş km başlangıçtan büyük olmalı';
+      }
+      if (range.price <= 0) {
+        newErrors[`pricing.ranges.${index}.price`] = 'Fiyat 0\'dan büyük olmalı';
+      }
+    });
 
     // Plaka formatı kontrolü (basit)
     const plateRegex = /^[0-9]{2}[A-Z]{1,3}[0-9]{2,4}$/;
@@ -99,12 +192,21 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
       const vehicleData = {
         ...formData,
         capacity: parseInt(formData.capacity),
-        kmRate: parseFloat(formData.kmRate),
+        kmRate: parseFloat(formData.kmRate), // Backward compatibility
         year: parseInt(formData.year),
         plateNumber: formData.plateNumber.toUpperCase().replace(/\s/g, ''),
         brand: formData.brand.trim(),
         model: formData.model.trim(),
-        color: formData.color.trim()
+        color: formData.color.trim(),
+        // Yeni dinamik fiyatlandırma sistemi
+        pricing: {
+          ranges: formData.pricing.ranges.map(range => ({
+            from: parseInt(range.from),
+            to: parseInt(range.to),
+            price: parseFloat(range.price),
+            isFixed: Boolean(range.isFixed)
+          }))
+        }
       };
 
       const success = await onSubmit(vehicleData);
@@ -295,29 +397,142 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  KM Başı Ücret (₺) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={formData.kmRate}
-                  onChange={(e) => handleInputChange('kmRate', e.target.value)}
-                  min="0"
-                  step="0.01"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.kmRate ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="0.00"
-                />
-                {errors.kmRate && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+              {/* Dinamik Fiyatlandırma Sistemi */}
+              <div className="col-span-2 bg-green-50 rounded-lg p-4 border border-green-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <Calculator className="w-5 h-5 text-green-600" />
+                    Dinamik Fiyatlandırma Sistemi (EUR)
+                  </h3>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={addPriceRange}
+                      className="flex items-center gap-1 text-sm text-green-600 hover:text-green-800 px-2 py-1 rounded border border-green-300 hover:bg-green-100"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Aralık Ekle
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPricingExample(!showPricingExample)}
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      <Info className="w-4 h-4" />
+                      Örnek Hesaplama
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {formData.pricing.ranges.map((range, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-2 items-end bg-white p-3 rounded border">
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Başlangıç (km)
+                        </label>
+                        <input
+                          type="number"
+                          value={range.from}
+                          onChange={(e) => handleRangeChange(index, 'from', e.target.value)}
+                          min="0"
+                          className="w-full px-2 py-1 text-sm border rounded"
+                          placeholder="1"
+                        />
+                      </div>
+                      
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Bitiş (km)
+                        </label>
+                        <input
+                          type="number"
+                          value={range.to}
+                          onChange={(e) => handleRangeChange(index, 'to', e.target.value)}
+                          min="1"
+                          className="w-full px-2 py-1 text-sm border rounded"
+                          placeholder="20"
+                        />
+                      </div>
+                      
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Fiyat (€)
+                        </label>
+                        <input
+                          type="number"
+                          value={range.price}
+                          onChange={(e) => handleRangeChange(index, 'price', e.target.value)}
+                          min="0"
+                          step="0.1"
+                          className="w-full px-2 py-1 text-sm border rounded"
+                          placeholder="25"
+                        />
+                      </div>
+                      
+                      <div className="col-span-3">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Fiyat Tipi
+                        </label>
+                        <select
+                          value={range.isFixed ? 'fixed' : 'per_km'}
+                          onChange={(e) => handleRangeChange(index, 'isFixed', e.target.value === 'fixed')}
+                          className="w-full px-2 py-1 text-sm border rounded"
+                        >
+                          <option value="fixed">Sabit Fiyat</option>
+                          <option value="per_km">Km Başına</option>
+                        </select>
+                      </div>
+                      
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Önizleme
+                        </label>
+                        <div className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                          {range.from}-{range.to}km: {range.isFixed ? `€${range.price}` : `€${range.price}/km`}
+                        </div>
+                      </div>
+                      
+                      <div className="col-span-1 flex justify-center">
+                        {formData.pricing.ranges.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removePriceRange(index)}
+                            className="text-red-500 hover:text-red-700 p-1"
+                            title="Aralığı Sil"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Genel validasyon hataları */}
+                {Object.keys(errors).filter(key => key.startsWith('pricing.general')).map(key => (
+                  <p key={key} className="mt-2 text-sm text-red-600 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
-                    {errors.kmRate}
+                    {errors[key]}
                   </p>
+                ))}
+
+                {/* Örnek hesaplama */}
+                {showPricingExample && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="font-medium text-blue-900 mb-2">Örnek Hesaplama: 35km mesafe</h4>
+                    <div className="text-sm text-blue-800">
+                      <p>• 1-20km: €25 (sabit)</p>
+                      <p>• 20-35km: 15km × €1.5 = €22.5</p>
+                      <p className="font-medium border-t pt-1 mt-1">Toplam: €47.5 → €48 (yuvarlama)</p>
+                    </div>
+                  </div>
                 )}
               </div>
+            </div>
 
+            {/* Teknik Detaylar */}
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

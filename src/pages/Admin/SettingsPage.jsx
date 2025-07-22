@@ -615,7 +615,7 @@ const PaymentSettings = ({ settings, onChange, onNestedChange }) => (
           onChange={(e) => onChange('currency', e.target.value)}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="TRY">Türk Lirası (₺)</option>
+          <option value="EUR">Euro (€)</option>
           <option value="USD">Amerikan Doları ($)</option>
           <option value="EUR">Euro (€)</option>
         </select>

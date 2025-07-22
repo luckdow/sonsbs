@@ -320,7 +320,7 @@ const PaymentReminders = () => {
                     <div className="flex items-center gap-2">
                       <div className="text-right mr-4">
                         {reminder.amount > 0 && (
-                          <p className="font-bold text-green-600">₺{reminder.amount.toLocaleString()}</p>
+                          <p className="font-bold text-green-600">€{reminder.amount.toLocaleString()}</p>
                         )}
                         <p className={`text-sm font-medium ${
                           isOverdue ? 'text-red-600' : isToday ? 'text-yellow-600' : 'text-gray-600'
@@ -477,7 +477,7 @@ const PaymentReminders = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tutar (₺)
+                    Tutar (€)
                   </label>
                   <input
                     type="number"

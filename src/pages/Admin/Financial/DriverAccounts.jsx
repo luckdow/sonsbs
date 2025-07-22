@@ -233,7 +233,7 @@ const DriverAccounts = () => {
           <p className={`text-lg font-bold ${
             driver.currentBalance >= 0 ? 'text-green-600' : 'text-red-600'
           }`}>
-            ₺{Math.abs(driver.currentBalance).toLocaleString()}
+            €{Math.abs(driver.currentBalance).toLocaleString()}
           </p>
         </div>
         <div>
@@ -247,7 +247,7 @@ const DriverAccounts = () => {
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-yellow-600" />
             <span className="text-xs font-medium text-yellow-800">
-              Nakit Komisyon Borcu: ₺{driver.cashCommissionOwed.toLocaleString()}
+              Nakit Komisyon Borcu: €{driver.cashCommissionOwed.toLocaleString()}
             </span>
           </div>
         </div>
@@ -342,28 +342,28 @@ const DriverAccounts = () => {
                   <p className={`text-2xl font-bold ${
                     selectedDriver.currentBalance >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    ₺{Math.abs(selectedDriver.currentBalance).toLocaleString()}
+                    €{Math.abs(selectedDriver.currentBalance).toLocaleString()}
                   </p>
                 </div>
                 
                 <div className="bg-green-50 p-4 rounded-lg">
                   <p className="text-sm text-green-600">Toplam Kazanç</p>
                   <p className="text-2xl font-bold text-green-600">
-                    ₺{selectedDriver.totalEarnings.toLocaleString()}
+                    €{selectedDriver.totalEarnings.toLocaleString()}
                   </p>
                 </div>
                 
                 <div className="bg-purple-50 p-4 rounded-lg">
                   <p className="text-sm text-purple-600">Toplam Komisyon</p>
                   <p className="text-2xl font-bold text-purple-600">
-                    ₺{selectedDriver.totalCommission.toLocaleString()}
+                    €{selectedDriver.totalCommission.toLocaleString()}
                   </p>
                 </div>
                 
                 <div className="bg-yellow-50 p-4 rounded-lg">
                   <p className="text-sm text-yellow-600">Nakit Borç</p>
                   <p className="text-2xl font-bold text-yellow-600">
-                    ₺{selectedDriver.cashCommissionOwed.toLocaleString()}
+                    €{selectedDriver.cashCommissionOwed.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -423,10 +423,10 @@ const DriverAccounts = () => {
                         <p className={`font-bold ${
                           transaction.type === 'payment' ? 'text-green-600' : 'text-red-600'
                         }`}>
-                          {transaction.type === 'payment' ? '+' : '-'}₺{transaction.amount.toLocaleString()}
+                          {transaction.type === 'payment' ? '+' : '-'}€{transaction.amount.toLocaleString()}
                         </p>
                         <p className="text-sm text-gray-500">
-                          Bakiye: ₺{transaction.balanceAfter.toLocaleString()}
+                          Bakiye: €{transaction.balanceAfter.toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -461,7 +461,7 @@ const DriverAccounts = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tutar (₺)
+                  Tutar (€)
                 </label>
                 <input
                   type="number"

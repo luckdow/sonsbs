@@ -1,26 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, 
-  Calendar, 
   Clock, 
-  ArrowRightLeft,
+  Calendar,
   Users,
-  Package,
+  Luggage,
+  ArrowRight,
+  ArrowRightLeft,
+  ChevronDown,
+  Navigation,
+  Route,
+  Car,
+  CheckCircle,
+  User,
   Plus,
   Minus,
-  ChevronDown,
+  Info,
   Star,
-  CheckCircle,
-  Route,
-  Timer,
-  Car,
-  ArrowRight,
-  Navigation2,
-  Map as MapIcon
+  RotateCcw
 } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
+import { calculateDistanceBasedPrice } from '../../../utils/distancePricing';
 
 const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
   // Trip type
@@ -478,33 +480,21 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
     }
   };
 
-  // Calculate vehicle price based on distance
+  // Calculate vehicle price based on distance using new pricing system
   const calculateVehiclePrice = (vehicle) => {
     if (!routeInfo || !routeInfo.distanceValue) {
       // Eğer rota yoksa minimum fiyat göster
-      return vehicle.basePrice || vehicle.kmRate || 100;
+      return 1250; // Base price for 0-20km
     }
     
     const distanceKm = routeInfo.distanceValue / 1000; // metre cinsinden km'ye çevir
+    const vehicleType = vehicle.type || 'sedan';
+    const isRoundTrip = tripType === 'round-trip';
     
-    // Admin panelindeki kmRate değerini kullan
-    const kmRate = vehicle.kmRate || vehicle.basePrice || vehicle.pricePerKm || 10;
+    // Yeni basamaklı fiyatlandırma sistemini kullan
+    const priceData = calculateDistanceBasedPrice(distanceKm, vehicleType, isRoundTrip);
     
-    // Toplam fiyat = Mesafe (km) × km başına fiyat
-    let totalPrice = Math.round(distanceKm * kmRate);
-    
-    // Minimum fiyat kontrolü
-    const minimumPrice = kmRate * 5; // En az 5 km fiyatı
-    if (totalPrice < minimumPrice) {
-      totalPrice = minimumPrice;
-    }
-    
-    // Gidiş-dönüş için 2 katına çıkar
-    if (tripType === 'round-trip') {
-      totalPrice = totalPrice * 2;
-    }
-    
-    return totalPrice;
+    return priceData.totalPrice;
   };
 
   // Passenger count handlers
@@ -1024,7 +1014,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
                       <span className="text-sm text-gray-500">Toplam Fiyat</span>
                       <div className="text-right">
                         <div className="text-xl font-bold text-green-600">
-                          ₺{calculateVehiclePrice(vehicle)}
+                          €{calculateVehiclePrice(vehicle)}
                         </div>
                         <div className="text-xs text-gray-500">
                           {tripType === 'round-trip' ? 'Gidiş-Dönüş' : 'Tek Yön'}

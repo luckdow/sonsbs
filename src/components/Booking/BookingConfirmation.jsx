@@ -350,7 +350,7 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
         `Yolcu Sayısı: ${bookingData.passengerCount || 1}`,
         `Ödeme: ${bookingData.paymentMethod === 'cash' ? 'Nakit' : 
                   bookingData.paymentMethod === 'bank_transfer' ? 'Havale' : 'Kredi Kartı'}`,
-        `Toplam Tutar: ₺${calculateTotal()}`
+        `Toplam Tutar: €${calculateTotal()}`
       ];
 
       details.forEach(detail => {
@@ -546,14 +546,14 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Transfer Ücreti</span>
-                    <span className="font-medium">₺{(bookingData.selectedVehicle?.totalPrice || 0).toLocaleString()}</span>
+                    <span className="font-medium">€{(bookingData.selectedVehicle?.totalPrice || 0).toLocaleString()}</span>
                   </div>
                   
                   {bookingData.selectedServices && bookingData.selectedServices.length > 0 && (
                     bookingData.selectedServices.map((service) => (
                       <div key={service.id} className="flex justify-between text-sm">
                         <span className="text-gray-600">{service.name}</span>
-                        <span className="font-medium">₺{(service.price || 0).toLocaleString()}</span>
+                        <span className="font-medium">€{(service.price || 0).toLocaleString()}</span>
                       </div>
                     ))
                   )}
@@ -562,7 +562,7 @@ const BookingConfirmation = ({ bookingData, onComplete }) => {
                     <div className="flex justify-between">
                       <span className="font-semibold text-gray-900">Toplam Tutar</span>
                       <span className="text-lg font-bold text-green-600">
-                        ₺{calculateTotal().toLocaleString()}
+                        €{calculateTotal().toLocaleString()}
                       </span>
                     </div>
                   </div>

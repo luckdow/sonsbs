@@ -57,7 +57,7 @@ Varis: ${formatLocation(reservation.tripDetails?.dropoffLocation)}
 Yolcu Sayisi: ${reservation.tripDetails?.passengerCount || 1} kisi
 Bagaj: ${reservation.tripDetails?.luggageCount || 0} adet
 
-Seyahat Ucreti: ${price} TL
+Seyahat Ucreti: ${price} EUR
 
 Arac Plakasi: ${driverInfo.plateNumber}
 
@@ -116,7 +116,7 @@ Varis Noktasi: ${formatLocation(reservation.tripDetails?.dropoffLocation)}
 Yolcu Sayisi: ${reservation.tripDetails?.passengerCount || 1} kisi
 Bagaj: ${reservation.tripDetails?.luggageCount || 0} adet
 
-Seyahat Ucreti: ${manualDriver.price} TL
+Seyahat Ucreti: ${manualDriver.price} EUR
 Arac Plakasi: ${manualDriver.plateNumber}
 
 ---

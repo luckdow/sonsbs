@@ -243,7 +243,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-gray-900">
-                        ₺{reservation.totalPrice || 0}
+                        €{reservation.totalPrice || 0}
                       </p>
                       <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full mt-1 ${
                         reservation.status === 'completed' ? 'bg-emerald-100 text-emerald-600' :

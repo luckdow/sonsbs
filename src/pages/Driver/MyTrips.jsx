@@ -173,7 +173,7 @@ const MyTrips = () => {
         <div className="card">
           <div className="card-body text-center">
             <DollarSign className="w-8 h-8 text-green-500 mx-auto mb-2" />
-            <p className="text-lg font-bold text-gray-900">₺{stats.totalEarnings.toLocaleString('tr-TR')}</p>
+            <p className="text-lg font-bold text-gray-900">€{stats.totalEarnings.toLocaleString('tr-TR')}</p>
             <p className="text-sm text-gray-600">Kazanç</p>
           </div>
         </div>
@@ -270,10 +270,10 @@ const MyTrips = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-gray-900">
-                          ₺{reservation.totalPrice?.toLocaleString('tr-TR') || '0'}
+                          €{reservation.totalPrice?.toLocaleString('tr-TR') || '0'}
                         </p>
                         <p className="text-sm text-green-600 font-medium">
-                          Kazanç: ₺{calculateDriverEarning(reservation.totalPrice).toLocaleString('tr-TR')}
+                          Kazanç: €{calculateDriverEarning(reservation.totalPrice).toLocaleString('tr-TR')}
                         </p>
                       </div>
                     </div>

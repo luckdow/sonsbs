@@ -89,7 +89,7 @@ export const generateReservationPDF = async (reservationData, companyInfo, qrCod
                          'Kredi Kartı';
     pdf.text(`Ödeme Yöntemi: ${paymentMethod}`, 25, yPos);
     yPos += 7;
-    pdf.text(`Toplam Tutar: ₺${reservationData.payment.amount.toLocaleString()}`, 25, yPos);
+    pdf.text(`Toplam Tutar: €${reservationData.payment.amount.toLocaleString()}`, 25, yPos);
     
     // Sağ: Yolcu Bilgileri
     let yPosRight = 165; // Transfer başlığıyla aynı hizada
@@ -406,7 +406,7 @@ export const generateManualDriverPDF = async (reservation, manualDriver, company
     pdf.setFont('helvetica', 'bold');
     pdf.text('Seyahat Ucreti:', 20, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`${manualDriver.price} TL`, 75, yPos);
+    pdf.text(`${manualDriver.price} EUR`, 75, yPos);
     yPos += 12;
     
     // Uyarılar

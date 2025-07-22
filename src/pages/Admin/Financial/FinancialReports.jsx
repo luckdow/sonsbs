@@ -183,7 +183,7 @@ const FinancialReports = () => {
         <div>
           <p className="text-gray-600 text-sm font-medium">{title}</p>
           <p className="text-3xl font-bold text-gray-800 mt-2">
-            {typeof value === 'number' && title.includes('₺') ? `₺${value.toLocaleString()}` : value.toLocaleString()}
+            {typeof value === 'number' && title.includes('€') ? `€${value.toLocaleString()}` : value.toLocaleString()}
           </p>
           {change && (
             <p className={`text-sm mt-2 ${change > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -337,15 +337,15 @@ const FinancialReports = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span>Nakit Ödemeler</span>
-                      <span className="font-bold">₺{reportData.cashTransactions.toLocaleString()}</span>
+                      <span className="font-bold">€{reportData.cashTransactions.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Kredi Kartı/Havale</span>
-                      <span className="font-bold">₺{reportData.cardTransactions.toLocaleString()}</span>
+                      <span className="font-bold">€{reportData.cardTransactions.toLocaleString()}</span>
                     </div>
                     <div className="border-t pt-3 flex justify-between font-bold text-lg">
                       <span>Toplam</span>
-                      <span>₺{reportData.totalRevenue.toLocaleString()}</span>
+                      <span>€{reportData.totalRevenue.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -355,7 +355,7 @@ const FinancialReports = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span>Toplam Komisyon</span>
-                      <span className="font-bold">₺{reportData.totalCommissions.toLocaleString()}</span>
+                      <span className="font-bold">€{reportData.totalCommissions.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Ortalama Komisyon Oranı</span>
@@ -402,16 +402,16 @@ const FinancialReports = () => {
                           {driver.totalTrips}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center font-bold text-green-600">
-                          ₺{driver.totalRevenue.toLocaleString()}
+                          €{driver.totalRevenue.toLocaleString()}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center font-bold text-red-600">
-                          ₺{driver.totalCommission.toLocaleString()}
+                          €{driver.totalCommission.toLocaleString()}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center font-bold text-blue-600">
-                          ₺{driver.driverEarnings.toLocaleString()}
+                          €{driver.driverEarnings.toLocaleString()}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center">
-                          ₺{driver.averageTrip.toLocaleString()}
+                          €{driver.averageTrip.toLocaleString()}
                         </td>
                       </tr>
                     ))}
@@ -439,7 +439,7 @@ const FinancialReports = () => {
                         </div>
                         <div className="flex justify-between">
                           <span>Toplam Tutar</span>
-                          <span className="font-bold">₺{paymentReport.cash.amount.toLocaleString()}</span>
+                          <span className="font-bold">€{paymentReport.cash.amount.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Yüzde</span>
@@ -457,7 +457,7 @@ const FinancialReports = () => {
                         </div>
                         <div className="flex justify-between">
                           <span>Toplam Tutar</span>
-                          <span className="font-bold">₺{paymentReport.card.amount.toLocaleString()}</span>
+                          <span className="font-bold">€{paymentReport.card.amount.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Yüzde</span>

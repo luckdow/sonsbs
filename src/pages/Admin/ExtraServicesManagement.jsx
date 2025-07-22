@@ -262,7 +262,7 @@ const ExtraServicesManagement = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <DollarSign className="h-4 w-4 text-green-500" />
-                    <span className="font-semibold text-green-600">₺{service.price}</span>
+                    <span className="font-semibold text-green-600">€{service.price}</span>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     service.status === 'active' 
@@ -369,7 +369,7 @@ const ExtraServicesManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Fiyat (₺) *
+                      Fiyat (€) *
                     </label>
                     <input
                       type="number"

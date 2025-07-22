@@ -466,7 +466,7 @@ const MyReservations = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-xl font-bold text-gray-900">
-                        ₺{Number(reservation?.totalPrice || 0).toLocaleString('tr-TR')}
+                        €{Number(reservation?.totalPrice || 0).toLocaleString('tr-TR')}
                       </p>
                       <p className="text-sm text-gray-500">
                         {formatDateTime(reservation)}
@@ -637,7 +637,7 @@ const MyReservations = () => {
                   </div>
                   <div>
                     <label className="text-sm text-gray-600">Toplam Ücret</label>
-                    <p className="font-medium text-blue-600">₺{Number(selectedReservation.totalPrice || 0).toLocaleString('tr-TR')}</p>
+                    <p className="font-medium text-blue-600">€{Number(selectedReservation.totalPrice || 0).toLocaleString('tr-TR')}</p>
                   </div>
                   
                   {/* QR Kod Bölümü */}

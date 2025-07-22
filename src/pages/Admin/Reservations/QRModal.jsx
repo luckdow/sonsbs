@@ -121,7 +121,7 @@ const QRModal = ({ reservation, onClose }) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tutar:</span>
-                <span className="font-medium text-green-600">₺{reservation.totalPrice}</span>
+                <span className="font-medium text-green-600">€{reservation.totalPrice}</span>
               </div>
             </div>
           </div>

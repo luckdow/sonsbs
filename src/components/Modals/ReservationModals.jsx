@@ -281,7 +281,7 @@ export const AddReservationModal = ({ onAdd, onClose }) => {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Fiyat ve Durum</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="label">Toplam Fiyat (₺)</label>
+                    <label className="label">Toplam Fiyat (€)</label>
                     <input
                       type="number"
                       min="0"
@@ -489,7 +489,7 @@ export const EditReservationModal = ({ reservation, onUpdate, onClose }) => {
               </div>
 
               <div>
-                <label className="label">Toplam Fiyat (₺)</label>
+                <label className="label">Toplam Fiyat (€)</label>
                 <input
                   type="number"
                   className="input"

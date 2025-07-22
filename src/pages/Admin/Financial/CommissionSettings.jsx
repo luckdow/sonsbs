@@ -183,7 +183,7 @@ const CommissionSettings = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Minimum Komisyon (₺)
+              Minimum Komisyon (€)
             </label>
             <div className="relative">
               <input
@@ -301,9 +301,9 @@ const CommissionSettings = () => {
                       </div>
                       
                       <div className="text-right">
-                        <p className="text-sm text-gray-600">1000₺ yolculukta</p>
+                        <p className="text-sm text-gray-600">1000€ yolculukta</p>
                         <p className="font-bold text-green-600">
-                          ₺{(1000 * driver.commissionRate / 100).toFixed(0)} komisyon
+                          €{(1000 * driver.commissionRate / 100).toFixed(0)} komisyon
                         </p>
                       </div>
                     </div>
@@ -313,7 +313,7 @@ const CommissionSettings = () => {
                     <div className="bg-gray-50 p-2 rounded">
                       <p className="text-gray-600">Şoför Kazancı</p>
                       <p className="font-bold text-gray-800">
-                        ₺{(1000 - (1000 * driver.commissionRate / 100)).toFixed(0)}
+                        €{(1000 - (1000 * driver.commissionRate / 100)).toFixed(0)}
                       </p>
                     </div>
                     <div className="bg-blue-50 p-2 rounded">
@@ -336,10 +336,10 @@ const CommissionSettings = () => {
           <div className="bg-white p-4 rounded-lg">
             <h4 className="font-semibold text-gray-800 mb-2">Kredi Kartı Ödeme</h4>
             <div className="space-y-1 text-sm">
-              <p>Yolculuk: 500₺</p>
-              <p>Komisyon (%{globalSettings.defaultCommissionRate}): {(500 * globalSettings.defaultCommissionRate / 100).toFixed(0)}₺</p>
+              <p>Yolculuk: 500€</p>
+              <p>Komisyon (%{globalSettings.defaultCommissionRate}): {(500 * globalSettings.defaultCommissionRate / 100).toFixed(0)}€</p>
               <p className="font-bold text-green-600">
-                Şoför Kazancı: {(500 - (500 * globalSettings.defaultCommissionRate / 100)).toFixed(0)}₺
+                Şoför Kazancı: {(500 - (500 * globalSettings.defaultCommissionRate / 100)).toFixed(0)}€
               </p>
             </div>
           </div>
@@ -347,10 +347,10 @@ const CommissionSettings = () => {
           <div className="bg-white p-4 rounded-lg">
             <h4 className="font-semibold text-gray-800 mb-2">Nakit Ödeme</h4>
             <div className="space-y-1 text-sm">
-              <p>Yolculuk: 500₺</p>
-              <p>Komisyon (%{globalSettings.cashCommissionRate}): {(500 * globalSettings.cashCommissionRate / 100).toFixed(0)}₺</p>
+              <p>Yolculuk: 500€</p>
+              <p>Komisyon (%{globalSettings.cashCommissionRate}): {(500 * globalSettings.cashCommissionRate / 100).toFixed(0)}€</p>
               <p className="font-bold text-yellow-600">
-                Şoför Borcu: {(500 * globalSettings.cashCommissionRate / 100).toFixed(0)}₺
+                Şoför Borcu: {(500 * globalSettings.cashCommissionRate / 100).toFixed(0)}€
               </p>
             </div>
           </div>
@@ -358,10 +358,10 @@ const CommissionSettings = () => {
           <div className="bg-white p-4 rounded-lg">
             <h4 className="font-semibold text-gray-800 mb-2">Minimum Komisyon</h4>
             <div className="space-y-1 text-sm">
-              <p>Yolculuk: 200₺</p>
-              <p>Hesaplanan (%{globalSettings.defaultCommissionRate}): {(200 * globalSettings.defaultCommissionRate / 100).toFixed(0)}₺</p>
+              <p>Yolculuk: 200€</p>
+              <p>Hesaplanan (%{globalSettings.defaultCommissionRate}): {(200 * globalSettings.defaultCommissionRate / 100).toFixed(0)}€</p>
               <p className="font-bold text-blue-600">
-                Uygulanan: {Math.max(200 * globalSettings.defaultCommissionRate / 100, globalSettings.minimumCommission).toFixed(0)}₺
+                Uygulanan: {Math.max(200 * globalSettings.defaultCommissionRate / 100, globalSettings.minimumCommission).toFixed(0)}€
               </p>
             </div>
           </div>

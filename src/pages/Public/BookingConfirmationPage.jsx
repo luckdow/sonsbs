@@ -486,7 +486,7 @@ const BookingConfirmationPage = () => {
                   <p className="text-sm text-gray-600">
                     {bookingData.paymentMethod === 'credit_card' ? 'Kredi Kartı' : 'Nakit'}
                   </p>
-                  <p className="text-lg font-bold text-green-600">₺{bookingData.totalPrice}</p>
+                  <p className="text-lg font-bold text-green-600">€{bookingData.totalPrice}</p>
                 </div>
               </div>
             </div>

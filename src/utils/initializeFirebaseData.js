@@ -170,7 +170,7 @@ export const initializeSettings = async () => {
             accountHolder: 'SBS Transfer Hizmetleri Ltd. Şti.',
             iban: 'TR33 0006 4000 0011 2345 6789 01',
             branch: 'Ataşehir Şubesi',
-            currency: 'TL',
+            currency: 'EUR',
             isActive: true
           },
           {
@@ -179,7 +179,7 @@ export const initializeSettings = async () => {
             accountHolder: 'SBS Transfer Hizmetleri Ltd. Şti.',
             iban: 'TR64 0062 0001 2345 6789 1011 12',
             branch: 'Kadıköy Şubesi',
-            currency: 'TL',
+            currency: 'EUR',
             isActive: true
           }
         ],

@@ -128,7 +128,7 @@ const VehicleDetailsModal = ({ vehicle, onClose }) => {
                   <MapPin className="w-5 h-5 text-green-600" />
                   <div>
                     <p className="text-sm font-medium text-gray-900">KM Ücreti</p>
-                    <p className="text-sm text-gray-600">₺{vehicle.kmRate?.toFixed(2)} / km</p>
+                    <p className="text-sm text-gray-600">€{vehicle.kmRate?.toFixed(2)} / km</p>
                   </div>
                 </div>
                 
@@ -198,7 +198,7 @@ const VehicleDetailsModal = ({ vehicle, onClose }) => {
                     
                     <div>
                       <label className="text-sm font-medium text-gray-500">KM Başı Ücret</label>
-                      <p className="text-sm text-gray-900">₺{vehicle.kmRate?.toFixed(2)}</p>
+                      <p className="text-sm text-gray-900">€{vehicle.kmRate?.toFixed(2)}</p>
                     </div>
                     
                     <div>

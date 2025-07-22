@@ -442,7 +442,7 @@ const ReservationTable = ({
                                     <div className="min-w-0">
                                       <p className="text-xs font-medium text-gray-700">Ücret</p>
                                       <p className="text-sm text-green-600 font-bold">
-                                        {reservation.manualDriverInfo.price} ₺
+                                        {reservation.manualDriverInfo.price} €
                                       </p>
                                     </div>
                                   </div>

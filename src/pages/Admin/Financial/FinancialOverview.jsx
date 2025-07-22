@@ -101,7 +101,7 @@ const FinancialOverview = () => {
     }
   };
 
-  const StatCard = ({ title, value, icon: Icon, color, trend, prefix = '₺' }) => (
+  const StatCard = ({ title, value, icon: Icon, color, trend, prefix = '€' }) => (
     <motion.div
       whileHover={{ scale: 1.02 }}
       className={`bg-white rounded-xl p-6 shadow-lg border-l-4 ${color}`}
@@ -241,7 +241,7 @@ const FinancialOverview = () => {
               
               <div className="text-right">
                 <p className="font-bold text-green-600">
-                  ₺{(transaction.totalPrice || 0).toLocaleString()}
+                  €{(transaction.totalPrice || 0).toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-500">
                   {transaction.createdAt?.toDate?.()?.toLocaleDateString('tr-TR') || 'Tarih'}

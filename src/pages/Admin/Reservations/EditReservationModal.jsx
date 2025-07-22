@@ -387,7 +387,7 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Fiyat (₺)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fiyat (€)</label>
                   <input
                     type="number"
                     min="0"
