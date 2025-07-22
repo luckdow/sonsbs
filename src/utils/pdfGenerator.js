@@ -296,138 +296,138 @@ export const generateManualDriverPDF = async (reservation, manualDriver, company
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
     
-    // Sol kolon
+    // Daha kompakt layout
     pdf.setFont('helvetica', 'bold');
     pdf.text('Rezervasyon No:', 20, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(reservation.reservationId || 'Belirtilmemiş', 70, yPos);
-    yPos += 7;
+    pdf.text(reservation.reservationId || 'Belirtilmemis', 65, yPos);
+    yPos += 6;
     
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Müşteri:', 20, yPos);
+    pdf.text('Musteri:', 20, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`${reservation.customerInfo?.firstName || ''} ${reservation.customerInfo?.lastName || ''}`, 70, yPos);
-    yPos += 7;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Müşteri Tel:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(reservation.customerInfo?.phone || 'Belirtilmemiş', 70, yPos);
-    yPos += 7;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Tarih:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(formatDate(reservation.tripDetails?.date), 70, yPos);
-    yPos += 7;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Saat:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(reservation.tripDetails?.time || 'Belirtilmemiş', 70, yPos);
-    yPos += 10;
-    
-    // Güzergah Bilgileri
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Güzergah Bilgileri', 20, yPos);
-    yPos += 15;
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Kalkış Noktası:', 20, yPos);
-    yPos += 7;
-    pdf.setFont('helvetica', 'normal');
-    const pickupText = formatLocation(reservation.tripDetails?.pickupLocation);
-    const pickupLines = pdf.splitTextToSize(pickupText, pageWidth - 40);
-    pdf.text(pickupLines, 25, yPos);
-    yPos += (pickupLines.length * 7) + 5;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Varış Noktası:', 20, yPos);
-    yPos += 7;
-    pdf.setFont('helvetica', 'normal');
-    const dropoffText = formatLocation(reservation.tripDetails?.dropoffLocation);
-    const dropoffLines = pdf.splitTextToSize(dropoffText, pageWidth - 40);
-    pdf.text(dropoffLines, 25, yPos);
-    yPos += (dropoffLines.length * 7) + 10;
-    
-    // Yolcu ve Araç Bilgileri
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Yolcu ve Araç Bilgileri', 20, yPos);
-    yPos += 15;
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Yolcu Sayısı:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`${reservation.tripDetails?.passengerCount || 1} kişi`, 70, yPos);
-    yPos += 7;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Bagaj:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`${reservation.tripDetails?.luggageCount || 0} adet`, 70, yPos);
-    yPos += 7;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Araç Plakası:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(manualDriver.plateNumber || 'Belirtilmemiş', 70, yPos);
-    yPos += 10;
-    
-    // Şoför Bilgileri
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Şoför Bilgileri', 20, yPos);
-    yPos += 15;
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Şoför Adı:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(manualDriver.name || 'Belirtilmemiş', 70, yPos);
-    yPos += 7;
+    pdf.text(`${reservation.customerInfo?.firstName || ''} ${reservation.customerInfo?.lastName || ''}`, 45, yPos);
+    yPos += 6;
     
     pdf.setFont('helvetica', 'bold');
     pdf.text('Telefon:', 20, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(manualDriver.phone || 'Belirtilmemiş', 70, yPos);
-    yPos += 10;
+    pdf.text(reservation.customerInfo?.phone || 'Belirtilmemis', 50, yPos);
+    yPos += 6;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Tarih:', 20, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(formatDate(reservation.tripDetails?.date), 45, yPos);
+    yPos += 6;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Saat:', 20, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(reservation.tripDetails?.time || 'Belirtilmemis', 40, yPos);
+    yPos += 8;
+    
+    // Güzergah Bilgileri
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Guzergah Bilgileri', 20, yPos);
+    yPos += 12;
+    
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Kalkis:', 20, yPos);
+    yPos += 5;
+    pdf.setFont('helvetica', 'normal');
+    const pickupText = formatLocation(reservation.tripDetails?.pickupLocation);
+    const pickupLines = pdf.splitTextToSize(pickupText, pageWidth - 40);
+    pdf.text(pickupLines, 25, yPos);
+    yPos += (pickupLines.length * 5) + 4;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Varis:', 20, yPos);
+    yPos += 5;
+    pdf.setFont('helvetica', 'normal');
+    const dropoffText = formatLocation(reservation.tripDetails?.dropoffLocation);
+    const dropoffLines = pdf.splitTextToSize(dropoffText, pageWidth - 40);
+    pdf.text(dropoffLines, 25, yPos);
+    yPos += (dropoffLines.length * 5) + 8;
+    
+    // Yolcu ve Araç Bilgileri
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Yolcu ve Arac Bilgileri', 20, yPos);
+    yPos += 12;
+    
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Yolcu Sayisi:', 20, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`${reservation.tripDetails?.passengerCount || 1} kisi`, 60, yPos);
+    yPos += 6;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Bagaj:', 20, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`${reservation.tripDetails?.luggageCount || 0} adet`, 45, yPos);
+    yPos += 6;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Arac Plakasi:', 20, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(manualDriver.plateNumber || 'Belirtilmemis', 65, yPos);
+    yPos += 8;
+    
+    // Şoför Bilgileri
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Sofor Bilgileri', 20, yPos);
+    yPos += 12;
+    
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Sofor Adi:', 20, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(manualDriver.name || 'Belirtilmemis', 55, yPos);
+    yPos += 6;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Telefon:', 20, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(manualDriver.phone || 'Belirtilmemis', 50, yPos);
+    yPos += 8;
     
     // Ücret Bilgileri
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Ücret Bilgileri', 20, yPos);
-    yPos += 15;
+    pdf.text('Ucret Bilgileri', 20, yPos);
+    yPos += 12;
     
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Seyahat Ücreti:', 20, yPos);
+    pdf.text('Seyahat Ucreti:', 20, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`${manualDriver.price} ₺`, 70, yPos);
-    yPos += 15;
+    pdf.text(`${manualDriver.price} TL`, 75, yPos);
+    yPos += 12;
     
     // Uyarılar
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Önemli Notlar:', 20, yPos);
-    yPos += 10;
+    pdf.text('Onemli Notlar:', 20, yPos);
+    yPos += 8;
     
     pdf.setFont('helvetica', 'normal');
-    pdf.text('• Belirlenen saatte hazır olunuz', 25, yPos);
-    yPos += 7;
-    pdf.text('• Müşteri ile nezaketle iletişim kurunuz', 25, yPos);
-    yPos += 7;
-    pdf.text('• Seyahat tamamlandığında rapor veriniz', 25, yPos);
+    pdf.text('• Belirlenen saatte hazir olunuz', 25, yPos);
+    yPos += 6;
+    pdf.text('• Musteri ile nezaketle iletisim kurunuz', 25, yPos);
+    yPos += 6;
+    pdf.text('• Seyahat tamamlandiginda rapor veriniz', 25, yPos);
     
     // Alt bilgi
     yPos = pageHeight - 30;
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'italic');
-    pdf.text('Bu belge manuel şoför ataması için oluşturulmuştur.', 20, yPos);
-    pdf.text(`Oluşturma Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, 20, yPos + 7);
+    pdf.text('Bu belge manuel sofor atamasi icin olusturulmustur.', 20, yPos);
+    pdf.text(`Olusturma Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, 20, yPos + 7);
     
     return pdf.output('datauristring');
   } catch (error) {

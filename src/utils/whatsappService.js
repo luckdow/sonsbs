@@ -41,29 +41,29 @@ export const generateReservationWhatsAppMessage = (reservation, driverInfo, pric
     return `${day}/${month}/${year}`;
   };
 
-  const message = `🚗 *SONSBS TRANSFER SERVİSİ*
-*Rezervasyon Detayları*
+  const message = `SONSBS TRANSFER SERVISI
+*Rezervasyon Detaylari*
 
-📋 *Rezervasyon No:* ${reservation.reservationId}
-👤 *Müşteri:* ${reservation.customerInfo?.firstName} ${reservation.customerInfo?.lastName}
-📞 *Telefon:* ${reservation.customerInfo?.phone}
+Rezervasyon No: ${reservation.reservationId}
+Musteri: ${reservation.customerInfo?.firstName} ${reservation.customerInfo?.lastName}
+Telefon: ${reservation.customerInfo?.phone}
 
-📅 *Tarih:* ${formatDate(reservation.tripDetails?.date)}
-🕐 *Saat:* ${reservation.tripDetails?.time}
+Tarih: ${formatDate(reservation.tripDetails?.date)}
+Saat: ${reservation.tripDetails?.time}
 
-📍 *Kalkış:* ${formatLocation(reservation.tripDetails?.pickupLocation)}
-📍 *Varış:* ${formatLocation(reservation.tripDetails?.dropoffLocation)}
+Kalkis: ${formatLocation(reservation.tripDetails?.pickupLocation)}
+Varis: ${formatLocation(reservation.tripDetails?.dropoffLocation)}
 
-👥 *Yolcu Sayısı:* ${reservation.tripDetails?.passengerCount || 1} kişi
-🧳 *Bagaj:* ${reservation.tripDetails?.luggageCount || 0} adet
+Yolcu Sayisi: ${reservation.tripDetails?.passengerCount || 1} kisi
+Bagaj: ${reservation.tripDetails?.luggageCount || 0} adet
 
-💰 *Seyahat Ücreti:* ${price} ₺
+Seyahat Ucreti: ${price} TL
 
-🚙 *Araç Plakası:* ${driverInfo.plateNumber}
+Arac Plakasi: ${driverInfo.plateNumber}
 
 ---
-*Lütfen belirlenen saatte hazır olunuz.*
-*İyi yolculuklar dileriz! 🛣️*
+*Lutfen belirlenen saatte hazir olunuz.*
+*Iyi yolculuklar dileriz!*
 
 _SONSBS Transfer Servisi_`;
 
@@ -91,33 +91,39 @@ export const generateManualDriverWhatsAppMessage = (reservation, manualDriver) =
     return `${day}/${month}/${year}`;
   };
 
-  const message = `🚗 *SONSBS TRANSFER SERVİSİ*
-*Seyahat Görevi*
+  // Seyahat türünü belirle
+  const tripTypeText = reservation.tripDetails?.tripType === 'round-trip' ? 'GIDIS DONUS' : 'TEK YON';
+  
+  // Uçuş bilgisi varsa ekle
+  const flightInfo = reservation.tripDetails?.flightNumber ? 
+    `Ucus Bilgisi: ${reservation.tripDetails.flightNumber}` : '';
+
+  const message = `GATE TRAVEL REZARVASYON
+*Seyahat Gorevi*
 
 Merhaba ${manualDriver.name},
 
-📋 *Rezervasyon No:* ${reservation.reservationId}
-👤 *Müşteri:* ${reservation.customerInfo?.firstName} ${reservation.customerInfo?.lastName}
-📞 *Müşteri Tel:* ${reservation.customerInfo?.phone}
+Rezervasyon No: ${reservation.reservationId}
+Musteri: ${reservation.customerInfo?.firstName} ${reservation.customerInfo?.lastName}
 
-📅 *Tarih:* ${formatDate(reservation.tripDetails?.date)}
-🕐 *Saat:* ${reservation.tripDetails?.time}
+Tarih: ${formatDate(reservation.tripDetails?.date)}
+Saat: ${reservation.tripDetails?.time}
+${flightInfo ? flightInfo + '\n' : ''}Seyahat Turu: ${tripTypeText}
 
-📍 *Kalkış Noktası:* ${formatLocation(reservation.tripDetails?.pickupLocation)}
-📍 *Varış Noktası:* ${formatLocation(reservation.tripDetails?.dropoffLocation)}
+Kalkis Noktasi: ${formatLocation(reservation.tripDetails?.pickupLocation)}
+Varis Noktasi: ${formatLocation(reservation.tripDetails?.dropoffLocation)}
 
-👥 *Yolcu Sayısı:* ${reservation.tripDetails?.passengerCount || 1} kişi
-🧳 *Bagaj:* ${reservation.tripDetails?.luggageCount || 0} adet
+Yolcu Sayisi: ${reservation.tripDetails?.passengerCount || 1} kisi
+Bagaj: ${reservation.tripDetails?.luggageCount || 0} adet
 
-💰 *Seyahat Ücreti:* ${manualDriver.price} ₺
-🚙 *Araç Plakası:* ${manualDriver.plateNumber}
+Seyahat Ucreti: ${manualDriver.price} TL
+Arac Plakasi: ${manualDriver.plateNumber}
 
 ---
-*Lütfen belirlenen saatte hazır olunuz.*
-*Güvenli yolculuklar! 🛣️*
+*Lutfen belirlenen saatte hazir olunuz.*
+*Guvenli yolculuklar!*
 
-_SONSBS Transfer Servisi_
-_Rezervasyon Yönetimi_`;
+GATE TRAVEL REZARVASYON SERVISI`;
 
   return message;
 };

@@ -533,34 +533,44 @@ const ReservationTable = ({
                               </div>
                             </div>
                           </div>
-
-                          {/* Rota Bilgileri */}
+                        </div>
+                        
+                        {/* Rota Bilgileri - 5. Kart */}
+                        <div className="mt-4">
                           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                             <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
                               <div className="p-1.5 bg-orange-100 rounded-lg">
                                 <MapPin className="w-4 h-4 text-orange-600" />
                               </div>
-                              <h4 className="font-medium text-gray-900 text-sm">Rota</h4>
+                              <h4 className="font-medium text-gray-900 text-sm">Rota Bilgileri</h4>
                             </div>
-                            <div className="space-y-2">
-                              <div className="flex items-start gap-2">
-                                <div className="p-1 bg-green-100 rounded-full">
-                                  <MapPin className="w-2 h-2 text-green-600" />
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {/* Kalkış Noktası */}
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="p-1 bg-green-100 rounded-full">
+                                    <MapPin className="w-3 h-3 text-green-600" />
+                                  </div>
+                                  <h5 className="font-medium text-gray-800 text-sm">Kalkış Noktası</h5>
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-medium text-gray-700">Kalkış</p>
-                                  <p className="text-sm text-gray-900 font-semibold break-words">
+                                <div className="pl-6">
+                                  <p className="text-gray-900 font-medium leading-relaxed">
                                     {getTripDetails(reservation).pickupLocation}
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex items-start gap-2">
-                                <div className="p-1 bg-red-100 rounded-full">
-                                  <MapPin className="w-2 h-2 text-red-600" />
+                              
+                              {/* Varış Noktası */}
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="p-1 bg-red-100 rounded-full">
+                                    <MapPin className="w-3 h-3 text-red-600" />
+                                  </div>
+                                  <h5 className="font-medium text-gray-800 text-sm">Varış Noktası</h5>
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-medium text-gray-700">Varış</p>
-                                  <p className="text-sm text-gray-900 font-semibold break-words">
+                                <div className="pl-6">
+                                  <p className="text-gray-900 font-medium leading-relaxed">
                                     {getTripDetails(reservation).dropoffLocation}
                                   </p>
                                 </div>
@@ -648,7 +658,7 @@ const ReservationTable = ({
                             )}
                           </div>
                         </div>
-                      </div>
+                      </div> {/* max-w-7xl mx-auto kapanışı */}
                     </td>
                   </tr>
                 )}
