@@ -36,7 +36,7 @@ const ReservationFinance = () => {
       const snapshot = await getDocs(q);
       const reservationData = [];
       
-      // Şoför bilgilerini de al
+      // Sistem şoför bilgilerini al
       const usersRef = collection(db, 'users');
       const usersSnapshot = await getDocs(usersRef);
       const driversMap = {};
@@ -48,23 +48,67 @@ const ReservationFinance = () => {
         }
       });
 
+      // Manuel şoför bilgilerini al
+      const manualDriversRef = collection(db, 'manual_drivers');
+      const manualDriversSnapshot = await getDocs(manualDriversRef);
+      const manualDriversMap = {};
+      
+      manualDriversSnapshot.docs.forEach(doc => {
+        const driverData = doc.data();
+        manualDriversMap[doc.id] = driverData;
+      });
+
       snapshot.docs.forEach(doc => {
         const data = doc.data();
         const driverId = data.assignedDriver || data.assignedDriverId || data.driverId;
-        const driverData = driversMap[driverId];
         
-        if (driverData && data.totalPrice) {
-          const commissionRate = driverData.commission || 15;
-          const commission = (data.totalPrice * commissionRate) / 100;
-          const netIncome = data.totalPrice - commission;
+        if (data.totalPrice) {
+          let driverName = 'Bilinmeyen Şoför';
+          let driverShare = 0; // Şoföre giden para
+          let ourRevenue = data.totalPrice; // Bizim gelirimiz
+          let ourExpense = 0; // Bizim giderimiz (sadece kredi kartı/havale durumunda)
+          let commissionRate = 0;
+          let paymentMethod = data.paymentMethod || 'cash';
+
+          // Manuel şoför kontrolü
+          if (driverId === 'manual' && data.manualDriverInfo) {
+            driverName = data.manualDriverInfo.name;
+            driverShare = parseFloat(data.manualDriverInfo.price || 0);
+            ourRevenue = data.totalPrice - driverShare; // Bizim gelirimiz = Toplam - Şoföre giden
+            commissionRate = driverShare > 0 ? (driverShare / data.totalPrice * 100) : 0;
+            
+            // Ödeme yöntemine göre gider hesapla
+            if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
+              ourExpense = driverShare; // Kredi kartı/havale durumunda şoföre ödeme yapıyoruz
+            }
+            // Nakit durumunda gider = 0 (şoför müşteriden direkt alıyor)
+            
+          } else if (driverId && driversMap[driverId]) {
+            // Sistem şoförü
+            const driverData = driversMap[driverId];
+            driverName = `${driverData.firstName} ${driverData.lastName}`;
+            commissionRate = driverData.commission || 15;
+            driverShare = (data.totalPrice * commissionRate) / 100;
+            ourRevenue = data.totalPrice - driverShare; // Bizim gelirimiz = Toplam - Komisyon
+            
+            // Ödeme yöntemine göre gider hesapla
+            if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
+              ourExpense = driverShare; // Kredi kartı/havale durumunda komisyon ödüyoruz
+            }
+            // Nakit durumunda gider = 0 (şoför bizden komisyonu düşerek veriyor)
+          }
 
           reservationData.push({
             id: doc.id,
             ...data,
-            driverName: `${driverData.firstName} ${driverData.lastName}`,
+            driverName,
             commissionRate,
-            commission,
-            netIncome,
+            driverShare, // Şoföre giden toplam para
+            ourRevenue, // Bizim gelirimiz
+            ourExpense, // Bizim giderimiz
+            netIncome: ourRevenue - ourExpense, // Net kazancımız
+            isManualDriver: driverId === 'manual',
+            paymentMethod,
             completedDate: data.completedAt?.toDate ? data.completedAt.toDate() : new Date(data.completedAt)
           });
         }
@@ -96,17 +140,19 @@ const ReservationFinance = () => {
         grouped[key] = {
           period: key,
           reservations: [],
-          totalRevenue: 0,
-          totalCommission: 0,
-          totalNetIncome: 0,
+          totalRevenue: 0, // Bizim toplam gelirimiz
+          totalExpense: 0, // Bizim toplam giderimiz
+          totalNetIncome: 0, // Net kazancımız
+          totalDriverPayments: 0, // Şoförlere toplam ödenen
           count: 0
         };
       }
 
       grouped[key].reservations.push(reservation);
-      grouped[key].totalRevenue += reservation.totalPrice;
-      grouped[key].totalCommission += reservation.commission;
+      grouped[key].totalRevenue += reservation.ourRevenue;
+      grouped[key].totalExpense += reservation.ourExpense;
       grouped[key].totalNetIncome += reservation.netIncome;
+      grouped[key].totalDriverPayments += reservation.driverShare;
       grouped[key].count += 1;
     });
 
@@ -219,7 +265,7 @@ const ReservationFinance = () => {
                   <DollarSign className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-green-600">Toplam Gelir</p>
+                  <p className="text-sm font-medium text-green-600">Bizim Gelirimiz</p>
                   <p className="text-2xl font-bold text-green-900">
                     {formatCurrency(selectedData.totalRevenue)}
                   </p>
@@ -233,9 +279,9 @@ const ReservationFinance = () => {
                   <TrendingUp className="h-6 w-6 text-red-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-red-600">Toplam Komisyon</p>
+                  <p className="text-sm font-medium text-red-600">Bizim Giderimiz</p>
                   <p className="text-2xl font-bold text-red-900">
-                    {formatCurrency(selectedData.totalCommission)}
+                    {formatCurrency(selectedData.totalExpense)}
                   </p>
                 </div>
               </div>
@@ -281,7 +327,13 @@ const ReservationFinance = () => {
                       Toplam Ücret
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Komisyon
+                      Şoföre Giden
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Bizim Gelirimiz
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Bizim Giderimiz
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Net Kazanç
@@ -298,15 +350,38 @@ const ReservationFinance = () => {
                         {reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {reservation.driverName}
+                        <div className="flex flex-col">
+                          <span>{reservation.driverName}</span>
+                          {reservation.isManualDriver && (
+                            <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full inline-block w-fit mt-1">
+                              Manuel Şoför
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {formatCurrency(reservation.totalPrice)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                        -{formatCurrency(reservation.commission)} (%{reservation.commissionRate})
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-600">
+                        <div className="flex flex-col">
+                          <span>{formatCurrency(reservation.driverShare)}</span>
+                          <span className="text-xs text-gray-500">
+                            {reservation.isManualDriver ? 'Hak Ediş' : `%${reservation.commissionRate.toFixed(1)} Komisyon`}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                        {formatCurrency(reservation.ourRevenue)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
+                        <div className="flex flex-col">
+                          <span>{formatCurrency(reservation.ourExpense)}</span>
+                          <span className="text-xs text-gray-500">
+                            {reservation.paymentMethod === 'cash' ? 'Nakit (Gider Yok)' : 'Kredi/Havale'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-purple-600">
                         {formatCurrency(reservation.netIncome)}
                       </td>
                     </tr>
@@ -337,10 +412,10 @@ const ReservationFinance = () => {
                   Rezervasyon Sayısı
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Toplam Gelir
+                  Bizim Gelirimiz
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Toplam Komisyon
+                  Bizim Giderimiz
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Net Kazanç
@@ -369,7 +444,7 @@ const ReservationFinance = () => {
                     {formatCurrency(period.totalRevenue)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                    -{formatCurrency(period.totalCommission)}
+                    {formatCurrency(period.totalExpense)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
                     {formatCurrency(period.totalNetIncome)}

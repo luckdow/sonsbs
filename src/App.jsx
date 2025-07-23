@@ -19,6 +19,7 @@ import ConfirmationPage from './pages/Public/ConfirmationPage'
 import BookingConfirmationPage from './pages/Public/BookingConfirmationPage'
 import MyReservations from './pages/Public/MyReservations'
 import CustomerProfile from './pages/Public/CustomerProfile'
+import DriverQRScanner from './pages/Public/DriverQRScanner'
 
 // Auth Pages
 import LoginPage from './pages/Auth/LoginPage'
@@ -31,7 +32,7 @@ import VehicleManagement from './pages/Admin/VehicleManagement'
 import VehicleIndex from './pages/Admin/Vehicles'
 import DriverIndex from './pages/Admin/Drivers'
 import ExtraServicesManagement from './pages/Admin/ExtraServicesManagement'
-import ReservationManagement from './pages/Admin/ReservationManagement'
+import ReservationManagement from './pages/Admin/Reservations'
 import FinancialManagement from './pages/Admin/Financial'
 import SettingsPage from './pages/Admin/SettingsPage'
 
@@ -72,6 +73,9 @@ function App() {
 
               {/* Booking Confirmation - Standalone Route */}
               <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />
+              
+              {/* Driver QR Scanner - Standalone Route */}
+              <Route path="/driver-qr" element={<DriverQRScanner />} />
 
               {/* Auth Routes */}
               <Route path="/giriş" element={

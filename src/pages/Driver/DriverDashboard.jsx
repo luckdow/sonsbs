@@ -25,6 +25,7 @@ import { collection, onSnapshot, updateDoc, doc, query, where } from 'firebase/f
 import { db } from '../../config/firebase';
 import { processQRScanCompletion } from '../../utils/financialIntegration';
 import QRScannerComponent from '../../components/QR/QRScannerComponent';
+import QRScanner from './QRScanner';
 import toast from 'react-hot-toast';
 
 const DriverDashboard = () => {
@@ -308,12 +309,12 @@ const DriverDashboard = () => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => setIsQRScannerOpen(true)}
+          onClick={() => setActiveView('qr-scanner')}
           className="bg-white border-2 border-gray-200 rounded-xl p-6 text-center hover:border-blue-300 transition-colors"
         >
           <QrCode className="w-12 h-12 text-blue-500 mx-auto mb-3" />
           <p className="font-semibold text-gray-900">QR Kod Okut</p>
-          <p className="text-sm text-gray-500 mt-1">Yolculuk Başlat</p>
+          <p className="text-sm text-gray-500 mt-1">Yolculuk Yönet</p>
         </motion.button>
 
         <motion.button
@@ -801,6 +802,28 @@ const DriverDashboard = () => {
             exit={{ opacity: 0, x: 20 }}
           >
             <ReservationDetailsView />
+          </motion.div>
+        )}
+
+        {activeView === 'qr-scanner' && (
+          <motion.div
+            key="qr-scanner"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="space-y-6"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => setActiveView('dashboard')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-gray-600" />
+              </button>
+              <h1 className="text-2xl font-bold text-gray-900">QR Kod Tarayıcı</h1>
+            </div>
+            
+            <QRScanner />
           </motion.div>
         )}
 

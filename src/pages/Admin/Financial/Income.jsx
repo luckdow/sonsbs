@@ -26,7 +26,7 @@ const Income = () => {
         const snapshot = await getDocs(q);
         const reservationData = [];
         
-        // Şoför bilgilerini de al
+        // Sistem şoför bilgilerini al
         const usersRef = collection(db, 'users');
         const usersSnapshot = await getDocs(usersRef);
         const driversMap = {};
@@ -38,23 +38,50 @@ const Income = () => {
           }
         });
 
+        // Manuel şoför bilgilerini al
+        const manualDriversRef = collection(db, 'manual_drivers');
+        const manualDriversSnapshot = await getDocs(manualDriversRef);
+        const manualDriversMap = {};
+        
+        manualDriversSnapshot.docs.forEach(doc => {
+          const driverData = doc.data();
+          manualDriversMap[doc.id] = driverData;
+        });
+
         snapshot.docs.forEach(doc => {
           const data = doc.data();
           const driverId = data.assignedDriver || data.assignedDriverId || data.driverId;
-          const driverData = driversMap[driverId];
           
-          if (driverData && data.totalPrice) {
-            const commissionRate = driverData.commission || 15;
-            const commission = (data.totalPrice * commissionRate) / 100;
-            const netIncome = data.totalPrice - commission;
+          if (data.totalPrice) {
+            let driverName = 'Bilinmeyen Şoför';
+            let commission = 0;
+            let netIncome = data.totalPrice;
+            let commissionRate = 0;
+
+            // Manuel şoför kontrolü
+            if (driverId === 'manual' && data.manualDriverInfo) {
+              driverName = data.manualDriverInfo.name;
+              // Manuel şoförler için hak ediş tutarı commission olarak hesaplanır
+              commission = parseFloat(data.manualDriverInfo.price || 0);
+              netIncome = data.totalPrice - commission;
+              commissionRate = commission > 0 ? (commission / data.totalPrice * 100) : 0;
+            } else if (driverId && driversMap[driverId]) {
+              // Sistem şoförü
+              const driverData = driversMap[driverId];
+              driverName = `${driverData.firstName} ${driverData.lastName}`;
+              commissionRate = driverData.commission || 15;
+              commission = (data.totalPrice * commissionRate) / 100;
+              netIncome = data.totalPrice - commission;
+            }
 
             reservationData.push({
               id: doc.id,
               ...data,
-              driverName: `${driverData.firstName} ${driverData.lastName}`,
+              driverName,
               commissionRate,
               commission,
-              netIncome
+              netIncome,
+              isManualDriver: driverId === 'manual'
             });
           }
         });

@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { X, User, Car, Check, UserPlus, Share2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, User, Car, Check, UserPlus, Share2, ChevronDown, QrCode } from 'lucide-react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../../config/firebase';
+import { QRCodeModal } from '../../../components/QR/QRCodeUtils';
 
 const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }) => {
   const [selectedDriver, setSelectedDriver] = useState('');
   const [assignmentType, setAssignmentType] = useState('system'); // 'system' or 'manual'
   const [loading, setLoading] = useState(false);
+  const [manualDrivers, setManualDrivers] = useState([]); // Kayıtlı manuel şoförler
+  const [selectedManualDriver, setSelectedManualDriver] = useState(''); // Seçilen manuel şoför
+  const [isNewManualDriver, setIsNewManualDriver] = useState(false); // Yeni şoför mi?
+  const [showQRModal, setShowQRModal] = useState(false); // QR Modal kontrolü
   
   // Manuel şoför bilgileri
   const [manualDriver, setManualDriver] = useState({
@@ -13,6 +20,61 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
     plateNumber: '',
     price: ''
   });
+
+  // Kayıtlı manuel şoförleri getir
+  useEffect(() => {
+    const fetchManualDrivers = async () => {
+      try {
+        const manualDriversRef = collection(db, 'manual_drivers');
+        const snapshot = await getDocs(manualDriversRef);
+        const drivers = [];
+        
+        snapshot.docs.forEach(doc => {
+          const driverData = doc.data();
+          drivers.push({
+            id: doc.id,
+            ...driverData
+          });
+        });
+        
+        setManualDrivers(drivers);
+      } catch (error) {
+        console.error('Manuel şoförler yüklenirken hata:', error);
+      }
+    };
+
+    if (assignmentType === 'manual') {
+      fetchManualDrivers();
+    }
+  }, [assignmentType]);
+
+  // Manuel şoför seçimi
+  const handleManualDriverSelect = (driverId) => {
+    if (driverId === 'new') {
+      setIsNewManualDriver(true);
+      setSelectedManualDriver('');
+      setManualDriver({
+        name: '',
+        phone: '',
+        plateNumber: '',
+        price: ''
+      });
+    } else {
+      setIsNewManualDriver(false);
+      setSelectedManualDriver(driverId);
+      
+      // Seçilen şoför bilgilerini form'a doldur
+      const selectedDriver = manualDrivers.find(d => d.id === driverId);
+      if (selectedDriver) {
+        setManualDriver({
+          name: selectedDriver.name || '',
+          phone: selectedDriver.phone || '',
+          plateNumber: selectedDriver.plateNumber || '',
+          price: '' // Fiyatı her seferinde girmek gerekiyor
+        });
+      }
+    }
+  };
 
   // Location objelerini string'e dönüştürme helper
   const formatLocation = (location) => {
@@ -45,6 +107,12 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
     }
     
     if (assignmentType === 'manual') {
+      // Manuel şoför seçimi veya yeni şoför ekleme kontrolü
+      if (!selectedManualDriver && !isNewManualDriver) {
+        alert('Lütfen bir şoför seçin veya yeni şoför ekleyin');
+        return;
+      }
+      
       if (!manualDriver.name || !manualDriver.phone || !manualDriver.plateNumber || !manualDriver.price) {
         alert('Lütfen tüm manuel şoför bilgilerini doldurun');
         return;
@@ -227,64 +295,108 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
               <div className="space-y-4">
                 <h4 className="text-lg font-medium text-gray-700 flex items-center gap-2">
                   <UserPlus className="w-5 h-5" />
-                  Dış Şoför Bilgileri
+                  Manuel Şoför Seçimi
                 </h4>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Şoför Adı Soyadı *
-                    </label>
-                    <input
-                      type="text"
-                      value={manualDriver.name}
-                      onChange={(e) => setManualDriver(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                      placeholder="Örn: Ahmet Yılmaz"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Telefon Numarası *
-                    </label>
-                    <input
-                      type="tel"
-                      value={manualDriver.phone}
-                      onChange={(e) => setManualDriver(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                      placeholder="Örn: +90 555 123 45 67"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Araç Plakası *
-                    </label>
-                    <input
-                      type="text"
-                      value={manualDriver.plateNumber}
-                      onChange={(e) => setManualDriver(prev => ({ ...prev, plateNumber: e.target.value.toUpperCase() }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                      placeholder="Örn: 34 ABC 1234"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Seyahat Ücreti (€) *
-                    </label>
-                    <input
-                      type="number"
-                      value={manualDriver.price}
-                      onChange={(e) => setManualDriver(prev => ({ ...prev, price: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                      placeholder="Örn: 500"
-                      min="0"
-                      step="0.01"
-                    />
+                {/* Manuel Şoför Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Şoför Seçin
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedManualDriver || (isNewManualDriver ? 'new' : '')}
+                      onChange={(e) => handleManualDriverSelect(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none bg-white"
+                    >
+                      <option value="">Şoför seçin...</option>
+                      <option value="new">+ Yeni Şoför Ekle</option>
+                      {manualDrivers.map((driver) => (
+                        <option key={driver.id} value={driver.id}>
+                          {driver.name} - {driver.phone} ({driver.plateNumber})
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
+
+                {/* Şoför Bilgileri Formu - Yeni şoför veya seçilen şoför için */}
+                {(isNewManualDriver || selectedManualDriver) && (
+                  <div className="space-y-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <h5 className="text-md font-medium text-purple-700">
+                      {isNewManualDriver ? 'Yeni Şoför Bilgileri' : 'Seçilen Şoför Bilgileri'}
+                    </h5>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Şoför Adı Soyadı *
+                        </label>
+                        <input
+                          type="text"
+                          value={manualDriver.name}
+                          onChange={(e) => setManualDriver(prev => ({ ...prev, name: e.target.value }))}
+                          disabled={!isNewManualDriver && selectedManualDriver}
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                            !isNewManualDriver && selectedManualDriver ? 'bg-gray-100 text-gray-600' : ''
+                          }`}
+                          placeholder="Örn: Ahmet Yılmaz"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Telefon Numarası *
+                        </label>
+                        <input
+                          type="tel"
+                          value={manualDriver.phone}
+                          onChange={(e) => setManualDriver(prev => ({ ...prev, phone: e.target.value }))}
+                          disabled={!isNewManualDriver && selectedManualDriver}
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                            !isNewManualDriver && selectedManualDriver ? 'bg-gray-100 text-gray-600' : ''
+                          }`}
+                          placeholder="Örn: +90 555 123 45 67"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Araç Plakası *
+                        </label>
+                        <input
+                          type="text"
+                          value={manualDriver.plateNumber}
+                          onChange={(e) => setManualDriver(prev => ({ ...prev, plateNumber: e.target.value.toUpperCase() }))}
+                          disabled={!isNewManualDriver && selectedManualDriver}
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                            !isNewManualDriver && selectedManualDriver ? 'bg-gray-100 text-gray-600' : ''
+                          }`}
+                          placeholder="Örn: 34 ABC 1234"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Seyahat Ücreti (€) *
+                        </label>
+                        <input
+                          type="number"
+                          value={manualDriver.price}
+                          onChange={(e) => setManualDriver(prev => ({ ...prev, price: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
+                          placeholder="Örn: 500"
+                          min="0"
+                          step="0.01"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Her rezervasyon için şoföre ödenecek hak ediş tutarı
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                   <div className="flex items-start gap-3">
@@ -313,13 +425,28 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
           </button>
           
           <button
+            type="button"
+            onClick={() => setShowQRModal(true)}
+            className="px-4 py-3 text-purple-600 border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors flex items-center gap-2 font-medium"
+          >
+            <QrCode className="w-4 h-4" />
+            QR Kod
+          </button>
+          
+          <button
             type="submit"
             form="driver-assign-form"
             onClick={handleSubmit}
             disabled={
               loading || 
               (assignmentType === 'system' && (!selectedDriver || activeDrivers.length === 0)) ||
-              (assignmentType === 'manual' && (!manualDriver.name || !manualDriver.phone || !manualDriver.plateNumber || !manualDriver.price))
+              (assignmentType === 'manual' && (
+                (!selectedManualDriver && !isNewManualDriver) ||
+                !manualDriver.name || 
+                !manualDriver.phone || 
+                !manualDriver.plateNumber || 
+                !manualDriver.price
+              ))
             }
             className={`px-6 py-3 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium ${
               assignmentType === 'system' 
@@ -341,6 +468,14 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
           </button>
         </div>
       </div>
+
+      {/* QR Code Modal */}
+      {showQRModal && (
+        <QRCodeModal
+          reservation={reservation}
+          onClose={() => setShowQRModal(false)}
+        />
+      )}
     </div>
   );
 };

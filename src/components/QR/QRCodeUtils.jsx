@@ -31,14 +31,15 @@ export const QRCodeModal = ({ reservation, onClose }) => {
   const qrRef = useRef();
 
   const qrData = {
-    reservationId: reservation.reservationId || `SBS-${reservation.id?.slice(-6)}`,
+    reservationId: reservation.id, // Gerçek rezervasyon ID'si
+    reservationCode: reservation.reservationId || `SBS-${reservation.id?.slice(-6)}`, // Görüntüleme kodu
     customerName: `${reservation.customerInfo?.firstName || ''} ${reservation.customerInfo?.lastName || ''}`.trim(),
     pickup: reservation.tripDetails?.pickupLocation || '',
     dropoff: reservation.tripDetails?.dropoffLocation || '',
     date: reservation.tripDetails?.date || '',
     time: reservation.tripDetails?.time || '',
     phone: reservation.customerInfo?.phone || '',
-    verifyUrl: `${window.location.origin}/verify/${reservation.id}`
+    verifyUrl: `${window.location.origin}/driver-qr`
   };
 
   const qrString = JSON.stringify(qrData);
@@ -56,7 +57,7 @@ export const QRCodeModal = ({ reservation, onClose }) => {
       });
       
       const link = document.createElement('a');
-      link.download = `qr-${qrData.reservationId}.png`;
+      link.download = `qr-${qrData.reservationCode}.png`;
       link.href = canvas.toDataURL();
       link.click();
       
@@ -94,7 +95,7 @@ export const QRCodeModal = ({ reservation, onClose }) => {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">QR Kod</h2>
-              <p className="text-sm text-gray-500">{qrData.reservationId}</p>
+              <p className="text-sm text-gray-500">{qrData.reservationCode}</p>
             </div>
           </div>
           <button

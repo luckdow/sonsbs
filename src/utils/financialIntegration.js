@@ -1,4 +1,4 @@
-import { doc, updateDoc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, collection, addDoc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 /**
@@ -8,16 +8,32 @@ import { db } from '../config/firebase';
  */
 export const updateDriverFinancials = async (reservationId, reservationData) => {
   try {
+    console.log('💰 updateDriverFinancials başlatıldı:', { reservationId, reservationData });
+    
     const driverId = reservationData.assignedDriver || reservationData.assignedDriverId || reservationData.driverId;
     const {
       totalPrice,
       paymentMethod,
       customerInfo,
-      tripDetails
+      tripDetails,
+      manualDriverInfo
     } = reservationData;
 
+    console.log('🔍 Driver bilgileri:', { driverId, totalPrice, paymentMethod, manualDriverInfo });
+
+    // Manuel şoför kontrolü
+    const isManualDriver = driverId === 'manual' && manualDriverInfo;
+    
+    console.log('🤖 Manuel şoför mi?', isManualDriver);
+    
+    if (isManualDriver) {
+      console.log('➡️ Manuel şoför finansal işlemi çağrılıyor...');
+      // Manuel şoför için finansal işlem
+      return await updateManualDriverFinancials(reservationId, reservationData);
+    }
+
     if (!driverId || !totalPrice) {
-      console.log('Eksik veri: driverId veya totalPrice bulunamadı');
+      console.log('⚠️ Eksik veri: driverId veya totalPrice bulunamadı');
       return;
     }
 
@@ -186,7 +202,10 @@ export const manualCompleteReservation = async (reservationId, completedBy) => {
       throw new Error('Bu rezervasyon zaten tamamlanmış');
     }
 
-    // Rezervasyonu tamamlanmış olarak işaretle
+    // Önce finansal güncellemeyi yap (rezervasyon henüz completed değilken)
+    const financialResult = await updateDriverFinancials(reservationId, reservationData);
+
+    // Sonra rezervasyonu tamamlanmış olarak işaretle
     await updateDoc(doc(db, 'reservations', reservationId), {
       status: 'completed',
       completedAt: new Date(),
@@ -194,9 +213,6 @@ export const manualCompleteReservation = async (reservationId, completedBy) => {
       completionMethod: 'manual',
       financialProcessed: true // Finansal işlemin yapıldığını işaretle
     });
-
-    // Finansal güncellemeyi yap
-    const financialResult = await updateDriverFinancials(reservationId, reservationData);
 
     return {
       success: true,
@@ -207,6 +223,149 @@ export const manualCompleteReservation = async (reservationId, completedBy) => {
 
   } catch (error) {
     console.error('Manual completion error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Manuel şoför için finansal işlem
+ * @param {string} reservationId - Rezervasyon ID
+ * @param {object} reservationData - Rezervasyon verileri
+ */
+export const updateManualDriverFinancials = async (reservationId, reservationData) => {
+  try {
+    const {
+      totalPrice,
+      paymentMethod,
+      customerInfo,
+      tripDetails,
+      manualDriverInfo
+    } = reservationData;
+
+    if (!manualDriverInfo || !manualDriverInfo.price) {
+      console.log('Manuel şoför bilgileri veya hak ediş tutarı bulunamadı');
+      return;
+    }
+
+    const driverEarning = parseFloat(manualDriverInfo.price);
+    const driverName = manualDriverInfo.name;
+    const driverPhone = manualDriverInfo.phone;
+    const plateNumber = manualDriverInfo.plateNumber;
+
+    // Manuel şoför için cari hesap ID'si oluştur (telefon numarasına göre)
+    const manualDriverId = `manual_${driverPhone.replace(/[^0-9]/g, '')}`;
+
+    let balanceChange = 0;
+    let transactionNote = '';
+
+    // Ödeme metoduna göre cari hesap güncellemesi
+    if (paymentMethod === 'cash') {
+      // Nakit ödeme: Manuel şoför müşteriden parayı aldı, bize hak ediş tutarını ödemeli
+      balanceChange = -driverEarning; // Negatif çünkü manuel şoför firmaya borçlu
+      transactionNote = `Nakit rezervasyon - Manuel şoför borcu - ${reservationId}`;
+    } else if (paymentMethod === 'card' || paymentMethod === 'credit_card') {
+      // Kart ödeme: Firma müşteriden parayı aldı, manuel şofore hak ediş ödemeli
+      balanceChange = +driverEarning; // Pozitif çünkü firma manuel şofore borçlu
+      transactionNote = `Kart rezervasyon - Manuel şoför alacağı - ${reservationId}`;
+    }
+
+    // Manuel şoför cari hesap kaydını kontrol et veya oluştur
+    let manualDriverDoc;
+    try {
+      manualDriverDoc = await getDoc(doc(db, 'manual_drivers', manualDriverId));
+    } catch (error) {
+      console.log('Manuel şoför belgesi kontrol edilemedi:', error);
+    }
+
+    let currentBalance = 0;
+    let currentTransactions = [];
+    let totalEarnings = 0;
+    let completedTrips = 0;
+
+    if (manualDriverDoc && manualDriverDoc.exists()) {
+      const driverData = manualDriverDoc.data();
+      currentBalance = driverData.balance || 0;
+      currentTransactions = driverData.transactions || [];
+      totalEarnings = driverData.totalEarnings || 0;
+      completedTrips = driverData.completedTrips || 0;
+    }
+
+    const newBalance = currentBalance + balanceChange;
+
+    // İşlem kaydı oluştur
+    const transaction = {
+      id: Date.now().toString(),
+      type: balanceChange > 0 ? 'earning' : 'debt',
+      amount: Math.abs(balanceChange),
+      note: transactionNote,
+      date: new Date(),
+      balanceBefore: currentBalance,
+      balanceAfter: newBalance,
+      reservationId: reservationId,
+      paymentMethod: paymentMethod,
+      totalPrice: totalPrice,
+      driverEarning: driverEarning,
+      customerName: `${customerInfo.firstName} ${customerInfo.lastName}`,
+      tripRoute: `${tripDetails.pickupLocation} → ${tripDetails.dropoffLocation}`
+    };
+
+    const updatedTransactions = [...currentTransactions, transaction];
+
+    // Manuel şoför belgesini güncelle/oluştur
+    const manualDriverData = {
+      name: driverName,
+      phone: driverPhone,
+      plateNumber: plateNumber,
+      balance: newBalance,
+      transactions: updatedTransactions,
+      lastTransactionDate: new Date(),
+      totalEarnings: totalEarnings + (balanceChange > 0 ? balanceChange : 0),
+      completedTrips: completedTrips + 1,
+      createdAt: manualDriverDoc && manualDriverDoc.exists() ? undefined : new Date(),
+      updatedAt: new Date(),
+      type: 'manual_driver'
+    };
+
+    // Undefined değerleri temizle
+    Object.keys(manualDriverData).forEach(key => {
+      if (manualDriverData[key] === undefined) {
+        delete manualDriverData[key];
+      }
+    });
+
+    // setDoc kullanarak belgeyi oluştur/güncelle (merge: true ile)
+    await setDoc(doc(db, 'manual_drivers', manualDriverId), manualDriverData, { merge: true });
+
+    // Ayrıca finansal işlem kaydı oluştur (raporlama için)
+    await addDoc(collection(db, 'financial_transactions'), {
+      ...transaction,
+      driverId: manualDriverId,
+      driverType: 'manual',
+      driverName: driverName,
+      driverPhone: driverPhone,
+      plateNumber: plateNumber,
+      createdAt: new Date(),
+      processedBy: 'system_auto'
+    });
+
+    console.log(`Manuel şoför ${driverName} cari hesabı güncellendi:`, {
+      oldBalance: currentBalance,
+      newBalance: newBalance,
+      change: balanceChange,
+      paymentMethod: paymentMethod
+    });
+
+    return {
+      success: true,
+      oldBalance: currentBalance,
+      newBalance: newBalance,
+      transaction: transaction,
+      driverType: 'manual',
+      driverName: driverName
+    };
+
+  } catch (error) {
+    console.error('Manuel şoför finansal güncelleme hatası:', error);
     throw error;
   }
 };

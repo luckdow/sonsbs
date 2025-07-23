@@ -4,19 +4,29 @@ import {
   DollarSign, 
   Users, 
   CreditCard, 
-  Calendar
+  Calendar,
+  BarChart3
 } from 'lucide-react';
 
 // Alt modülleri import et
+import FinancialDashboard from './FinancialDashboard';
 import DriverAccounts from './DriverAccounts';
+import ManualDriverAccounts from './ManualDriverAccounts';
 import ReservationFinance from './ReservationFinance';
 import Income from './Income';
 import Expenses from './Expenses';
 
 const FinancialManagement = () => {
-  const [activeTab, setActiveTab] = useState('reservations');
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const tabs = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: BarChart3,
+      component: FinancialDashboard,
+      description: 'Genel finansal durum özeti ve analizler'
+    },
     {
       id: 'reservations',
       label: 'Rezervasyon Finansı',
@@ -29,7 +39,14 @@ const FinancialManagement = () => {
       label: 'Şoför Cari Hesapları',
       icon: Users,
       component: DriverAccounts,
-      description: 'Şoförlere ne kadar ödeyeceğiniz/alacağınız'
+      description: 'Sistem şoförlerinin cari hesap durumu'
+    },
+    {
+      id: 'manual-drivers',
+      label: 'Manuel Şoför Cari',
+      icon: Users,
+      component: ManualDriverAccounts,
+      description: 'Dış şoförlerin cari hesap durumu'
     },
     {
       id: 'income',
@@ -43,7 +60,7 @@ const FinancialManagement = () => {
       label: 'Giderler',
       icon: CreditCard,
       component: Expenses,
-      description: 'Şoförlere ödenen komisyonlar'
+      description: 'Şoför ödemeleri ve manuel giderler'
     }
   ];
 
