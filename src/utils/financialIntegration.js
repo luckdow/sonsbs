@@ -29,7 +29,7 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
     }
 
     const driverData = driverDoc.data();
-    const commissionRate = driverData.commissionRate || 15; // %15 varsayılan
+    const commissionRate = driverData.commission || 15; // Şoför yönetimindeki % komisyon
     const commission = (totalPrice * commissionRate) / 100;
     const driverEarning = totalPrice - commission;
 

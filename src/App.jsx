@@ -32,7 +32,7 @@ import VehicleIndex from './pages/Admin/Vehicles'
 import DriverIndex from './pages/Admin/Drivers'
 import ExtraServicesManagement from './pages/Admin/ExtraServicesManagement'
 import ReservationManagement from './pages/Admin/ReservationManagement'
-import FinancialManagement from './pages/Admin/FinancialManagement'
+import FinancialManagement from './pages/Admin/Financial'
 import SettingsPage from './pages/Admin/SettingsPage'
 
 // Driver Pages

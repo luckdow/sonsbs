@@ -4,52 +4,46 @@ import {
   DollarSign, 
   Users, 
   CreditCard, 
-  TrendingUp, 
-  AlertTriangle,
-  Calendar,
-  FileText
+  Calendar
 } from 'lucide-react';
 
 // Alt modülleri import et
-import FinancialOverview from './FinancialOverview';
 import DriverAccounts from './DriverAccounts';
-import PaymentManagement from './PaymentManagement';
-import PaymentReminders from './PaymentReminders';
-import FinancialReports from './FinancialReports';
+import ReservationFinance from './ReservationFinance';
+import Income from './Income';
+import Expenses from './Expenses';
 
 const FinancialManagement = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('reservations');
 
   const tabs = [
     {
-      id: 'overview',
-      label: 'Genel Bakış',
-      icon: TrendingUp,
-      component: FinancialOverview
+      id: 'reservations',
+      label: 'Rezervasyon Finansı',
+      icon: Calendar,
+      component: ReservationFinance,
+      description: 'Aylık/yıllık rezervasyon gelir takibi'
     },
     {
       id: 'drivers',
-      label: 'Şoför Cariler',
+      label: 'Şoför Cari Hesapları',
       icon: Users,
-      component: DriverAccounts
+      component: DriverAccounts,
+      description: 'Şoförlere ne kadar ödeyeceğiniz/alacağınız'
     },
     {
-      id: 'payments',
-      label: 'Ödeme Yönetimi',
+      id: 'income',
+      label: 'Gelirler',
+      icon: DollarSign,
+      component: Income,
+      description: 'Rezervasyonlardan komisyon düştükten sonra net kazancınız'
+    },
+    {
+      id: 'expenses',
+      label: 'Giderler',
       icon: CreditCard,
-      component: PaymentManagement
-    },
-    {
-      id: 'reminders',
-      label: 'Ödeme Uyarıları',
-      icon: AlertTriangle,
-      component: PaymentReminders
-    },
-    {
-      id: 'reports',
-      label: 'Finansal Raporlar',
-      icon: FileText,
-      component: FinancialReports
+      component: Expenses,
+      description: 'Şoförlere ödenen komisyonlar'
     }
   ];
 
@@ -60,29 +54,23 @@ const FinancialManagement = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">Finansal Yönetim</h1>
-        <p className="text-gray-600 mt-1">Tüm finansal işlemler, şoför carilik hesapları ve ödeme takibi merkezi</p>
-      </div>
-
+    <div className="space-y-6">
       {/* Navigation Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="flex flex-wrap border-b border-gray-200">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                flex items-center gap-2 px-6 py-4 transition-all duration-200 font-medium
+                flex items-center gap-2 px-4 py-3 transition-all duration-200 font-medium text-sm
                 ${activeTab === tab.id
                   ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
                 }
               `}
             >
-              <tab.icon className="w-5 h-5" />
+              <tab.icon className="w-4 h-4" />
               {tab.label}
             </button>
           ))}
@@ -92,9 +80,9 @@ const FinancialManagement = () => {
         <div className="p-6">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
           >
             {renderActiveComponent()}
           </motion.div>
