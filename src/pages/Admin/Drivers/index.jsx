@@ -1,26 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, RefreshCw, Users } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { USER_ROLES } from '../../../config/constants';
 import DriverTable from './DriverTable';
-import DriverFilters from './DriverFilters';
 import AddDriverModal from './AddDriverModal';
 import EditDriverModal from './EditDriverModal';
 import DriverDetailsModal from './DriverDetailsModal';
 
 const DriverIndex = () => {
   const [drivers, setDrivers] = useState([]);
-  const [filteredDrivers, setFilteredDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDriver, setSelectedDriver] = useState(null);
-  
-  // Filtreleme state'leri
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [vehicleFilter, setVehicleFilter] = useState('all');
-  const [licenseExpiryFilter, setLicenseExpiryFilter] = useState('all');
   
   // Modal durumları
   const [showAddModal, setShowAddModal] = useState(false);
@@ -93,71 +85,6 @@ const DriverIndex = () => {
 
     initializeData();
   }, []);
-
-  // Filtreleme fonksiyonu
-  const applyFilters = () => {
-    if (!drivers || drivers.length === 0) {
-      setFilteredDrivers([]);
-      return;
-    }
-    
-    let filtered = [...drivers];
-
-    // Arama filtresi
-    if (searchTerm) {
-      const searchTermLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(driver => 
-        (driver.firstName || '').toLowerCase().includes(searchTermLower) ||
-        (driver.lastName || '').toLowerCase().includes(searchTermLower) ||
-        (driver.phone || '').includes(searchTerm) ||
-        (driver.email || '').toLowerCase().includes(searchTermLower) ||
-        (driver.licenseNumber || '').includes(searchTerm)
-      );
-    }
-
-    // Durum filtresi
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(driver => driver.status === statusFilter);
-    }
-
-    // Araç atama filtresi
-    if (vehicleFilter !== 'all') {
-      if (vehicleFilter === 'assigned') {
-        filtered = filtered.filter(driver => driver.assignedVehicle);
-      } else if (vehicleFilter === 'unassigned') {
-        filtered = filtered.filter(driver => !driver.assignedVehicle);
-      }
-    }
-
-    // Lisans süresi filtresi
-    if (licenseExpiryFilter !== 'all') {
-      const today = new Date();
-      const oneMonth = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-      const threeMonths = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
-      
-      filtered = filtered.filter(driver => {
-        const expiryDate = new Date(driver.licenseExpiry);
-        
-        switch (licenseExpiryFilter) {
-          case 'expired':
-            return expiryDate < today;
-          case 'expiring':
-            return expiryDate >= today && expiryDate <= oneMonth;
-          case 'valid':
-            return expiryDate > oneMonth;
-          default:
-            return true;
-        }
-      });
-    }
-
-    setFilteredDrivers(filtered);
-  };
-
-  // Filtreler değiştiğinde filtreleme uygula
-  useEffect(() => {
-    applyFilters();
-  }, [drivers, searchTerm, statusFilter, vehicleFilter, licenseExpiryFilter]);
 
   // Şoför ekleme
   const handleAddDriver = async (driverData) => {
@@ -244,13 +171,10 @@ const DriverIndex = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Şoför Yönetimi</h1>
-            <p className="text-gray-600 mt-1">
-              Toplam {drivers.length} şoför • Filtrelenmiş {filteredDrivers.length} şoför
-            </p>
+            <h1 className="text-xl font-semibold text-gray-900">Şoförler</h1>
           </div>
           <button
             onClick={() => {
@@ -264,70 +188,9 @@ const DriverIndex = () => {
         </div>
       </div>
 
-      {/* İstatistikler */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { 
-            label: 'Aktif Şoförler', 
-            value: drivers.filter(d => d.status === 'active').length,
-            color: 'text-green-600',
-            bg: 'bg-green-100'
-          },
-          { 
-            label: 'Pasif Şoförler', 
-            value: drivers.filter(d => d.status === 'inactive').length,
-            color: 'text-red-600',
-            bg: 'bg-red-100'
-          },
-          { 
-            label: 'Araç Atanmış', 
-            value: drivers.filter(d => d.assignedVehicle).length,
-            color: 'text-blue-600',
-            bg: 'bg-blue-100'
-          },
-          { 
-            label: 'Araç Bekleyen', 
-            value: drivers.filter(d => !d.assignedVehicle).length,
-            color: 'text-yellow-600',
-            bg: 'bg-yellow-100'
-          }
-        ].map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg border border-gray-100 p-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${stat.bg}`}>
-                <Users className={`w-4 h-4 ${stat.color}`} />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">{stat.label}</p>
-                <p className="text-lg font-semibold text-gray-900">{stat.value}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filtreleme */}
-      <DriverFilters 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        vehicleFilter={vehicleFilter}
-        setVehicleFilter={setVehicleFilter}
-        licenseExpiryFilter={licenseExpiryFilter}
-        setLicenseExpiryFilter={setLicenseExpiryFilter}
-        onClearFilters={() => {
-          setSearchTerm('');
-          setStatusFilter('all');
-          setVehicleFilter('all');
-          setLicenseExpiryFilter('all');
-        }}
-        vehicles={vehicles}
-      />
-
       {/* Şoför Tablosu */}
       <DriverTable
-        drivers={filteredDrivers}
+        drivers={drivers}
         vehicles={vehicles}
         onEdit={(driver) => {
           setSelectedDriver(driver);
