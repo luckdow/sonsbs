@@ -22,6 +22,8 @@ const DriverAccounts = () => {
       const driversQuery = query(collection(db, 'users'), where('role', '==', 'driver'));
       const driversSnapshot = await getDocs(driversQuery);
       
+      console.log('👥 Bulunan şoför sayısı:', driversSnapshot.docs.length);
+      
       const driversData = [];
       let totalPositive = 0; // Şoförlere ödeyeceğimiz toplam
       let totalNegative = 0; // Şoförlerden alacağımız toplam
@@ -29,6 +31,13 @@ const DriverAccounts = () => {
       driversSnapshot.docs.forEach(doc => {
         const data = doc.data();
         const balance = data.balance || 0;
+        
+        console.log('💰 Şoför finansal durumu:', {
+          name: `${data.firstName} ${data.lastName}`,
+          balance: balance,
+          totalEarnings: data.totalEarnings,
+          completedTrips: data.completedTrips
+        });
         
         if (balance > 0) {
           totalPositive += balance; // Şofore ödeyeceğimiz
@@ -43,7 +52,8 @@ const DriverAccounts = () => {
           totalEarnings: data.totalEarnings || 0,
           totalCommission: data.totalCommission || 0,
           completedTrips: data.completedTrips || 0,
-          lastTransactionDate: data.lastTransactionDate?.toDate ? data.lastTransactionDate.toDate() : null
+          lastTransactionDate: data.lastTransactionDate?.toDate ? data.lastTransactionDate.toDate() : null,
+          transactions: data.transactions || []
         });
       });
 
@@ -53,6 +63,12 @@ const DriverAccounts = () => {
       setDrivers(driversData);
       setTotalDebt(totalPositive);
       setTotalCredit(totalNegative);
+      
+      console.log('📊 Şoför finansal özet:', {
+        totalDrivers: driversData.length,
+        totalDebt: totalPositive,
+        totalCredit: totalNegative
+      });
       
     } catch (error) {
       console.error('Şoför cari hesapları alınırken hata:', error);

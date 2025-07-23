@@ -17,9 +17,12 @@ import {
   MapPin,
   Star,
   Shield,
-  Zap
+  Zap,
+  TestTube
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { addAllTestData } from '../../utils/addTestData';
+import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const { state } = useApp();
@@ -149,8 +152,45 @@ const AdminDashboard = () => {
 
 
 
+  const handleAddTestData = async () => {
+    try {
+      toast.loading('Test verileri ekleniyor...', { id: 'testData' });
+      
+      const result = await addAllTestData();
+      
+      toast.success('Test verileri başarıyla eklendi! Finansal sayfaları kontrol edin.', { id: 'testData' });
+      
+      console.log('✅ Test verileri eklendi:', result);
+      
+    } catch (error) {
+      console.error('❌ Test verileri eklenirken hata:', error);
+      toast.error('Test verileri eklenirken hata oluştu: ' + error.message, { id: 'testData' });
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
+      {/* Finansal Test Bölümü */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-yellow-800">Finansal Sistem Test</h3>
+              <p className="text-sm text-yellow-700 mt-1">
+                Test rezervasyonları ve şoför verileri ekleyerek finansal sistemi test edin
+              </p>
+            </div>
+            <button
+              onClick={handleAddTestData}
+              className="flex items-center gap-2 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
+            >
+              <TestTube className="w-4 h-4" />
+              Test Verisi Ekle
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => (

@@ -3,6 +3,7 @@ import { X, User, Car, Check, UserPlus, Share2, ChevronDown, QrCode } from 'luci
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { QRCodeModal } from '../../../components/QR/QRCodeUtils';
+import { sendManualDriverWhatsApp } from '../../../utils/whatsappService';
 
 const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }) => {
   const [selectedDriver, setSelectedDriver] = useState('');
@@ -130,6 +131,21 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
       } else {
         // Manuel şoför ataması - özel işlem
         await onAssign(reservation.id, null, null, manualDriver);
+        
+        // ✅ Manuel şoföre WhatsApp gönder
+        try {
+          console.log('📤 WhatsApp gönderim başlatılıyor...');
+          const whatsappSuccess = sendManualDriverWhatsApp(reservation, manualDriver);
+          
+          if (whatsappSuccess) {
+            alert(`✅ Şoför atandı!\n\n📱 WhatsApp mesajı ${manualDriver.name} adlı şoföre gönderildi.\n\nEğer WhatsApp açılmadıysa, popup engelleyicisini kontrol edin.`);
+          } else {
+            alert(`✅ Şoför atandı!\n\n⚠️ WhatsApp mesajı gönderilemedi.\nLütfen manuel olarak ${manualDriver.phone} numarasına mesaj gönderin.`);
+          }
+        } catch (whatsappError) {
+          console.error('❌ WhatsApp gönderme hatası:', whatsappError);
+          alert(`✅ Şoför atandı!\n\n❌ WhatsApp gönderiminde hata oluştu.\nLütfen manuel olarak ${manualDriver.phone} numarasına mesaj gönderin.`);
+        }
       }
     } catch (error) {
       console.error('Şoför atama hatası:', error);

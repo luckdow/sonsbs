@@ -20,6 +20,7 @@ import BookingConfirmationPage from './pages/Public/BookingConfirmationPage'
 import MyReservations from './pages/Public/MyReservations'
 import CustomerProfile from './pages/Public/CustomerProfile'
 import DriverQRScanner from './pages/Public/DriverQRScanner'
+import ManualDriverQR from './pages/Public/ManualDriverQR'
 
 // Auth Pages
 import LoginPage from './pages/Auth/LoginPage'
@@ -76,6 +77,9 @@ function App() {
               
               {/* Driver QR Scanner - Standalone Route */}
               <Route path="/driver-qr" element={<DriverQRScanner />} />
+              
+              {/* Manuel Driver QR - Rezervasyon spesifik link */}
+              <Route path="/manual-driver/:reservationId" element={<ManualDriverQR />} />
 
               {/* Auth Routes */}
               <Route path="/giriş" element={

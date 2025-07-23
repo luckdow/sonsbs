@@ -6,17 +6,70 @@
  * @param {string} message - Gönderilecek mesaj
  */
 export const sendWhatsAppMessage = (phoneNumber, message) => {
-  // Telefon numarasını temizle (sadece rakamlar)
-  const cleanPhone = phoneNumber.replace(/[^\d]/g, '');
-  
-  // Mesajı URL encode et
-  const encodedMessage = encodeURIComponent(message);
-  
-  // WhatsApp Web URL'si
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-  
-  // Yeni sekmede aç
-  window.open(whatsappUrl, '_blank');
+  try {
+    // Telefon numarasını temizle (sadece rakamlar)
+    const cleanPhone = phoneNumber.replace(/[^\d]/g, '');
+    
+    console.log('📱 WhatsApp gönderim başlatılıyor:', {
+      originalPhone: phoneNumber,
+      cleanPhone: cleanPhone,
+      messageLength: message.length
+    });
+    
+    // Mesajı URL encode et
+    const encodedMessage = encodeURIComponent(message);
+    
+    // WhatsApp Web URL'si
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    
+    console.log('🔗 WhatsApp URL oluşturuldu:', whatsappUrl);
+    
+    // Mobil cihaz kontrolü
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // Mobil cihazlarda doğrudan yönlendir
+      window.location.href = whatsappUrl;
+      console.log('📱 Mobil cihaz - doğrudan yönlendirme yapıldı');
+      return true;
+    } else {
+      // Masaüstünde önce popup dene, sonra direct link
+      const opened = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+      
+      if (opened && !opened.closed) {
+        console.log('✅ WhatsApp penceresi açıldı');
+        return true;
+      } else {
+        console.log('⚠️ Popup engellendi, direct link ile deneniyor...');
+        
+        // Popup engellenirse kullanıcıya seçenek sun
+        const userChoice = confirm(
+          'WhatsApp otomatik açılamadı.\n\n' +
+          'TAMAM = WhatsApp Web\'de aç\n' +
+          'İPTAL = Link\'i kopyala'
+        );
+        
+        if (userChoice) {
+          // WhatsApp Web'de aç
+          window.location.href = whatsappUrl;
+          return true;
+        } else {
+          // Link'i kopyala
+          navigator.clipboard.writeText(whatsappUrl).then(() => {
+            alert('WhatsApp linki kopyalandı! Manuel olarak WhatsApp\'ta paylaşabilirsiniz.');
+          }).catch(() => {
+            // Clipboard API desteklenmiyorsa
+            prompt('WhatsApp linki (Ctrl+C ile kopyalayın):', whatsappUrl);
+          });
+          return false;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ WhatsApp gönderim hatası:', error);
+    alert('WhatsApp gönderiminde hata oluştu. Lütfen manuel olarak şoföre mesaj gönderin.');
+    return false;
+  }
 };
 
 /**
@@ -71,7 +124,7 @@ _SONSBS Transfer Servisi_`;
 };
 
 /**
- * Manuel şoför ataması için özel WhatsApp mesajı
+ * Manuel şoför ataması için özel WhatsApp mesajı (QR Link ile)
  * @param {Object} reservation - Rezervasyon bilgileri  
  * @param {Object} manualDriver - Manuel şoför bilgileri
  */
@@ -91,39 +144,81 @@ export const generateManualDriverWhatsAppMessage = (reservation, manualDriver) =
     return `${day}/${month}/${year}`;
   };
 
-  // Seyahat türünü belirle
-  const tripTypeText = reservation.tripDetails?.tripType === 'round-trip' ? 'GIDIS DONUS' : 'TEK YON';
-  
-  // Uçuş bilgisi varsa ekle
-  const flightInfo = reservation.tripDetails?.flightNumber ? 
-    `Ucus Bilgisi: ${reservation.tripDetails.flightNumber}` : '';
+  // Manuel şoför için özel link oluştur
+  const manualDriverLink = `${window.location.origin}/manual-driver/${reservation.id}`;
 
-  const message = `GATE TRAVEL REZARVASYON
-*Seyahat Gorevi*
+  // Ödeme tipine göre mesaj oluştur
+  let paymentInfo = '';
+  if (reservation.paymentMethod === 'cash') {
+    paymentInfo = `ODEME TIPI: NAKIT
+ONEMLI: Musteriden ${reservation.totalPrice} EUR nakit alacaksiniz.
+Sizin hak edisiniz: ${manualDriver.price} EUR
+Firmaya verecegınız: ${(reservation.totalPrice - manualDriver.price).toFixed(2)} EUR`;
+  } else {
+    paymentInfo = `ODEME TIPI: KREDI KARTI / BANKA HAVALESI
+Musteri online odeme yapti.
+Sizin hak edisiniz: ${manualDriver.price} EUR
+(Hak edisinizi firmadan alacaksiniz)`;
+  }
+
+  const message = `SONSBS TRANSFER SERVISI
+Yeni Seyahat Gorevi
 
 Merhaba ${manualDriver.name},
 
-Rezervasyon No: ${reservation.reservationId}
-Musteri: ${reservation.customerInfo?.firstName} ${reservation.customerInfo?.lastName}
+REZERVASYON NO: ${reservation.reservationId}
+MUSTERI: ${reservation.customerInfo?.firstName} ${reservation.customerInfo?.lastName}
+TELEFON: ${reservation.customerInfo?.phone}
 
-Tarih: ${formatDate(reservation.tripDetails?.date)}
-Saat: ${reservation.tripDetails?.time}
-${flightInfo ? flightInfo + '\n' : ''}Seyahat Turu: ${tripTypeText}
+TARIH: ${formatDate(reservation.tripDetails?.date)}
+SAAT: ${reservation.tripDetails?.time}
 
-Kalkis Noktasi: ${formatLocation(reservation.tripDetails?.pickupLocation)}
-Varis Noktasi: ${formatLocation(reservation.tripDetails?.dropoffLocation)}
+NEREDEN: ${formatLocation(reservation.tripDetails?.pickupLocation)}
+NEREYE: ${formatLocation(reservation.tripDetails?.dropoffLocation)}
 
-Yolcu Sayisi: ${reservation.tripDetails?.passengerCount || 1} kisi
-Bagaj: ${reservation.tripDetails?.luggageCount || 0} adet
+YOLCU: ${reservation.tripDetails?.passengerCount || 1} kisi
 
-Seyahat Ucreti: ${manualDriver.price} EUR
-Arac Plakasi: ${manualDriver.plateNumber}
+${paymentInfo}
 
----
-*Lutfen belirlenen saatte hazir olunuz.*
-*Guvenli yolculuklar!*
+YOLCULUK YONETIMI:
+${manualDriverLink}
 
-GATE TRAVEL REZARVASYON SERVISI`;
+Bu link ile yolculugu baslatip tamamlayabilirsiniz.
+
+Iyi yolculuklar.
+
+SONSBS Transfer Servisi`;
 
   return message;
+};
+
+/**
+ * Manuel şoföre WhatsApp mesajı gönder
+ * @param {Object} reservation - Rezervasyon bilgileri
+ * @param {Object} manualDriver - Manuel şoför bilgileri
+ */
+export const sendManualDriverWhatsApp = (reservation, manualDriver) => {
+  try {
+    console.log('📤 Manuel şoför WhatsApp gönderim başlatılıyor:', {
+      driverName: manualDriver.name,
+      driverPhone: manualDriver.phone,
+      reservationId: reservation.reservationId
+    });
+
+    const message = generateManualDriverWhatsAppMessage(reservation, manualDriver);
+    console.log('📝 WhatsApp mesajı oluşturuldu:', message);
+    
+    const success = sendWhatsAppMessage(manualDriver.phone, message);
+    
+    if (success) {
+      console.log('✅ Manuel şoför WhatsApp gönderimi başarılı');
+    } else {
+      console.error('❌ Manuel şoför WhatsApp gönderimi başarısız');
+    }
+    
+    return success;
+  } catch (error) {
+    console.error('❌ Manuel şoför WhatsApp gönderim hatası:', error);
+    return false;
+  }
 };

@@ -80,89 +80,137 @@ const FinancialDashboard = () => {
   };
 
   const fetchReservationData = async () => {
-    // Tamamlanmış rezervasyonları getir
-    const reservationsRef = collection(db, 'reservations');
-    const q = query(
-      reservationsRef,
-      where('status', '==', 'completed'),
-      orderBy('completedAt', 'desc')
-    );
-
-    const snapshot = await getDocs(q);
-    const reservationData = [];
-    
-    // Sistem şoför bilgilerini al
-    const usersRef = collection(db, 'users');
-    const usersSnapshot = await getDocs(usersRef);
-    const driversMap = {};
-    
-    usersSnapshot.docs.forEach(doc => {
-      const userData = doc.data();
-      if (userData.role === 'driver') {
-        driversMap[doc.id] = userData;
-      }
-    });
-
-    snapshot.docs.forEach(doc => {
-      const data = doc.data();
-      const driverId = data.assignedDriver || data.assignedDriverId || data.driverId;
+    try {
+      // Tüm rezervasyonları getir (completed olmayanlara da bakacağız)
+      const reservationsRef = collection(db, 'reservations');
       
-      if (data.totalPrice) {
-        let driverShare = 0;
-        let ourRevenue = data.totalPrice;
-        let ourExpense = 0;
-        let paymentMethod = data.paymentMethod || 'cash';
-
-        // Manuel şoför kontrolü
-        if (driverId === 'manual' && data.manualDriverInfo) {
-          driverShare = parseFloat(data.manualDriverInfo.price || 0);
-          ourRevenue = data.totalPrice - driverShare;
-          
-          if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
-            ourExpense = driverShare;
-          }
-        } else if (driverId && driversMap[driverId]) {
-          // Sistem şoförü
-          const driverData = driversMap[driverId];
-          const commissionRate = driverData.commission || 15;
-          driverShare = (data.totalPrice * commissionRate) / 100;
-          ourRevenue = data.totalPrice - driverShare;
-          
-          if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
-            ourExpense = driverShare;
-          }
-        }
-
-        reservationData.push({
-          id: doc.id,
-          ...data,
-          driverShare,
-          ourRevenue,
-          ourExpense,
-          paymentMethod,
-          completedDate: data.completedAt?.toDate ? data.completedAt.toDate() : new Date(data.completedAt)
-        });
+      // Önce tamamlanmış rezervasyonları deneyelim
+      let reservationQuery = query(
+        reservationsRef,
+        where('status', '==', 'completed')
+      );
+      
+      let snapshot = await getDocs(reservationQuery);
+      
+      // Eğer tamamlanmış rezervasyon yoksa, tüm rezervasyonları getir
+      if (snapshot.empty) {
+        console.log('📊 Tamamlanmış rezervasyon bulunamadı, tüm rezervasyonları kontrol ediliyor...');
+        snapshot = await getDocs(reservationsRef);
       }
-    });
 
-    return filterByTime(reservationData, timeFilter);
+      console.log('📊 Toplam rezervasyon sayısı:', snapshot.docs.length);
+      
+      const reservationData = [];
+      
+      // Sistem şoför bilgilerini al
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+      const driversMap = {};
+      
+      usersSnapshot.docs.forEach(doc => {
+        const userData = doc.data();
+        if (userData.role === 'driver') {
+          driversMap[doc.id] = userData;
+        }
+      });
+
+      console.log('👥 Sistem şoför sayısı:', Object.keys(driversMap).length);
+
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        console.log('📋 Rezervasyon verisi:', {
+          id: doc.id,
+          status: data.status,
+          totalPrice: data.totalPrice,
+          assignedDriver: data.assignedDriver,
+          completedAt: data.completedAt
+        });
+
+        const driverId = data.assignedDriver || data.assignedDriverId || data.driverId;
+        
+        if (data.totalPrice) {
+          let driverShare = 0;
+          let ourRevenue = data.totalPrice;
+          let ourExpense = 0;
+          let paymentMethod = data.paymentMethod || 'cash';
+
+          // Manuel şoför kontrolü
+          if (driverId === 'manual' && data.manualDriverInfo) {
+            driverShare = parseFloat(data.manualDriverInfo.price || 0);
+            ourRevenue = data.totalPrice - driverShare;
+            
+            if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
+              ourExpense = driverShare;
+            }
+          } else if (driverId && driversMap[driverId]) {
+            // Sistem şoförü
+            const driverData = driversMap[driverId];
+            const commissionRate = driverData.commission || 15;
+            driverShare = (data.totalPrice * commissionRate) / 100;
+            ourRevenue = data.totalPrice - driverShare;
+            
+            if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
+              ourExpense = driverShare;
+            }
+          }
+
+          // Tamamlanma tarihini düzenle
+          let completedDate = new Date();
+          if (data.completedAt) {
+            completedDate = data.completedAt?.toDate ? data.completedAt.toDate() : new Date(data.completedAt);
+          } else if (data.createdAt) {
+            completedDate = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+          }
+
+          reservationData.push({
+            id: doc.id,
+            ...data,
+            driverShare,
+            ourRevenue,
+            ourExpense,
+            paymentMethod,
+            completedDate
+          });
+        }
+      });
+
+      console.log('💰 İşlenmiş rezervasyon sayısı:', reservationData.length);
+      return filterByTime(reservationData, timeFilter);
+      
+    } catch (error) {
+      console.error('❌ Rezervasyon verileri alınırken hata:', error);
+      return [];
+    }
   };
 
   const fetchManualExpensesData = async () => {
-    const expensesRef = collection(db, 'manual_expenses');
-    const q = query(expensesRef, orderBy('date', 'desc'));
-    const snapshot = await getDocs(q);
-    
-    const expenseData = [];
-    snapshot.docs.forEach(doc => {
-      expenseData.push({
-        id: doc.id,
-        ...doc.data(),
-        date: doc.data().date.toDate ? doc.data().date.toDate() : new Date(doc.data().date)
+    try {
+      const expensesRef = collection(db, 'manual_expenses');
+      const snapshot = await getDocs(expensesRef);
+      
+      console.log('💸 Manuel gider sayısı:', snapshot.docs.length);
+      
+      if (snapshot.empty) {
+        console.log('💸 Manuel gider bulunamadı, boş array döndürülüyor');
+        return [];
+      }
+      
+      const expenseData = [];
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        expenseData.push({
+          id: doc.id,
+          ...data,
+          date: data.date?.toDate ? data.date.toDate() : new Date(data.date || Date.now()),
+          amount: parseFloat(data.amount || 0)
+        });
       });
-    });
 
-    return filterByTime(expenseData, timeFilter);
+      return filterByTime(expenseData, timeFilter);
+    } catch (error) {
+      console.error('❌ Manuel giderler alınırken hata:', error);
+      return [];
+    }
   };
 
   const filterByTime = (data, filter) => {
@@ -241,6 +289,39 @@ const FinancialDashboard = () => {
           <option value="this_year">Bu Yıl</option>
         </select>
       </div>
+
+      {/* Debug Bilgileri - Development sırasında görünür */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h3 className="font-semibold text-yellow-800 mb-2">Debug Bilgileri ({getTimeFilterLabel()})</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <span className="text-yellow-700">Rezervasyon:</span>
+              <div className="font-mono text-yellow-900">{reservationCount} adet</div>
+            </div>
+            <div>
+              <span className="text-yellow-700">Toplam Gelir:</span>
+              <div className="font-mono text-yellow-900">€{totalRevenue}</div>
+            </div>
+            <div>
+              <span className="text-yellow-700">Şoför Gideri:</span>
+              <div className="font-mono text-yellow-900">€{totalDriverExpenses}</div>
+            </div>
+            <div>
+              <span className="text-yellow-700">Manuel Gider:</span>
+              <div className="font-mono text-yellow-900">€{totalManualExpenses}</div>
+            </div>
+            <div>
+              <span className="text-yellow-700">Nakit Ödemeler:</span>
+              <div className="font-mono text-yellow-900">€{cashPayments}</div>
+            </div>
+            <div>
+              <span className="text-yellow-700">Kart Ödemeler:</span>
+              <div className="font-mono text-yellow-900">€{cardPayments}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Ana Finansal Kartlar */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Calendar, Clock, User, Phone, Mail, Car, CreditCard, QrCode, Edit, X, Eye } from 'lucide-react';
+import { MapPin, Calendar, Clock, User, Phone, Mail, Car, CreditCard, QrCode, Edit, X, Eye, MessageCircle, CheckCircle, ArrowRight } from 'lucide-react';
 
 const ReservationCard = ({ 
   reservation, 
@@ -11,7 +11,8 @@ const ReservationCard = ({
   onUpdateStatus,
   onEdit,
   onCancel,
-  onShowQR
+  onShowQR,
+  onCompleteReservation
 }) => {
   const assignedDriver = drivers.find(d => d.id === reservation.assignedDriver);
   const assignedVehicle = vehicles.find(v => v.id === reservation.assignedVehicle);
@@ -125,26 +126,85 @@ const ReservationCard = ({
       </div>
 
       {/* Şoför/Araç Bilgisi */}
-      {assignedDriver && assignedVehicle && (
+      {(assignedDriver || reservation.assignedDriver === 'manual') && (
         <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4 mb-6 border border-purple-200">
           <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
             <Car className="w-4 h-4" />
             Atanmış Şoför & Araç
           </h4>
-          <div className="flex items-center justify-between">
+          
+          {reservation.assignedDriver === 'manual' && reservation.manualDriverInfo ? (
+            // Manuel Şoför Bilgileri
             <div>
-              <p className="font-medium text-purple-900">
-                {assignedDriver.firstName} {assignedDriver.lastName}
-              </p>
-              <p className="text-sm text-purple-700">
-                {assignedVehicle.brand} {assignedVehicle.model} - {assignedVehicle.plateNumber}
-              </p>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium">
+                      Manuel Şoför
+                    </span>
+                    <p className="font-medium text-purple-900">
+                      {reservation.manualDriverInfo.name}
+                    </p>
+                  </div>
+                  <p className="text-sm text-purple-700 mt-1">
+                    📱 {reservation.manualDriverInfo.phone} | 🚗 {reservation.manualDriverInfo.plateNumber}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-green-700">
+                    Hak Ediş: €{reservation.manualDriverInfo.price}
+                  </p>
+                  <p className="text-xs text-purple-600">
+                    Durum: {reservation.status === 'completed' ? '✅ Tamamlandı' : 
+                            reservation.status === 'in_progress' ? '🚗 Devam Ediyor' : 
+                            '⏳ Bekliyor'}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Manuel Şoför Özgü Butonlar */}
+              <div className="flex gap-2">
+                {reservation.status === 'assigned' && (
+                  <button
+                    onClick={() => window.open(`https://wa.me/${reservation.manualDriverInfo.phone.replace(/[^\d]/g, '')}`)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+                  >
+                    <MessageCircle className="w-3 h-3" />
+                    WhatsApp
+                  </button>
+                )}
+                {reservation.status === 'in_progress' && (
+                  <button
+                    onClick={() => onCompleteReservation && onCompleteReservation(reservation.id)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+                  >
+                    <CheckCircle className="w-3 h-3" />
+                    Tamamla
+                  </button>
+                )}
+                <span className="text-xs text-purple-600 flex items-center">
+                  <ArrowRight className="w-3 h-3 mr-1" />
+                  Özel Link: /manual-driver/{reservation.id}
+                </span>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-purple-700">{assignedDriver.phone}</p>
-              <p className="text-xs text-purple-600">Kapasite: {assignedVehicle.capacity} kişi</p>
+          ) : assignedDriver && assignedVehicle ? (
+            // Sistem Şoförü Bilgileri
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-purple-900">
+                  {assignedDriver.firstName} {assignedDriver.lastName}
+                </p>
+                <p className="text-sm text-purple-700">
+                  {assignedVehicle.brand} {assignedVehicle.model} - {assignedVehicle.plateNumber}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-purple-700">{assignedDriver.phone}</p>
+                <p className="text-xs text-purple-600">Kapasite: {assignedVehicle.capacity} kişi</p>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       )}
 

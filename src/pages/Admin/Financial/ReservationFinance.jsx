@@ -25,15 +25,24 @@ const ReservationFinance = () => {
     try {
       setLoading(true);
 
-      // Tamamlanmış rezervasyonları getir
+      // Önce tamamlanmış rezervasyonları deneyelim
       const reservationsRef = collection(db, 'reservations');
-      const q = query(
+      let q = query(
         reservationsRef,
         where('status', '==', 'completed'),
         orderBy('completedAt', 'desc')
       );
 
-      const snapshot = await getDocs(q);
+      let snapshot = await getDocs(q);
+      
+      // Eğer tamamlanmış rezervasyon yoksa, tüm rezervasyonları getir
+      if (snapshot.empty) {
+        console.log('📊 Rezervasyon Finansı: Tamamlanmış rezervasyon bulunamadı, tüm rezervasyonları kontrol ediliyor...');
+        snapshot = await getDocs(reservationsRef);
+      }
+
+      console.log('📊 Rezervasyon Finansı: Toplam rezervasyon sayısı:', snapshot.docs.length);
+      
       const reservationData = [];
       
       // Sistem şoför bilgilerini al
