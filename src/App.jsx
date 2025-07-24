@@ -1,6 +1,17 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+// Static Pages
+import AboutPage from './pages/Static/AboutPage'
+import ContactPage from './pages/Static/ContactPage'
+import ServicesPage from './pages/Static/ServicesPage'
+import FAQPage from './pages/Static/FAQPage'
+import PrivacyPolicyPage from './pages/Static/PrivacyPolicyPage'
+import TermsPage from './pages/Static/TermsPage'
+import KVKKPage from './pages/Static/KVKKPage'
+import CookiePolicyPage from './pages/Static/CookiePolicyPage'
+import RefundCancellationPage from './pages/Static/RefundCancellationPage'
 import { Toaster } from 'react-hot-toast'
+import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
 import { AppProvider } from './context/AppContext'
 
@@ -54,11 +65,12 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <AppProvider>
-          <Router>
-            <div className="App">
-              <Routes>
+      <HelmetProvider>
+        <AuthProvider>
+          <AppProvider>
+            <BrowserRouter>
+              <div className="App">
+                <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
@@ -70,6 +82,17 @@ function App() {
                 <Route path="onay" element={<ConfirmationPage />} />
                 <Route path="rezervasyonlarim" element={<MyReservations />} />
                 <Route path="profil" element={<CustomerProfile />} />
+                
+                {/* Static Pages */}
+                <Route path="hakkimizda" element={<AboutPage />} />
+                <Route path="iletisim" element={<ContactPage />} />
+                <Route path="hizmetlerimiz" element={<ServicesPage />} />
+                <Route path="sss" element={<FAQPage />} />
+                <Route path="gizlilik-politikasi" element={<PrivacyPolicyPage />} />
+                <Route path="kullanim-sartlari" element={<TermsPage />} />
+                <Route path="kvkk" element={<KVKKPage />} />
+                <Route path="cerez-politikasi" element={<CookiePolicyPage />} />
+                <Route path="iade-iptal" element={<RefundCancellationPage />} />
               </Route>
 
               {/* Booking Confirmation - Standalone Route */}
@@ -170,9 +193,10 @@ function App() {
               }}
             />
           </div>
-        </Router>
+        </BrowserRouter>
       </AppProvider>
     </AuthProvider>
+  </HelmetProvider>
   </ErrorBoundary>
   )
 }

@@ -93,11 +93,11 @@ const Footer = () => {
             </h3>
             <ul className="space-y-3">
               {[
-                { to: '/hakkımızda', label: 'Hakkımızda', icon: Globe },
-                { to: '/güvenlik', label: 'Güvenlik', icon: Shield },
-                { to: '/destek', label: 'Müşteri Desteği', icon: Headphones },
-                { to: '/kariyer', label: 'Kariyer' },
-                { to: '/basın', label: 'Basın Kiti' }
+                { to: '/hakkimizda', label: 'Hakkımızda', icon: Globe },
+                { to: '/hizmetlerimiz', label: 'Hizmetlerimiz' },
+                { to: '/sss', label: 'Sık Sorulan Sorular', icon: Headphones },
+                { to: '/iletisim', label: 'İletişim' },
+                { to: '/kvkk', label: 'KVKK', icon: Shield }
               ].map((link, index) => (
                 <li key={index}>
                   <Link 
@@ -122,19 +122,19 @@ const Footer = () => {
               {[
                 {
                   icon: Phone,
-                  title: APP_CONFIG.supportPhone || '+90 555 123 4567',
+                  title: APP_CONFIG.supportPhone,
                   subtitle: '7/24 Destek Hattı',
-                  href: `tel:${APP_CONFIG.supportPhone || '+905551234567'}`
+                  href: `tel:${APP_CONFIG.supportPhone.replace(/\s/g, '')}`
                 },
                 {
                   icon: Mail,
-                  title: APP_CONFIG.supportEmail || 'info@sbstransfer.com',
+                  title: APP_CONFIG.supportEmail,
                   subtitle: 'E-posta Desteği',
-                  href: `mailto:${APP_CONFIG.supportEmail || 'info@sbstransfer.com'}`
+                  href: `mailto:${APP_CONFIG.supportEmail}`
                 },
                 {
                   icon: MapPin,
-                  title: 'İstanbul, Türkiye',
+                  title: 'Aksu, Antalya',
                   subtitle: 'Merkez Ofis',
                   href: '#'
                 }
@@ -165,14 +165,15 @@ const Footer = () => {
         <div className="border-t border-white/20 mt-12 pt-8 animate-fade-in">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm">
-              © 2025 {APP_CONFIG.companyName || 'SBS Transfer'}. Tüm hakları saklıdır.
+              © 2025 {APP_CONFIG.name}. Tüm hakları saklıdır.
             </p>
             <div className="flex items-center space-x-6">
               <div className="flex space-x-6">
                 {[
-                  { to: '/gizlilik', label: 'Gizlilik Politikası' },
-                  { to: '/kullanim-kosullari', label: 'Kullanım Koşulları' },
-                  { to: '/cerez-politikasi', label: 'Çerez Politikası' }
+                  { to: '/gizlilik-politikasi', label: 'Gizlilik Politikası' },
+                  { to: '/kullanim-sartlari', label: 'Kullanım Şartları' },
+                  { to: '/cerez-politikasi', label: 'Çerez Politikası' },
+                  { to: '/iade-iptal', label: 'İade & İptal' }
                 ].map((link, index) => (
                   <Link 
                     key={index}

@@ -9,11 +9,13 @@ export const GOOGLE_MAPS_CONFIG = {
 
 // Application Constants
 export const APP_CONFIG = {
-  name: "SBS Transfer",
+  name: "GATE Transfer",
   version: "1.0.0",
-  companyName: "SBS Transfer Hizmetleri",
-  supportEmail: "destek@sbstransfer.com",
-  supportPhone: "+90 (555) 000 00 00",
+  companyName: "SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi",
+  supportEmail: "info@sbstravel.net",
+  supportPhone: "+90 532 574 26 82",
+  companyAddress: "Güzelyurt Mahallesi Serik Caddesi No: 138/2, Aksu / Antalya",
+  website: "www.gatetransfer.com",
   testMode: true  // Geliştirme aşaması için test modu
 };
 

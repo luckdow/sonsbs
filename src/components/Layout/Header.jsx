@@ -117,9 +117,10 @@ const Header = () => {
           <nav className="hidden lg:flex items-center space-x-8">
             {[
               { path: '/', label: 'Ana Sayfa' },
-              { path: '/hakkımızda', label: 'Hakkımızda' },
-              { path: '/hizmetler', label: 'Hizmetlerimiz' },
-              { path: '/iletişim', label: 'İletişim' },
+              { path: '/hakkimizda', label: 'Hakkımızda' },
+              { path: '/hizmetlerimiz', label: 'Hizmetlerimiz' },
+              { path: '/sss', label: 'SSS' },
+              { path: '/iletisim', label: 'İletişim' },
               ...(user ? [{ path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }] : [])
             ].map((item) => (
               <div key={item.path} className="hover:scale-105 transition-transform duration-200">
@@ -185,9 +186,10 @@ const Header = () => {
           <div className="py-4 space-y-4 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 rounded-b-2xl shadow-xl">
             {[
               { path: '/', label: 'Ana Sayfa' },
-              { path: '/hakkımızda', label: 'Hakkımızda' },
-              { path: '/hizmetler', label: 'Hizmetlerimiz' },
-              { path: '/iletişim', label: 'İletişim' },
+              { path: '/hakkimizda', label: 'Hakkımızda' },
+              { path: '/hizmetlerimiz', label: 'Hizmetlerimiz' },
+              { path: '/sss', label: 'SSS' },
+              { path: '/iletisim', label: 'İletişim' },
               ...(user ? [{ path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }] : [])
             ].map((item) => (
               <div key={item.path} className="hover:translate-x-2 transition-transform duration-200">
