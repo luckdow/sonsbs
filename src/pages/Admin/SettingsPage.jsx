@@ -3,28 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Settings, 
   Save,
-  Globe,
-  Bell,
-  Shield,
   CreditCard,
-  MapPin,
   Mail,
-  Phone,
-  Clock,
-  DollarSign,
-  Percent,
-  Upload,
-  Image,
-  Key,
-  Database,
-  Server,
-  Smartphone,
   Building2,
-  Users,
   Banknote,
-  AlertCircle,
-  CheckCircle,
-  Info
+  Info,
+  MessageSquare
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
@@ -89,49 +73,113 @@ const SettingsPage = () => {
       authorizedPerson: 'Mehmet Yılmaz',
       authorizedPersonTitle: 'Genel Müdür'
     },
-    
-    // Commission Settings
-    commission: {
-      defaultDriverCommission: 70,
-      companyCommission: 30,
-      minimumCommission: 50,
-      maximumCommission: 90,
-      paymentFrequency: 'weekly'
+
+    // Email Settings
+    emailSettings: {
+      emailjsServiceId: '',
+      emailjsTemplateId: '',
+      emailjsPaymentTemplateId: '',
+      emailjsPublicKey: '',
+      senderName: 'SBS Transfer',
+      enableEmails: true
     },
-    
-    // Notification Settings
-    notifications: {
-      email: {
-        newReservation: true,
-        reservationUpdate: true,
-        driverAssignment: true,
-        paymentReceived: true,
-        cancellation: true,
-        weeklyReport: true
+
+    // SMS Settings
+    smsSettings: {
+      enableSMS: false,
+      twilioAccountSid: '',
+      twilioAuthToken: '',
+      twilioPhoneNumber: '',
+      senderName: 'SBS Transfer'
+    },
+
+    // Email Templates
+    emailTemplates: {
+      reservationConfirmation: {
+        subject: 'Rezervasyon Onayı - {{reservationNumber}}',
+        template: `Sayın {{customerName}},
+
+{{companyName}} olarak rezervasyon talebinizi aldık ve onayladık.
+
+REZERVASYON BİLGİLERİ:
+━━━━━━━━━━━━━━━━━━━━━━━
+📋 Rezervasyon No: {{reservationNumber}}
+📅 Tarih: {{date}} {{time}}
+🚗 Araç: {{vehicleType}}
+💰 Ücret: {{totalPrice}}
+💳 Ödeme Yöntemi: {{paymentMethod}}
+
+GÜZERGAH BİLGİLERİ:
+━━━━━━━━━━━━━━━━━━━━━━━
+🟢 Kalkış: {{pickupLocation}}
+🔴 Varış: {{dropoffLocation}}
+
+MÜŞTERİ BİLGİLERİ:
+━━━━━━━━━━━━━━━━━━━━━━━
+👤 Ad Soyad: {{customerName}}
+📱 Telefon: {{customerPhone}}
+📧 E-posta: {{customerEmail}}
+{{flightInfo}}
+
+ŞOFÖR BİLGİLERİ:
+━━━━━━━━━━━━━━━━━━━━━━━
+👨‍✈️ Ad Soyad: {{driverName}}
+📱 Telefon: {{driverPhone}}
+🚗 Araç Plaka: {{vehiclePlate}}
+
+📲 QR KOD: Transfer günü şoföre gösterebilirsiniz
+🔐 MÜŞTERİ GİRİŞ BİLGİLERİ:
+E-posta: {{customerEmail}}
+Geçici Şifre: {{tempPassword}}
+
+ŞIRKET İLETİŞİM:
+━━━━━━━━━━━━━━━━━━━━━━━
+🏢 {{companyName}}
+📍 {{companyAddress}}
+📞 Tel: {{companyPhone}}
+📧 E-posta: {{companyEmail}}
+
+Transfer süresince güvenli ve konforlu bir yolculuk dileriz.
+
+Saygılarımızla,
+{{companyName}} Ekibi`
       },
-      sms: {
-        reservationConfirmation: true,
-        driverAssignment: true,
-        paymentReminder: false,
-        promotions: false
-      },
-      push: {
-        newReservation: true,
-        statusUpdate: true,
-        promotions: false
+      paymentReceived: {
+        subject: 'Ödeme Onayı - {{reservationNumber}}',
+        template: `Sayın {{customerName}},
+
+{{reservationNumber}} numaralı rezervasyonunuz için ödemeniz başarıyla alınmıştır.
+
+ÖDEME BİLGİLERİ:
+━━━━━━━━━━━━━━━━━━━━━━━
+💰 Tutar: {{totalPrice}}
+💳 Ödeme Yöntemi: {{paymentMethod}}
+📅 İşlem Tarihi: {{paymentDate}}
+📋 Rezervasyon No: {{reservationNumber}}
+
+REZERVASYON ÖZETİ:
+━━━━━━━━━━━━━━━━━━━━━━━
+📅 Transfer Tarihi: {{date}} {{time}}
+🟢 Kalkış: {{pickupLocation}}
+🔴 Varış: {{dropoffLocation}}
+🚗 Araç: {{vehicleType}}
+
+FATURA BİLGİLERİ:
+━━━━━━━━━━━━━━━━━━━━━━━
+🏢 {{companyName}}
+🆔 Vergi No: {{taxNumber}}
+📍 {{companyAddress}}
+📞 Tel: {{companyPhone}}
+
+✅ Rezervasyonunuz onaylanmıştır.
+📲 Transfer günü şoföre QR kodu gösterebilirsiniz.
+
+Herhangi bir sorunuz olursa bizimle iletişime geçebilirsiniz.
+
+Teşekkür ederiz.
+
+{{companyName}} Ekibi`
       }
-    },
-    
-    // System Settings
-    system: {
-      maintenanceMode: false,
-      debugMode: false,
-      dataRetention: 365,
-      backupFrequency: 'daily',
-      timezone: 'Europe/Istanbul',
-      language: 'tr',
-      dateFormat: 'DD/MM/YYYY',
-      timeFormat: '24h'
     }
   });
 
@@ -161,22 +209,22 @@ const SettingsPage = () => {
       description: 'Resmi şirket ve yasal bilgiler'
     },
     {
-      id: 'commission',
-      name: 'Komisyon Ayarları',
-      icon: Percent,
-      description: 'Şoför komisyon oranları'
+      id: 'emailSettings',
+      name: 'E-posta Ayarları',
+      icon: Mail,
+      description: 'EmailJS ve e-posta gönderim ayarları'
     },
     {
-      id: 'notifications',
-      name: 'Bildirim Ayarları',
-      icon: Bell,
-      description: 'E-posta, SMS ve push bildirimleri'
+      id: 'emailTemplates',
+      name: 'E-posta Şablonları',
+      icon: Mail,
+      description: 'Müşterilere gönderilecek e-posta şablonları'
     },
     {
-      id: 'system',
-      name: 'Sistem Ayarları',
-      icon: Server,
-      description: 'Sistem konfigürasyonu ve güvenlik'
+      id: 'smsSettings',
+      name: 'SMS Ayarları',
+      icon: MessageSquare,
+      description: 'Twilio SMS gönderim ayarları'
     }
   ];
 
@@ -301,14 +349,14 @@ const SettingsPage = () => {
       case 'company':
         return <CompanySettings settings={settings.company} onChange={(field, value) => handleInputChange('company', field, value)} />;
       
-      case 'commission':
-        return <CommissionSettings settings={settings.commission} onChange={(field, value) => handleInputChange('commission', field, value)} />;
+      case 'emailSettings':
+        return <EmailSettings settings={settings.emailSettings} onChange={(field, value) => handleInputChange('emailSettings', field, value)} />;
       
-      case 'notifications':
-        return <NotificationSettings settings={settings.notifications} onChange={(subsection, field, value) => handleNestedChange('notifications', subsection, field, value)} />;
+      case 'emailTemplates':
+        return <EmailTemplateSettings settings={settings.emailTemplates} onChange={(template, field, value) => handleNestedChange('emailTemplates', template, field, value)} />;
       
-      case 'system':
-        return <SystemSettings settings={settings.system} onChange={(field, value) => handleInputChange('system', field, value)} />;
+      case 'smsSettings':
+        return <SMSSettings settings={settings.smsSettings} onChange={(field, value) => handleInputChange('smsSettings', field, value)} />;
       
       default:
         return null;
@@ -1133,5 +1181,427 @@ const SystemSettings = ({ settings, onChange }) => (
     </div>
   </div>
 );
+
+// Email Settings Component
+const EmailSettings = ({ settings, onChange }) => (
+  <div className="space-y-6">
+    {/* EmailJS Ayarları */}
+    <div className="bg-white p-6 rounded-lg border border-gray-200">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <Mail className="h-5 w-5 mr-2 text-blue-600" />
+        EmailJS Ayarları (Ücretsiz)
+      </h3>
+      
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center space-x-2 mb-2">
+          <Info className="h-5 w-5 text-blue-600" />
+          <h4 className="font-medium text-blue-900">EmailJS Kurulum Adımları</h4>
+        </div>
+        <div className="text-sm text-blue-700 space-y-2">
+          <p>1. <a href="https://emailjs.com" target="_blank" className="underline">EmailJS.com</a>'da ücretsiz hesap açın</p>
+          <p>2. Gmail servisinizi bağlayın</p>
+          <p>3. E-posta şablonları oluşturun</p>
+          <p>4. Service ID, Template ID ve Public Key'i aşağıya girin</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Service ID *
+          </label>
+          <input
+            type="text"
+            value={settings.emailjsServiceId}
+            onChange={(e) => onChange('emailjsServiceId', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="service_xxxxxxx"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Public Key *
+          </label>
+          <input
+            type="text"
+            value={settings.emailjsPublicKey}
+            onChange={(e) => onChange('emailjsPublicKey', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="user_xxxxxxxxxxxxxxxxx"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Rezervasyon Template ID *
+          </label>
+          <input
+            type="text"
+            value={settings.emailjsTemplateId}
+            onChange={(e) => onChange('emailjsTemplateId', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="template_xxxxxxx"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Ödeme Template ID
+          </label>
+          <input
+            type="text"
+            value={settings.emailjsPaymentTemplateId}
+            onChange={(e) => onChange('emailjsPaymentTemplateId', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="template_payment_xxxx"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Gönderen Adı
+          </label>
+          <input
+            type="text"
+            value={settings.senderName}
+            onChange={(e) => onChange('senderName', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="SBS Transfer"
+          />
+        </div>
+
+        <div className="flex items-center">
+          <label className="flex items-center space-x-3 p-4 border border-green-200 rounded-lg bg-green-50 w-full">
+            <input
+              type="checkbox"
+              checked={settings.enableEmails}
+              onChange={(e) => onChange('enableEmails', e.target.checked)}
+              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+            />
+            <div>
+              <span className="text-sm font-medium text-green-800">E-posta Gönderimini Aktif Et</span>
+              <p className="text-xs text-green-700">Kapalı olduğunda e-postalar sadece konsola yazdırılır</p>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    {/* Template Değişkenleri */}
+    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">EmailJS Template Değişkenleri</h3>
+      <p className="text-sm text-gray-600 mb-4">
+        EmailJS şablonlarınızda aşağıdaki değişkenleri kullanabilirsiniz:
+      </p>
+      <div className="grid grid-cols-2 gap-4 text-xs text-gray-600">
+        <div>
+          <strong>Temel:</strong> to_email, to_name, from_name, reply_to, subject, message
+        </div>
+        <div>
+          <strong>Not:</strong> message içinde tüm rezervasyon detayları olacak
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Email Template Settings Component
+const EmailTemplateSettings = ({ settings, onChange }) => (
+  <div className="space-y-8">
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="flex items-center space-x-2 mb-2">
+        <Info className="h-5 w-5 text-blue-600" />
+        <h3 className="font-medium text-blue-900">E-posta Şablonu Değişkenleri</h3>
+      </div>
+      <p className="text-sm text-blue-700 mb-2">
+        Şablonlarda aşağıdaki değişkenleri kullanabilirsiniz:
+      </p>
+      <div className="grid grid-cols-2 gap-4 text-xs text-blue-600">
+        <div>
+          <strong>Müşteri:</strong> {`{{customerName}}, {{customerPhone}}, {{customerEmail}}`}
+        </div>
+        <div>
+          <strong>Rezervasyon:</strong> {`{{reservationNumber}}, {{date}}, {{time}}`}
+        </div>
+        <div>
+          <strong>Lokasyon:</strong> {`{{pickupLocation}}, {{dropoffLocation}}`}
+        </div>
+        <div>
+          <strong>Araç:</strong> {`{{vehicleType}}, {{vehiclePlate}}`}
+        </div>
+        <div>
+          <strong>Şoför:</strong> {`{{driverName}}, {{driverPhone}}`}
+        </div>
+        <div>
+          <strong>Şirket:</strong> {`{{companyName}}, {{companyPhone}}, {{companyEmail}}, {{companyAddress}}, {{taxNumber}}`}
+        </div>
+        <div>
+          <strong>Ödeme:</strong> {`{{totalPrice}}, {{paymentMethod}}, {{paymentDate}}`}
+        </div>
+        <div>
+          <strong>Uçuş:</strong> {`{{flightInfo}}, {{tempPassword}}`}
+        </div>
+      </div>
+    </div>
+
+    {/* Rezervasyon Onay E-postası */}
+    <div className="bg-white p-6 rounded-lg border border-gray-200">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <Mail className="h-5 w-5 mr-2 text-green-600" />
+        Rezervasyon Onay E-postası
+      </h3>
+      
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            E-posta Konusu
+          </label>
+          <input
+            type="text"
+            value={settings.reservationConfirmation.subject}
+            onChange={(e) => onChange('reservationConfirmation', 'subject', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Rezervasyon Onayı - {{reservationNumber}}"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            E-posta İçeriği
+          </label>
+          <textarea
+            value={settings.reservationConfirmation.template}
+            onChange={(e) => onChange('reservationConfirmation', 'template', e.target.value)}
+            rows={12}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+            placeholder="E-posta şablonunu buraya yazın..."
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Ödeme Onay E-postası */}
+    <div className="bg-white p-6 rounded-lg border border-gray-200">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
+        Ödeme Onay E-postası
+      </h3>
+      
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            E-posta Konusu
+          </label>
+          <input
+            type="text"
+            value={settings.paymentReceived.subject}
+            onChange={(e) => onChange('paymentReceived', 'subject', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Ödeme Onayı - {{reservationNumber}}"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            E-posta İçeriği
+          </label>
+          <textarea
+            value={settings.paymentReceived.template}
+            onChange={(e) => onChange('paymentReceived', 'template', e.target.value)}
+            rows={12}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+            placeholder="E-posta şablonunu buraya yazın..."
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// SMS Settings Component
+const SMSSettings = ({ settings, onChange }) => {
+  const [testPhone, setTestPhone] = useState('');
+  const [isTestingSMS, setIsTestingSMS] = useState(false);
+
+  const handleTestSMS = async () => {
+    if (!testPhone) {
+      toast.error('Test için telefon numarası giriniz');
+      return;
+    }
+
+    setIsTestingSMS(true);
+    try {
+      // SMS servisini import et ve test gönder
+      const { smsService } = await import('../../services/smsService');
+      const result = await smsService.sendTestSMS(testPhone);
+      
+      if (result.success) {
+        toast.success('Test SMS başarıyla gönderildi!');
+      } else {
+        toast.error('Test SMS gönderilemedi: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Test SMS error:', error);
+      toast.error('Test SMS gönderilemedi: ' + error.message);
+    } finally {
+      setIsTestingSMS(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Twilio SMS Ayarları */}
+      <div className="bg-white p-6 rounded-lg border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <MessageSquare className="h-5 w-5 mr-2 text-green-600" />
+          Twilio SMS Ayarları
+        </h3>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center space-x-2 mb-2">
+            <Info className="h-5 w-5 text-blue-600" />
+            <h4 className="font-medium text-blue-900">Twilio Kurulum Adımları</h4>
+          </div>
+          <div className="text-sm text-blue-700 space-y-2">
+            <p>1. <a href="https://console.twilio.com" target="_blank" className="underline">Twilio Console</a>'da hesap açın</p>
+            <p>2. Account SID ve Auth Token'ınızı alın</p>
+            <p>3. Twilio telefon numarası satın alın</p>
+            <p>4. Aşağıdaki bilgileri girin ve SMS gönderimini aktif edin</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Account SID *
+            </label>
+            <input
+              type="text"
+              value={settings?.twilioAccountSid || ''}
+              onChange={(e) => onChange('twilioAccountSid', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="AC..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Auth Token *
+            </label>
+            <input
+              type="password"
+              value={settings?.twilioAuthToken || ''}
+              onChange={(e) => onChange('twilioAuthToken', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="••••••••••••••••"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Twilio Telefon Numarası *
+            </label>
+            <input
+              type="tel"
+              value={settings?.twilioPhoneNumber || ''}
+              onChange={(e) => onChange('twilioPhoneNumber', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="+1234567890"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Gönderen Adı
+            </label>
+            <input
+              type="text"
+              value={settings?.senderName || ''}
+              onChange={(e) => onChange('senderName', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="SBS Transfer"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="flex items-center space-x-3 p-4 border border-green-200 rounded-lg bg-green-50 w-full">
+              <input
+                type="checkbox"
+                checked={settings?.enableSMS || false}
+                onChange={(e) => onChange('enableSMS', e.target.checked)}
+                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+              <div>
+                <span className="text-sm font-medium text-green-800">SMS Gönderimini Aktif Et</span>
+                <p className="text-xs text-green-700">Kapalı olduğunda SMS'ler sadece konsola yazdırılır</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Test SMS */}
+      <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Test SMS</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Twilio SMS ayarlarınızı test etmek için test SMS'i gönderebilirsiniz.
+        </p>
+        
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <input
+              type="tel"
+              value={testPhone}
+              onChange={(e) => setTestPhone(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="05XX XXX XX XX"
+            />
+          </div>
+          <button
+            onClick={handleTestSMS}
+            disabled={isTestingSMS || !testPhone}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isTestingSMS ? 'Gönderiliyor...' : 'Test SMS Gönder'}
+          </button>
+        </div>
+        
+        {!settings?.enableSMS && (
+          <div className="mt-3 text-xs text-orange-600">
+            ⚠️ SMS gönderimi kapalı - Test SMS sadece konsola yazdırılacak
+          </div>
+        )}
+      </div>
+
+      {/* SMS Türleri */}
+      <div className="bg-white p-6 rounded-lg border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Gönderilecek SMS Türleri</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <h4 className="font-medium text-green-800 mb-2">📋 Rezervasyon Onayı</h4>
+            <p className="text-sm text-green-700">
+              Rezervasyon oluşturulduğunda müşteriye gönderilir
+            </p>
+          </div>
+          
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h4 className="font-medium text-blue-800 mb-2">💳 Ödeme Onayı</h4>
+            <p className="text-sm text-blue-700">
+              Ödeme tamamlandığında müşteriye gönderilir
+            </p>
+          </div>
+          
+          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <h4 className="font-medium text-purple-800 mb-2">🚗 Şoför Bilgileri</h4>
+            <p className="text-sm text-purple-700">
+              Transfer günü şoför bilgileri paylaşılır
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default SettingsPage;

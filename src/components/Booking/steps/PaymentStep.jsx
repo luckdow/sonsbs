@@ -19,12 +19,25 @@ import {
 } from 'lucide-react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
+import smsService from '../../../services/smsService';
 
 const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoading }) => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [expandedMethod, setExpandedMethod] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bankInfo, setBankInfo] = useState([]);
+  const [paymentSettings, setPaymentSettings] = useState({
+    enabledMethods: {
+      cash: true,
+      creditCard: true,
+      bankTransfer: true,
+      paytr: false
+    },
+    paytrMerchantId: '',
+    paytrMerchantKey: '',
+    paytrMerchantSalt: '',
+    testMode: true
+  });
   const [cardData, setCardData] = useState({
     cardNumber: '',
     expiryDate: '',
@@ -41,12 +54,20 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
     try {
       setLoading(true);
       
-      // Admin panelindeki settings'ten banka bilgilerini çek
+      // Admin panelindeki settings'ten ödeme ayarları ve banka bilgilerini çek
       const settingsDocRef = doc(db, 'settings', 'main');
       
       const unsubscribe = onSnapshot(settingsDocRef, (doc) => {
         if (doc.exists()) {
           const data = doc.data();
+          
+          // Ödeme ayarlarını güncelle
+          if (data.payment) {
+            setPaymentSettings(prev => ({
+              ...prev,
+              ...data.payment
+            }));
+          }
           
           // Aktif banka hesaplarını filtrele
           const activeBankAccounts = data.bankAccounts?.filter(account => account.isActive !== false) || [];
@@ -143,14 +164,45 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
     navigator.clipboard.writeText(text);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (validateForm()) {
       updateBookingData({
         paymentMethod,
         creditCardInfo: paymentMethod === 'credit_card' ? cardData : null
       });
+      
+      // Ödeme başarılı SMS'i gönder
+      try {
+        const smsData = {
+          customerPhone: bookingData.personalInfo?.phone,
+          reservationNumber: bookingData.reservationNumber || 'TMP-' + Date.now(),
+          totalAmount: bookingData.pricing?.totalPrice || bookingData.totalPrice,
+          paymentMethod: getPaymentMethodName(paymentMethod)
+        };
+        
+        const smsResult = await smsService.sendPaymentConfirmation(smsData);
+        
+        if (smsResult.success) {
+          console.log('✅ Ödeme onay SMS\'i gönderildi:', smsResult);
+        } else {
+          console.log('⚠️ Ödeme onay SMS\'i gönderilemedi:', smsResult.message);
+        }
+      } catch (smsError) {
+        console.error('❌ SMS gönderme hatası:', smsError);
+      }
+      
       onComplete();
     }
+  };
+
+  const getPaymentMethodName = (method) => {
+    const methodNames = {
+      'cash': 'Nakit',
+      'credit_card': 'Kredi Kartı',
+      'bank_transfer': 'Havale/EFT',
+      'paytr': 'Online Ödeme'
+    };
+    return methodNames[method] || method;
   };
 
   if (loading) {
@@ -213,7 +265,8 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-gray-900">Ödeme Seçenekleri</h3>
         
-        {/* Credit Card Payment */}
+        {/* Credit Card Payment - PayTR destekli */}
+        {(paymentSettings.enabledMethods.creditCard || paymentSettings.enabledMethods.paytr) && (
         <div className="border border-gray-200 rounded-lg">
           <button
             type="button"
@@ -360,8 +413,10 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
             </motion.div>
           )}
         </div>
+        )}
 
         {/* Bank Transfer Payment */}
+        {paymentSettings.enabledMethods.bankTransfer && (
         <div className="border border-gray-200 rounded-lg">
           <button
             type="button"
@@ -450,8 +505,10 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
             </motion.div>
           )}
         </div>
+        )}
 
         {/* Cash Payment */}
+        {paymentSettings.enabledMethods.cash && (
         <div className="border border-gray-200 rounded-lg">
           <button
             type="button"
@@ -520,6 +577,7 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
             </motion.div>
           )}
         </div>
+        )}
       </div>
 
       {/* Security and Trust Indicators */}

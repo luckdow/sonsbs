@@ -27,6 +27,8 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { db, auth } from '../../config/firebase';
 import toast from 'react-hot-toast';
 import QRCode from 'qrcode';
+import emailService from '../../services/emailService';
+import smsService from '../../services/smsService';
 
 const BookingConfirmationPage = () => {
   const location = useLocation();
@@ -248,6 +250,35 @@ const BookingConfirmationPage = () => {
           } else {
             console.warn('⚠️ QR kod için telefon numarası yok:', data.customerInfo);
           }
+
+          // E-posta gönder
+          if (data.customerInfo?.email) {
+            console.log('📧 Rezervasyon onay e-postası gönderiliyor...');
+            const emailData = {
+              ...data,
+              reservationId: reservationCode,
+              tempPassword: password || generateTempPassword()
+            };
+            
+            // E-posta gönderme işlemini async olarak yap (sayfayı bloklamasın)
+            setTimeout(async () => {
+              try {
+                const emailResult = await emailService.sendReservationConfirmation(emailData);
+                if (emailResult.success) {
+                  console.log('✅ E-posta başarıyla gönderildi:', emailResult.email);
+                  toast.success('Rezervasyon onay e-postası gönderildi!');
+                } else {
+                  console.error('❌ E-posta gönderme hatası:', emailResult.error);
+                  toast.error('E-posta gönderilirken hata oluştu');
+                }
+              } catch (error) {
+                console.error('❌ E-posta servisi hatası:', error);
+                toast.error('E-posta servisi hatası');
+              }
+            }, 1000); // 1 saniye sonra gönder
+          } else {
+            console.warn('⚠️ E-posta adresi bulunamadı, e-posta gönderilmedi');
+          }
           
           console.log('✅ BookingConfirmation: İşlem tamamlandı');
         } else {
@@ -313,6 +344,51 @@ const BookingConfirmationPage = () => {
       console.log('🎯 Rezervasyon kodu:', reservationCode);
       toast.success(`Rezervasyon başarıyla kaydedildi! (${reservationCode})`);
       
+      // E-posta gönder
+      try {
+        console.log('📧 E-posta gönderimi başlatılıyor...');
+        const emailData = {
+          ...reservationData,
+          reservationId: reservationCode,
+          tempPassword: tempPassword
+        };
+        
+        const emailResult = await emailService.sendReservationConfirmation(emailData);
+        
+        if (emailResult.success) {
+          console.log('✅ E-posta başarıyla gönderildi:', emailResult);
+          toast.success('Rezervasyon onay e-postası gönderildi!');
+        } else {
+          console.log('⚠️ E-posta gönderilemedi:', emailResult.error);
+          toast.warning('Rezervasyon kaydedildi ancak e-posta gönderilemedi');
+        }
+      } catch (emailError) {
+        console.error('❌ E-posta gönderme hatası:', emailError);
+        toast.warning('Rezervasyon kaydedildi ancak e-posta gönderilemedi');
+      }
+
+      // SMS gönder
+      try {
+        const smsData = {
+          ...reservationData,
+          reservationNumber: reservationCode,
+          customerPhone: reservationData.phone
+        };
+        
+        const smsResult = await smsService.sendReservationConfirmation(smsData);
+        
+        if (smsResult.success) {
+          console.log('✅ SMS başarıyla gönderildi:', smsResult);
+          toast.success('Rezervasyon onay SMS\'i gönderildi!');
+        } else {
+          console.log('⚠️ SMS gönderilemedi:', smsResult.message);
+          // SMS başarısız olursa toast gösterme, çünkü rezervasyon başarılı
+        }
+      } catch (smsError) {
+        console.error('❌ SMS gönderme hatası:', smsError);
+        // SMS hatası durumunda da toast gösterme
+      }
+      
     } catch (error) {
       console.error('❌ Rezervasyon kaydedilirken hata:', error);
       toast.error('Rezervasyon kaydedilirken bir hata oluştu.');
@@ -375,6 +451,47 @@ const BookingConfirmationPage = () => {
               <p className="mb-2 break-words">E-posta: <span className="font-medium">{bookingData.customerInfo?.email}</span></p>
               <p className="mb-2">Geçici Şifre: <span className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm">{tempPassword}</span></p>
               <p className="text-xs text-gray-600">Bu bilgilerle müşteri sayfanıza giriş yapabilirsiniz.</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* E-posta Gönderildi Bilgisi */}
+        {bookingData.customerInfo?.email && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 mx-2 sm:mx-0 shadow-lg"
+          >
+            <div className="flex items-center justify-center space-x-2 mb-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-center bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                Onay E-postası Gönderildi!
+              </h3>
+            </div>
+            <div className="text-center text-gray-700 text-xs sm:text-sm">
+              <p className="mb-2 break-words">
+                📧 <span className="font-medium">{bookingData.customerInfo.email}</span> adresine rezervasyon detayları gönderildi
+              </p>
+              <div className="flex items-center justify-center space-x-4 text-xs text-gray-600">
+                <div className="flex items-center space-x-1">
+                  <CheckCircle className="w-3 h-3 text-green-600" />
+                  <span>Rezervasyon detayları</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <CheckCircle className="w-3 h-3 text-green-600" />
+                  <span>QR kod</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <CheckCircle className="w-3 h-3 text-green-600" />
+                  <span>Giriş bilgileri</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                E-posta gelmezse spam klasörünü kontrol edin
+              </p>
             </div>
           </motion.div>
         )}
