@@ -2,6 +2,20 @@ import { doc, updateDoc, getDoc, collection, addDoc, setDoc } from 'firebase/fir
 import { db } from '../config/firebase';
 
 /**
+ * İyileştirilmiş Finansal Entegrasyon Sistemi
+ * 
+ * ÖDEME Akışları:
+ * 
+ * 1. Sisteme Kayıtlı Şoförler:
+ *    - Nakit: Şoför müşteriden alır → Şoför firmaya komisyon borçlu
+ *    - Kart: Firma müşteri parayı alır → Firma şofore kazancını (komisyon düştükten sonra kalan) ödemeli
+ * 
+ * 2. Manuel Şoförler:
+ *    - Nakit: Şoför müşteriden alır → Şoför firmaya (toplam - hak ediş) borçlu  
+ *    - Kart: Firma müşteri parayı alır → Firma şoföre hak edişini ödemeli
+ */
+
+/**
  * Rezervasyon tamamlandığında şoför cari hesabını otomatik günceller
  * @param {string} reservationId - Rezervasyon ID
  * @param {object} reservationData - Rezervasyon verileri
@@ -24,11 +38,8 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
     // Manuel şoför kontrolü
     const isManualDriver = driverId === 'manual' && manualDriverInfo;
     
-    console.log('🤖 Manuel şoför mi?', isManualDriver);
-    
     if (isManualDriver) {
       console.log('➡️ Manuel şoför finansal işlemi çağrılıyor...');
-      // Manuel şoför için finansal işlem
       return await updateManualDriverFinancials(reservationId, reservationData);
     }
 
@@ -47,20 +58,20 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
     const driverData = driverDoc.data();
     const commissionRate = driverData.commission || 15; // Şoför yönetimindeki % komisyon
     const commission = (totalPrice * commissionRate) / 100;
-    const driverEarning = totalPrice - commission;
+    const driverEarning = totalPrice - commission; // Şoförün kazancı (komisyon düştükten sonra)
 
     let balanceChange = 0;
     let transactionNote = '';
 
-    // Ödeme metoduna göre cari hesap güncellemesi
+    // ÖDEME Metoduna göre cari hesap güncellemesi - DÜZELTİLMİŞ MANTIK
     if (paymentMethod === 'cash') {
-      // Nakit ödeme: Şoför müşteriden parayı aldı, komisyon borcu var
-      balanceChange = -commission; // Negatif çünkü şoför firmaya komisyon borçlu
-      transactionNote = `Nakit rezervasyon komisyonu - ${reservationId}`;
-    } else if (paymentMethod === 'card' || paymentMethod === 'credit_card') {
-      // Kart ödeme: Firma müşteriden parayı aldı, şofore ödeme yapacak
-      balanceChange = +driverEarning; // Pozitif çünkü firma şofore borçlu
-      transactionNote = `Kart rezervasyon kazancı - ${reservationId}`;
+      // Nakit ödeme: Şoför müşteriden tüm parayı aldı, firmaya komisyon borçlu
+      balanceChange = -commission; // Negatif çünkü şofor firmaya komisyon borçlu
+      transactionNote = `Nakit rezervasyon komisyon borcu - ${reservationId}`;
+    } else if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
+      // Kart/Havale ödeme: Firma müşteriden parayı aldı, şofore kazancını ödemeli
+      balanceChange = +driverEarning; // Pozitif çünkü firma şofore kazancını borçlu
+      transactionNote = `Kart/Havale rezervasyon kazancı - ${reservationId}`;
     }
 
     // Mevcut bakiyeyi al
@@ -96,7 +107,13 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
       // İstatistikleri güncelle
       totalEarnings: (driverData.totalEarnings || 0) + (balanceChange > 0 ? balanceChange : 0),
       totalCommission: (driverData.totalCommission || 0) + commission,
-      completedTrips: (driverData.completedTrips || 0) + 1
+      completedTrips: (driverData.completedTrips || 0) + 1,
+      // Ödeme metoduna göre istatistikler
+      totalCashTrips: paymentMethod === 'cash' ? (driverData.totalCashTrips || 0) + 1 : (driverData.totalCashTrips || 0),
+      totalCardTrips: (paymentMethod === 'card' || paymentMethod === 'credit_card') ? (driverData.totalCardTrips || 0) + 1 : (driverData.totalCardTrips || 0),
+      // Finans özeti
+      totalCashCommission: paymentMethod === 'cash' ? (driverData.totalCashCommission || 0) + commission : (driverData.totalCashCommission || 0),
+      totalCardEarnings: (paymentMethod === 'card' || paymentMethod === 'credit_card') ? (driverData.totalCardEarnings || 0) + driverEarning : (driverData.totalCardEarnings || 0)
     });
 
     // Ayrıca finansal işlem kaydı oluştur (raporlama için)
@@ -113,6 +130,20 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
       change: balanceChange,
       paymentMethod: paymentMethod
     });
+
+    // Şirket finansal durumunu güncelle
+    const { updateCompanyFinancials } = await import('./companyAccountUtils');
+    try {
+      await updateCompanyFinancials(reservationId, reservationData, {
+        success: true,
+        oldBalance: currentBalance,
+        newBalance: newBalance,
+        transaction: transaction
+      });
+    } catch (error) {
+      console.error('Şirket finansal güncelleme hatası:', error);
+      // Şoför işlemi başarılı oldu, şirket güncellemesi başarısız olsa da devam et
+    }
 
     return {
       success: true,
@@ -319,8 +350,22 @@ export const updateManualDriverFinancials = async (reservationId, reservationDat
       balance: newBalance,
       transactions: updatedTransactions,
       lastTransactionDate: new Date(),
-      totalEarnings: totalEarnings + (balanceChange > 0 ? balanceChange : 0),
+      totalEarnings: totalEarnings + (balanceChange > 0 ? driverEarning : 0),
       completedTrips: completedTrips + 1,
+      // Ödeme metoduna göre istatistikler
+      totalCashTrips: paymentMethod === 'cash' ? 
+        ((manualDriverDoc && manualDriverDoc.exists()) ? (manualDriverDoc.data().totalCashTrips || 0) + 1 : 1) : 
+        ((manualDriverDoc && manualDriverDoc.exists()) ? (manualDriverDoc.data().totalCashTrips || 0) : 0),
+      totalCardTrips: (paymentMethod === 'card' || paymentMethod === 'credit_card') ? 
+        ((manualDriverDoc && manualDriverDoc.exists()) ? (manualDriverDoc.data().totalCardTrips || 0) + 1 : 1) : 
+        ((manualDriverDoc && manualDriverDoc.exists()) ? (manualDriverDoc.data().totalCardTrips || 0) : 0),
+      // Finans özeti
+      totalCashDebt: paymentMethod === 'cash' ? 
+        ((manualDriverDoc && manualDriverDoc.exists()) ? (manualDriverDoc.data().totalCashDebt || 0) + Math.abs(balanceChange) : Math.abs(balanceChange)) :
+        ((manualDriverDoc && manualDriverDoc.exists()) ? (manualDriverDoc.data().totalCashDebt || 0) : 0),
+      totalCardEarnings: (paymentMethod === 'card' || paymentMethod === 'credit_card') ? 
+        ((manualDriverDoc && manualDriverDoc.exists()) ? (manualDriverDoc.data().totalCardEarnings || 0) + driverEarning : driverEarning) :
+        ((manualDriverDoc && manualDriverDoc.exists()) ? (manualDriverDoc.data().totalCardEarnings || 0) : 0),
       createdAt: manualDriverDoc && manualDriverDoc.exists() ? undefined : new Date(),
       updatedAt: new Date(),
       type: 'manual_driver'
@@ -354,6 +399,22 @@ export const updateManualDriverFinancials = async (reservationId, reservationDat
       change: balanceChange,
       paymentMethod: paymentMethod
     });
+
+    // Şirket finansal durumunu güncelle
+    const { updateCompanyFinancials } = await import('./companyAccountUtils');
+    try {
+      await updateCompanyFinancials(reservationId, reservationData, {
+        success: true,
+        oldBalance: currentBalance,
+        newBalance: newBalance,
+        transaction: transaction,
+        driverType: 'manual',
+        driverName: driverName
+      });
+    } catch (error) {
+      console.error('Şirket finansal güncelleme hatası:', error);
+      // Şoför işlemi başarılı oldu, şirket güncellemesi başarısız olsa da devam et
+    }
 
     return {
       success: true,

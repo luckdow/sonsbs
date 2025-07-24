@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { updateManualDriverFinancials } from '../../utils/financialIntegration';
+import { updateManualDriverFinancials, updateDriverFinancials } from '../../utils/financialIntegration_IMPROVED';
 import { Car, CheckCircle, XCircle, Clock, MapPin, User, Euro, AlertCircle, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -98,11 +98,24 @@ const ManualDriverQR = () => {
         updatedAt: serverTimestamp()
       });
 
-      await updateManualDriverFinancials(reservation.id, {
-        ...reservation,
-        status: 'completed',
-        completedAt: serverTimestamp()
-      });
+      // Şoför tipine göre finansal işlemleri güncelle
+      if (reservation.assignedDriver === 'manual' || reservation.manualDriverInfo) {
+        // Manuel şoför için
+        console.log('🚕 Manuel şoför için finansal işlem güncelleniyor...');
+        await updateManualDriverFinancials(reservation.id, {
+          ...reservation,
+          status: 'completed',
+          completedAt: serverTimestamp()
+        });
+      } else if (reservation.assignedDriver || reservation.assignedDriverId) {
+        // Sisteme kayıtlı şoför için
+        console.log('👨‍💼 Sistem şoförü için finansal işlem güncelleniyor...');
+        await updateDriverFinancials(reservation.id, {
+          ...reservation,
+          status: 'completed',
+          completedAt: serverTimestamp()
+        });
+      }
 
       setTripStatus('completed');
       toast.success('Yolculuk tamamlandı! Finansal kayıtlar güncellendi.');

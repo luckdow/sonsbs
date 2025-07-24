@@ -1,526 +1,492 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { motion } from 'framer-motion';
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Users,
+  CreditCard,
+  Banknote,
+  PieChart,
+  BarChart3,
+  Calendar,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle,
+  Euro,
+  ArrowUpRight,
+  ArrowDownRight,
+  Wallet,
+  Building2
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { collection, onSnapshot, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
-import { DollarSign, TrendingUp, TrendingDown, BarChart3, Calendar, Users, CreditCard, Building, Car, Fuel, Settings } from 'lucide-react';
 
-const FinancialDashboard = () => {
+const FinancialDashboard_NEW = () => {
   const [loading, setLoading] = useState(true);
-  const [timeFilter, setTimeFilter] = useState('this_month');
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [reservations, setReservations] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  const [manualDrivers, setManualDrivers] = useState([]);
+  const [financialTransactions, setFinancialTransactions] = useState([]);
   
-  // Finansal veriler
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [totalDriverExpenses, setTotalDriverExpenses] = useState(0);
-  const [totalManualExpenses, setTotalManualExpenses] = useState(0);
-  const [netProfit, setNetProfit] = useState(0);
-  
-  // Detaylı veriler
-  const [reservationCount, setReservationCount] = useState(0);
-  const [cashPayments, setCashPayments] = useState(0);
-  const [cardPayments, setCardPayments] = useState(0);
-  const [manualExpensesByCategory, setManualExpensesByCategory] = useState({});
-  
+  const [dashboardStats, setDashboardStats] = useState({
+    totalRevenue: 0,           // Toplam Gelir (Ciro)
+    totalExpenses: 0,          // Toplam Gider
+    totalDriversDebt: 0,       // Şoförlerden Alacaklarım
+    totalDriversCredit: 0,     // Şoförlere Ödeyeceğim
+    cashPayments: 0,           // Nakit Ödemeler
+    cardPayments: 0,           // Kredi Kartı
+    bankTransferPayments: 0,   // Banka Havalesi
+    todayRevenue: 0,           // Günlük Gelir
+    todayExpenses: 0,          // Günlük Gider
+    monthlyTrend: []           // 6 Aylık Trend
+  });
+
+  // Gerçek zamanlı veri dinleme
   useEffect(() => {
-    fetchFinancialData();
-  }, [timeFilter]);
+    const unsubscribes = [];
 
-  const fetchFinancialData = async () => {
-    try {
-      setLoading(true);
-      
-      // Paralel olarak tüm verileri getir
-      const [reservationsData, manualExpensesData] = await Promise.all([
-        fetchReservationData(),
-        fetchManualExpensesData()
-      ]);
-      
-      // Toplam gelirleri hesapla
-      const revenue = reservationsData.reduce((sum, res) => sum + res.ourRevenue, 0);
-      setTotalRevenue(revenue);
-      
-      // Şoför giderlerini hesapla (sadece kredi kartı/havale)
-      const driverExpenses = reservationsData.reduce((sum, res) => sum + res.ourExpense, 0);
-      setTotalDriverExpenses(driverExpenses);
-      
-      // Manuel giderler toplamı
-      const manualExpenses = manualExpensesData.reduce((sum, exp) => sum + exp.amount, 0);
-      setTotalManualExpenses(manualExpenses);
-      
-      // Net kar
-      setNetProfit(revenue - driverExpenses - manualExpenses);
-      
-      // Rezervasyon sayısı
-      setReservationCount(reservationsData.length);
-      
-      // Ödeme yöntemlerine göre dağılım
-      const cash = reservationsData
-        .filter(res => res.paymentMethod === 'cash')
-        .reduce((sum, res) => sum + res.totalPrice, 0);
-      setCashPayments(cash);
-      
-      const card = reservationsData
-        .filter(res => res.paymentMethod === 'card' || res.paymentMethod === 'bank_transfer')
-        .reduce((sum, res) => sum + res.totalPrice, 0);
-      setCardPayments(card);
-      
-      // Manuel giderleri kategoriye göre grupla
-      const categoryExpenses = {};
-      manualExpensesData.forEach(expense => {
-        if (!categoryExpenses[expense.category]) {
-          categoryExpenses[expense.category] = 0;
-        }
-        categoryExpenses[expense.category] += expense.amount;
-      });
-      setManualExpensesByCategory(categoryExpenses);
-      
-    } catch (error) {
-      console.error('Finansal veriler alınırken hata:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchReservationData = async () => {
-    try {
-      // Tüm rezervasyonları getir (completed olmayanlara da bakacağız)
-      const reservationsRef = collection(db, 'reservations');
-      
-      // Önce tamamlanmış rezervasyonları deneyelim
-      let reservationQuery = query(
-        reservationsRef,
-        where('status', '==', 'completed')
-      );
-      
-      let snapshot = await getDocs(reservationQuery);
-      
-      // Eğer tamamlanmış rezervasyon yoksa, tüm rezervasyonları getir
-      if (snapshot.empty) {
-        console.log('📊 Tamamlanmış rezervasyon bulunamadı, tüm rezervasyonları kontrol ediliyor...');
-        snapshot = await getDocs(reservationsRef);
-      }
-
-      console.log('📊 Toplam rezervasyon sayısı:', snapshot.docs.length);
-      
-      const reservationData = [];
-      
-      // Sistem şoför bilgilerini al
-      const usersRef = collection(db, 'users');
-      const usersSnapshot = await getDocs(usersRef);
-      const driversMap = {};
-      
-      usersSnapshot.docs.forEach(doc => {
-        const userData = doc.data();
-        if (userData.role === 'driver') {
-          driversMap[doc.id] = userData;
-        }
-      });
-
-      console.log('👥 Sistem şoför sayısı:', Object.keys(driversMap).length);
-
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        console.log('📋 Rezervasyon verisi:', {
+    // Rezervasyonları dinle
+    unsubscribes.push(
+      onSnapshot(collection(db, 'reservations'), (snapshot) => {
+        const reservationData = snapshot.docs.map(doc => ({
           id: doc.id,
-          status: data.status,
-          totalPrice: data.totalPrice,
-          assignedDriver: data.assignedDriver,
-          completedAt: data.completedAt
-        });
+          ...doc.data()
+        }));
+        setReservations(reservationData);
+      })
+    );
 
-        const driverId = data.assignedDriver || data.assignedDriverId || data.driverId;
-        
-        if (data.totalPrice) {
-          let driverShare = 0;
-          let ourRevenue = data.totalPrice;
-          let ourExpense = 0;
-          let paymentMethod = data.paymentMethod || 'cash';
-
-          // Manuel şoför kontrolü
-          if (driverId === 'manual' && data.manualDriverInfo) {
-            driverShare = parseFloat(data.manualDriverInfo.price || 0);
-            ourRevenue = data.totalPrice - driverShare;
-            
-            if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
-              ourExpense = driverShare;
-            }
-          } else if (driverId && driversMap[driverId]) {
-            // Sistem şoförü
-            const driverData = driversMap[driverId];
-            const commissionRate = driverData.commission || 15;
-            driverShare = (data.totalPrice * commissionRate) / 100;
-            ourRevenue = data.totalPrice - driverShare;
-            
-            if (paymentMethod === 'card' || paymentMethod === 'bank_transfer') {
-              ourExpense = driverShare;
-            }
-          }
-
-          // Tamamlanma tarihini düzenle
-          let completedDate = new Date();
-          if (data.completedAt) {
-            completedDate = data.completedAt?.toDate ? data.completedAt.toDate() : new Date(data.completedAt);
-          } else if (data.createdAt) {
-            completedDate = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-          }
-
-          reservationData.push({
+    // Sisteme kayıtlı şoförleri dinle
+    unsubscribes.push(
+      onSnapshot(collection(db, 'users'), (snapshot) => {
+        const driverData = snapshot.docs
+          .filter(doc => doc.data().role === 'driver')
+          .map(doc => ({
             id: doc.id,
-            ...data,
-            driverShare,
-            ourRevenue,
-            ourExpense,
-            paymentMethod,
-            completedDate
-          });
-        }
-      });
+            ...doc.data()
+          }));
+        setDrivers(driverData);
+      })
+    );
 
-      console.log('💰 İşlenmiş rezervasyon sayısı:', reservationData.length);
-      return filterByTime(reservationData, timeFilter);
-      
-    } catch (error) {
-      console.error('❌ Rezervasyon verileri alınırken hata:', error);
-      return [];
-    }
-  };
-
-  const fetchManualExpensesData = async () => {
-    try {
-      const expensesRef = collection(db, 'manual_expenses');
-      const snapshot = await getDocs(expensesRef);
-      
-      console.log('💸 Manuel gider sayısı:', snapshot.docs.length);
-      
-      if (snapshot.empty) {
-        console.log('💸 Manuel gider bulunamadı, boş array döndürülüyor');
-        return [];
-      }
-      
-      const expenseData = [];
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        expenseData.push({
+    // Manuel şoförleri dinle
+    unsubscribes.push(
+      onSnapshot(collection(db, 'manual_drivers'), (snapshot) => {
+        const manualDriverData = snapshot.docs.map(doc => ({
           id: doc.id,
-          ...data,
-          date: data.date?.toDate ? data.date.toDate() : new Date(data.date || Date.now()),
-          amount: parseFloat(data.amount || 0)
-        });
-      });
+          ...doc.data()
+        }));
+        setManualDrivers(manualDriverData);
+      })
+    );
 
-      return filterByTime(expenseData, timeFilter);
-    } catch (error) {
-      console.error('❌ Manuel giderler alınırken hata:', error);
-      return [];
-    }
-  };
+    // Finansal işlemleri dinle
+    unsubscribes.push(
+      onSnapshot(
+        query(
+          collection(db, 'financial_transactions'),
+          orderBy('createdAt', 'desc'),
+          limit(50)
+        ),
+        (snapshot) => {
+          const transactionData = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setFinancialTransactions(transactionData);
+          setLoading(false);
+        }
+      )
+    );
 
-  const filterByTime = (data, filter) => {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    return () => {
+      unsubscribes.forEach(unsubscribe => unsubscribe());
+    };
+  }, []);
 
-    return data.filter(item => {
-      const itemDate = item.completedAt?.toDate ? item.completedAt.toDate() : 
-                     item.completedDate || item.date || new Date();
-      
-      switch (filter) {
-        case 'this_month':
-          return itemDate >= startOfMonth;
-        case 'last_month':
-          return itemDate >= startOfLastMonth && itemDate <= endOfLastMonth;
-        case 'this_year':
-          return itemDate >= startOfYear;
-        default:
-          return true;
+  // İstatistikleri hesapla
+  useEffect(() => {
+    calculateDashboardStats();
+  }, [reservations, drivers, manualDrivers, financialTransactions]);
+
+  const calculateDashboardStats = () => {
+    let totalRevenue = 0;
+    let totalExpenses = 0;
+    let totalDriversDebt = 0;
+    let totalDriversCredit = 0;
+    let cashPayments = 0;
+    let cardPayments = 0;
+    let bankTransferPayments = 0;
+    let todayRevenue = 0;
+    let todayExpenses = 0;
+
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    // Tamamlanan rezervasyonlardan gelir hesapla
+    reservations.forEach(reservation => {
+      if (reservation.status === 'completed' && reservation.totalPrice) {
+        const amount = parseFloat(reservation.totalPrice) || 0;
+        totalRevenue += amount;
+
+        // Ödeme metoduna göre dağılım
+        if (reservation.paymentMethod === 'cash') {
+          cashPayments += amount;
+        } else if (reservation.paymentMethod === 'credit_card' || reservation.paymentMethod === 'card') {
+          cardPayments += amount;
+        } else if (reservation.paymentMethod === 'bank_transfer') {
+          bankTransferPayments += amount;
+        }
+
+        // Günlük gelir
+        if (reservation.completedAt && reservation.completedAt.toDate() >= todayStart) {
+          todayRevenue += amount;
+        }
       }
     });
+
+    // Finansal işlemlerden gider hesapla
+    financialTransactions.forEach(transaction => {
+      const amount = parseFloat(transaction.amount) || 0;
+      
+      if (transaction.type === 'debit') {
+        totalExpenses += amount;
+        
+        // Günlük gider
+        if (transaction.createdAt && transaction.createdAt.toDate() >= todayStart) {
+          todayExpenses += amount;
+        }
+      }
+    });
+
+    // Şoför alacak/verecek hesapla
+    drivers.forEach(driver => {
+      const balance = parseFloat(driver.balance) || 0;
+      if (balance < 0) {
+        totalDriversDebt += Math.abs(balance); // Şoförden alacak
+      } else if (balance > 0) {
+        totalDriversCredit += balance; // Şoföre verecek
+      }
+    });
+
+    manualDrivers.forEach(driver => {
+      const balance = parseFloat(driver.balance) || 0;
+      if (balance < 0) {
+        totalDriversDebt += Math.abs(balance); // Şoförden alacak
+      } else if (balance > 0) {
+        totalDriversCredit += balance; // Şoföre verecek
+      }
+    });
+
+    // 6 aylık trend hesapla
+    const monthlyTrend = calculateMonthlyTrend();
+
+    setDashboardStats({
+      totalRevenue,
+      totalExpenses,
+      totalDriversDebt,
+      totalDriversCredit,
+      cashPayments,
+      cardPayments,
+      bankTransferPayments,
+      todayRevenue,
+      todayExpenses,
+      monthlyTrend
+    });
+
+    setLastUpdate(new Date());
+  };
+
+  const calculateMonthlyTrend = () => {
+    const trend = [];
+    const now = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      
+      let monthRevenue = 0;
+      let monthExpenses = 0;
+
+      // O aydaki tamamlanan rezervasyonlar
+      reservations.forEach(reservation => {
+        if (reservation.status === 'completed' && 
+            reservation.completedAt && 
+            reservation.completedAt.toDate() >= monthStart && 
+            reservation.completedAt.toDate() <= monthEnd) {
+          monthRevenue += parseFloat(reservation.totalPrice) || 0;
+        }
+      });
+
+      // O aydaki giderler
+      financialTransactions.forEach(transaction => {
+        if (transaction.type === 'debit' && 
+            transaction.createdAt && 
+            transaction.createdAt.toDate() >= monthStart && 
+            transaction.createdAt.toDate() <= monthEnd) {
+          monthExpenses += parseFloat(transaction.amount) || 0;
+        }
+      });
+
+      trend.push({
+        month: monthStart.toLocaleDateString('tr-TR', { month: 'short', year: 'numeric' }),
+        revenue: monthRevenue,
+        expenses: monthExpenses,
+        profit: monthRevenue - monthExpenses
+      });
+    }
+
+    return trend;
   };
 
   const formatCurrency = (amount) => {
+    const num = parseFloat(amount) || 0;
+    if (isNaN(num)) return '€0';
+    
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
   };
 
-  const getExpenseCategoryInfo = (category) => {
-    const categories = {
-      maintenance: { label: 'Araç Bakım', icon: Car, color: 'blue' },
-      fuel: { label: 'Yakıt', icon: Fuel, color: 'green' },
-      office: { label: 'Ofis Giderleri', icon: Building, color: 'purple' },
-      other: { label: 'Diğer', icon: Settings, color: 'gray' }
-    };
-    return categories[category] || categories.other;
-  };
+  const StatCard = ({ title, value, icon: Icon, color, trend, description }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`p-6 rounded-xl border-2 ${color} relative overflow-hidden`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <Icon className="w-8 h-8 opacity-80" />
+        {trend && (
+          <div className={`flex items-center text-sm font-medium ${
+            trend > 0 ? 'text-green-600' : 'text-red-600'
+          }`}>
+            {trend > 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+            {Math.abs(trend)}%
+          </div>
+        )}
+      </div>
+      <div className="text-2xl font-bold mb-1">{value}</div>
+      <div className="text-sm opacity-80">{title}</div>
+      {description && (
+        <div className="text-xs opacity-60 mt-2">{description}</div>
+      )}
+    </motion.div>
+  );
 
-  const getTimeFilterLabel = () => {
-    switch (timeFilter) {
-      case 'this_month': return 'Bu Ay';
-      case 'last_month': return 'Geçen Ay';
-      case 'this_year': return 'Bu Yıl';
-      default: return 'Bu Ay';
-    }
+  const getRecentTransactions = () => {
+    const recent = [...financialTransactions]
+      .sort((a, b) => {
+        const dateA = a.createdAt?.toDate?.() || new Date(0);
+        const dateB = b.createdAt?.toDate?.() || new Date(0);
+        return dateB - dateA;
+      })
+      .slice(0, 10);
+
+    return recent;
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Başlık ve Filtre */}
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Finansal Dashboard</h2>
-          <p className="text-gray-600">Genel mali durum özeti - {getTimeFilterLabel()}</p>
+          <h2 className="text-2xl font-bold text-gray-800">📊 Finansal Dashboard</h2>
+          <p className="text-gray-600">Son güncelleme: {lastUpdate.toLocaleTimeString('tr-TR')}</p>
         </div>
-        <select
-          value={timeFilter}
-          onChange={(e) => setTimeFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <button
+          onClick={calculateDashboardStats}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
-          <option value="this_month">Bu Ay</option>
-          <option value="last_month">Geçen Ay</option>
-          <option value="this_year">Bu Yıl</option>
-        </select>
+          <RefreshCw className="w-4 h-4" />
+          Yenile
+        </button>
       </div>
 
-      {/* Debug Bilgileri - Development sırasında görünür */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h3 className="font-semibold text-yellow-800 mb-2">Debug Bilgileri ({getTimeFilterLabel()})</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-yellow-700">Rezervasyon:</span>
-              <div className="font-mono text-yellow-900">{reservationCount} adet</div>
-            </div>
-            <div>
-              <span className="text-yellow-700">Toplam Gelir:</span>
-              <div className="font-mono text-yellow-900">€{totalRevenue}</div>
-            </div>
-            <div>
-              <span className="text-yellow-700">Şoför Gideri:</span>
-              <div className="font-mono text-yellow-900">€{totalDriverExpenses}</div>
-            </div>
-            <div>
-              <span className="text-yellow-700">Manuel Gider:</span>
-              <div className="font-mono text-yellow-900">€{totalManualExpenses}</div>
-            </div>
-            <div>
-              <span className="text-yellow-700">Nakit Ödemeler:</span>
-              <div className="font-mono text-yellow-900">€{cashPayments}</div>
-            </div>
-            <div>
-              <span className="text-yellow-700">Kart Ödemeler:</span>
-              <div className="font-mono text-yellow-900">€{cardPayments}</div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Ana İstatistik Kartları (4 Kart) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Toplam Gelir (Ciro)"
+          value={formatCurrency(dashboardStats.totalRevenue)}
+          icon={DollarSign}
+          color="border-green-200 bg-green-50 text-green-800"
+          description="Tüm tamamlanan rezervasyonlar"
+        />
 
-      {/* Ana Finansal Kartlar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-full">
-              <DollarSign className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-green-600">Toplam Gelir</p>
-              <p className="text-2xl font-bold text-green-900">
-                {formatCurrency(totalRevenue)}
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          title="Toplam Gider"
+          value={formatCurrency(dashboardStats.totalExpenses)}
+          icon={TrendingDown}
+          color="border-red-200 bg-red-50 text-red-800"
+          description="Şoför ödemeleri ve manuel giderler"
+        />
 
-        <div className="bg-red-50 p-6 rounded-lg border border-red-200">
-          <div className="flex items-center">
-            <div className="p-3 bg-red-100 rounded-full">
-              <TrendingDown className="h-6 w-6 text-red-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-red-600">Toplam Gider</p>
-              <p className="text-2xl font-bold text-red-900">
-                {formatCurrency(totalDriverExpenses + totalManualExpenses)}
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          title="Şoförlerden Alacaklarım"
+          value={formatCurrency(dashboardStats.totalDriversDebt)}
+          icon={Users}
+          color="border-blue-200 bg-blue-50 text-blue-800"
+          description="Nakit ödemelerden komisyon borcu"
+        />
 
-        <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-full">
-              <BarChart3 className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-blue-600">Net Kar</p>
-              <p className={`text-2xl font-bold ${netProfit >= 0 ? 'text-blue-900' : 'text-red-900'}`}>
-                {formatCurrency(netProfit)}
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          title="Şoförlere Ödeyeceğim"
+          value={formatCurrency(dashboardStats.totalDriversCredit)}
+          icon={Wallet}
+          color="border-orange-200 bg-orange-50 text-orange-800"
+          description="Kart ödemelerden şoför alacağı"
+        />
+      </div>
 
-        <div className="bg-purple-50 p-6 rounded-lg border border-purple-200">
-          <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Calendar className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-purple-600">Rezervasyon Sayısı</p>
-              <p className="text-2xl font-bold text-purple-900">{reservationCount}</p>
-            </div>
-          </div>
+      {/* Gelir Dağılımı (3 Kart) */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <PieChart className="w-5 h-5" />
+          Gelir Dağılımı
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatCard
+            title="Nakit Ödemeler"
+            value={formatCurrency(dashboardStats.cashPayments)}
+            icon={Banknote}
+            color="border-emerald-200 bg-emerald-50 text-emerald-800"
+            description={`${((dashboardStats.cashPayments / dashboardStats.totalRevenue) * 100 || 0).toFixed(1)}% toplam gelir`}
+          />
+
+          <StatCard
+            title="Kredi Kartı"
+            value={formatCurrency(dashboardStats.cardPayments)}
+            icon={CreditCard}
+            color="border-blue-200 bg-blue-50 text-blue-800"
+            description={`${((dashboardStats.cardPayments / dashboardStats.totalRevenue) * 100 || 0).toFixed(1)}% toplam gelir`}
+          />
+
+          <StatCard
+            title="Banka Havalesi"
+            value={formatCurrency(dashboardStats.bankTransferPayments)}
+            icon={Building2}
+            color="border-purple-200 bg-purple-50 text-purple-800"
+            description={`${((dashboardStats.bankTransferPayments / dashboardStats.totalRevenue) * 100 || 0).toFixed(1)}% toplam gelir`}
+          />
         </div>
       </div>
 
-      {/* Detaylı Analiz */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gider Dağılımı */}
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800">Gider Dağılımı</h3>
+      {/* Günlük Özet */}
+      <div className="bg-white rounded-xl p-6 border">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          Günlük Özet
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">{formatCurrency(dashboardStats.todayRevenue)}</div>
+            <div className="text-sm text-gray-600">Bugünkü Gelir</div>
           </div>
-          <div className="p-6 space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                <span className="text-gray-700">Şoför Ödemeleri</span>
-              </div>
-              <span className="font-semibold text-gray-900">
-                {formatCurrency(totalDriverExpenses)}
-              </span>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-red-600">{formatCurrency(dashboardStats.todayExpenses)}</div>
+            <div className="text-sm text-gray-600">Bugünkü Gider</div>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl font-bold ${
+              (dashboardStats.todayRevenue - dashboardStats.todayExpenses) >= 0 
+                ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {formatCurrency(dashboardStats.todayRevenue - dashboardStats.todayExpenses)}
             </div>
-            
-            {Object.entries(manualExpensesByCategory).map(([category, amount]) => {
-              const categoryInfo = getExpenseCategoryInfo(category);
-              const CategoryIcon = categoryInfo.icon;
-              
-              return (
-                <div key={category} className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <CategoryIcon className={`w-5 h-5 text-${categoryInfo.color}-600`} />
-                    <span className="text-gray-700">{categoryInfo.label}</span>
+            <div className="text-sm text-gray-600">Bugünkü Kar/Zarar</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 6 Ay Trend */}
+      <div className="bg-white rounded-xl p-6 border">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <BarChart3 className="w-5 h-5" />
+          6 Aylık Trend
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2">Ay</th>
+                <th className="text-right py-2">Gelir</th>
+                <th className="text-right py-2">Gider</th>
+                <th className="text-right py-2">Kar/Zarar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboardStats.monthlyTrend.map((month, index) => (
+                <tr key={index} className="border-b border-gray-100">
+                  <td className="py-3 font-medium">{month.month}</td>
+                  <td className="py-3 text-right text-green-600">{formatCurrency(month.revenue)}</td>
+                  <td className="py-3 text-right text-red-600">{formatCurrency(month.expenses)}</td>
+                  <td className={`py-3 text-right font-medium ${
+                    month.profit >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {formatCurrency(month.profit)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* İşlem Özetleri */}
+      <div className="bg-white rounded-xl p-6 border">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <RefreshCw className="w-5 h-5" />
+          Son İşlem Özetleri
+        </h3>
+        
+        {getRecentTransactions().length > 0 ? (
+          <div className="space-y-3">
+            {getRecentTransactions().map(transaction => (
+              <div 
+                key={transaction.id} 
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    transaction.type === 'credit' ? 'bg-green-500' : 'bg-red-500'
+                  }`}></div>
+                  <div>
+                    <div className="font-medium">{transaction.description}</div>
+                    <div className="text-sm text-gray-500">
+                      {transaction.createdAt?.toDate?.()?.toLocaleDateString('tr-TR')} - {transaction.category || 'Kategori yok'}
+                    </div>
                   </div>
-                  <span className="font-semibold text-gray-900">
-                    {formatCurrency(amount)}
-                  </span>
                 </div>
-              );
-            })}
-            
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex justify-between items-center font-bold">
-                <span className="text-gray-800">Toplam Gider</span>
-                <span className="text-red-600">
-                  {formatCurrency(totalDriverExpenses + totalManualExpenses)}
-                </span>
+                <div className={`font-semibold ${
+                  transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {transaction.type === 'credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        </div>
-
-        {/* Ödeme Yöntemleri */}
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800">Ödeme Yöntemleri</h3>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p>Henüz işlem kaydı bulunmuyor</p>
           </div>
-          <div className="p-6 space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                <span className="text-gray-700">Nakit Ödemeler</span>
-              </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">
-                  {formatCurrency(cashPayments)}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {cashPayments + cardPayments > 0 ? 
-                    `%${((cashPayments / (cashPayments + cardPayments)) * 100).toFixed(1)}` : 
-                    '0%'
-                  }
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-                <span className="text-gray-700">Kart/Havale</span>
-              </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">
-                  {formatCurrency(cardPayments)}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {cashPayments + cardPayments > 0 ? 
-                    `%${((cardPayments / (cashPayments + cardPayments)) * 100).toFixed(1)}` : 
-                    '0%'
-                  }
-                </div>
-              </div>
-            </div>
-            
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex justify-between items-center font-bold">
-                <span className="text-gray-800">Toplam Ciro</span>
-                <span className="text-green-600">
-                  {formatCurrency(cashPayments + cardPayments)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Kar Analizi */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Kar/Zarar Analizi</h3>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {formatCurrency(totalRevenue)}
-              </div>
-              <div className="text-gray-600">Brüt Gelir</div>
-              <div className="text-sm text-gray-500 mt-1">
-                Rezervasyonlardan komisyon düştükten sonra
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-3xl font-bold text-red-600 mb-2">
-                -{formatCurrency(totalDriverExpenses + totalManualExpenses)}
-              </div>
-              <div className="text-gray-600">Toplam Gider</div>
-              <div className="text-sm text-gray-500 mt-1">
-                Şoför ödemeleri + Manuel giderler
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <div className={`text-3xl font-bold mb-2 ${netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                {formatCurrency(netProfit)}
-              </div>
-              <div className="text-gray-600">Net Kar/Zarar</div>
-              <div className="text-sm text-gray-500 mt-1">
-                {netProfit >= 0 ? 'Karlı işletme' : 'Zarar durumu'}
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default FinancialDashboard;
+export default FinancialDashboard_NEW;

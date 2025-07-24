@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
-import { Users, DollarSign, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Users, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Plus, Minus } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const DriverAccounts = () => {
   const [drivers, setDrivers] = useState([]);
@@ -9,6 +10,11 @@ const DriverAccounts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [totalDebt, setTotalDebt] = useState(0);
   const [totalCredit, setTotalCredit] = useState(0);
+  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentNote, setPaymentNote] = useState('');
+  const [paymentType, setPaymentType] = useState('payment'); // 'payment' or 'collection'
 
   useEffect(() => {
     fetchDriverAccounts();
@@ -231,6 +237,9 @@ const DriverAccounts = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Son İşlem
                 </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  İşlemler
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -288,6 +297,38 @@ const DriverAccounts = () => {
                         '-'
                       }
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex space-x-2 justify-end">
+                        {driver.balance > 0 && (
+                          <button
+                            onClick={() => {
+                              setSelectedDriver(driver);
+                              setPaymentType('payment');
+                              setPaymentAmount(driver.balance.toString());
+                              setShowPaymentModal(true);
+                            }}
+                            className="inline-flex items-center px-2.5 py-1.5 border border-green-300 text-xs font-medium rounded bg-green-50 text-green-700 hover:bg-green-100"
+                          >
+                            <Minus className="h-3 w-3 mr-1" />
+                            Ödeme Yap
+                          </button>
+                        )}
+                        {driver.balance < 0 && (
+                          <button
+                            onClick={() => {
+                              setSelectedDriver(driver);
+                              setPaymentType('collection');
+                              setPaymentAmount(Math.abs(driver.balance).toString());
+                              setShowPaymentModal(true);
+                            }}
+                            className="inline-flex items-center px-2.5 py-1.5 border border-blue-300 text-xs font-medium rounded bg-blue-50 text-blue-700 hover:bg-blue-100"
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Tahsil Et
+                          </button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
@@ -318,8 +359,193 @@ const DriverAccounts = () => {
           </div>
         </div>
       </div>
+
+      {/* Ödeme/Tahsilat Modal */}
+      {showPaymentModal && selectedDriver && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              {paymentType === 'payment' ? 'Şoföre Ödeme Yap' : 'Şoförden Tahsilat Yap'}
+            </h3>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                <span className="font-medium">Şoför:</span> {selectedDriver.firstName} {selectedDriver.lastName}
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Mevcut Bakiye:</span> 
+                <span className={selectedDriver.balance >= 0 ? 'text-red-600' : 'text-green-600'}>
+                  {' '}{formatCurrency(selectedDriver.balance)}
+                </span>
+                <span className="text-gray-500 ml-1">
+                  ({selectedDriver.balance >= 0 ? 'Ödenecek' : 'Tahsil Edilecek'})
+                </span>
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                İşlem Tutarı (EUR)
+              </label>
+              <input
+                type="number"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Açıklama
+              </label>
+              <input
+                type="text"
+                value={paymentNote}
+                onChange={(e) => setPaymentNote(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="İşlem açıklaması"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  setSelectedDriver(null);
+                  setPaymentAmount('');
+                  setPaymentNote('');
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handlePaymentOperation}
+                className={`px-4 py-2 rounded-md text-white ${
+                  paymentType === 'payment' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {paymentType === 'payment' ? 'Ödeme Yap' : 'Tahsilat Yap'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+
+  // Ödeme/Tahsilat işlemi
+  async function handlePaymentOperation() {
+    if (!selectedDriver || !paymentAmount || parseFloat(paymentAmount) <= 0) {
+      toast.error('Lütfen geçerli bir tutar girin');
+      return;
+    }
+
+    try {
+      const amount = parseFloat(paymentAmount);
+      const currentBalance = selectedDriver.balance || 0;
+      
+      let newBalance, transactionNote, transactionType;
+      
+      if (paymentType === 'payment') {
+        // Şofore ödeme yapıyoruz (pozitif bakiyeyi sıfırlıyoruz)
+        newBalance = currentBalance - amount;
+        transactionNote = `Manuel ödeme - ${paymentNote || 'Ödeme yapıldı'}`;
+        transactionType = 'payment';
+      } else {
+        // Şoförden tahsilat yapıyoruz (negatif bakiyeyi sıfırlıyoruz)
+        newBalance = currentBalance + amount;
+        transactionNote = `Manuel tahsilat - ${paymentNote || 'Tahsilat yapıldı'}`;
+        transactionType = 'collection';
+      }
+
+      // İşlem kaydı
+      const transaction = {
+        id: Date.now().toString(),
+        type: transactionType,
+        amount: amount,
+        note: transactionNote,
+        date: new Date(),
+        balanceBefore: currentBalance,
+        balanceAfter: newBalance,
+        processedBy: 'admin_manual'
+      };
+
+      const currentTransactions = selectedDriver.transactions || [];
+      const updatedTransactions = [...currentTransactions, transaction];
+
+      // Şoför belgesini güncelle
+      await updateDoc(doc(db, 'users', selectedDriver.id), {
+        balance: newBalance,
+        transactions: updatedTransactions,
+        lastTransactionDate: new Date()
+      });
+
+      // Finansal işlem kaydı oluştur
+      await addDoc(collection(db, 'financial_transactions'), {
+        ...transaction,
+        driverId: selectedDriver.id,
+        driverType: 'regular',
+        driverName: `${selectedDriver.firstName} ${selectedDriver.lastName}`,
+        createdAt: new Date(),
+        processedBy: 'admin_manual'
+      });
+      
+      // Şirket finansal kaydını güncelle
+      try {
+        // companyAccountUtils'i import et
+        const companyAccountUtils = await import('../../../utils/companyAccountUtils');
+        
+        if (paymentType === 'payment') {
+          // Şoföre ödeme yapıldıysa şirket gideri olarak kaydet
+          await companyAccountUtils.recordDriverPayment(
+            selectedDriver.id,
+            'regular',
+            `${selectedDriver.firstName} ${selectedDriver.lastName}`,
+            amount,
+            transactionNote
+          );
+        } else {
+          // Şoförden tahsilat yapıldıysa şirket geliri olarak kaydet
+          await companyAccountUtils.recordDriverCollection(
+            selectedDriver.id,
+            'regular',
+            `${selectedDriver.firstName} ${selectedDriver.lastName}`,
+            amount,
+            transactionNote
+          );
+        }
+      } catch (error) {
+        console.error('Şirket finansal kaydı oluşturma hatası:', error);
+        // Şirket kaydı oluşturulamasa bile şoför kaydı güncellendi, işleme devam et
+      }
+
+      toast.success(`${paymentType === 'payment' ? 'Ödeme' : 'Tahsilat'} başarıyla kaydedildi`);
+      
+      // State'i güncelle
+      setDrivers(prev => 
+        prev.map(driver => 
+          driver.id === selectedDriver.id 
+            ? { ...driver, balance: newBalance, transactions: updatedTransactions, lastTransactionDate: new Date() }
+            : driver
+        )
+      );
+
+      // Modal'ı kapat
+      setShowPaymentModal(false);
+      setPaymentAmount('');
+      setPaymentNote('');
+      setSelectedDriver(null);
+
+    } catch (error) {
+      console.error('Ödeme işlemi hatası:', error);
+      toast.error('Ödeme işlemi sırasında hata oluştu');
+    }
+  }
 };
 
 export default DriverAccounts;

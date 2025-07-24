@@ -3,7 +3,7 @@ import { Plus, RefreshCw, CheckCircle, Calendar, CalendarDays, Clock } from 'luc
 import { collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, query, where, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { USER_ROLES } from '../../../config/constants';
-import { manualCompleteReservation } from '../../../utils/financialIntegration';
+import { manualCompleteReservation } from '../../../utils/financialIntegration_IMPROVED';
 import QuickReservationModal from './QuickReservationModal';
 import EditReservationModal from './EditReservationModal';
 import ReservationTable from './ReservationTable';

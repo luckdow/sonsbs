@@ -5,62 +5,39 @@ import {
   Users, 
   CreditCard, 
   Calendar,
-  BarChart3
+  BarChart3,
+  TrendingUp
 } from 'lucide-react';
 
-// Alt modülleri import et
+// Yeni finansal sistem modülleri
 import FinancialDashboard from './FinancialDashboard';
-import DriverAccounts from './DriverAccounts';
-import ManualDriverAccounts from './ManualDriverAccounts';
-import ReservationFinance from './ReservationFinance';
-import Income from './Income';
-import Expenses from './Expenses';
+import DriverPaymentManagement_IMPROVED from './DriverPaymentManagement_IMPROVED';
+import IncomeExpenseManagement from './IncomeExpenseManagement';
 
 const FinancialManagement = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('dashboard'); // Dashboard ile başla
 
   const tabs = [
     {
       id: 'dashboard',
-      label: 'Dashboard',
+      label: '📊 Finansal Dashboard',
       icon: BarChart3,
       component: FinancialDashboard,
-      description: 'Genel finansal durum özeti ve analizler'
+      description: 'Güncel finansal durum, gelir-gider analizi ve trend grafikler'
     },
     {
-      id: 'reservations',
-      label: 'Rezervasyon Finansı',
-      icon: Calendar,
-      component: ReservationFinance,
-      description: 'Aylık/yıllık rezervasyon gelir takibi'
-    },
-    {
-      id: 'drivers',
-      label: 'Şoför Cari Hesapları',
+      id: 'driver-payments',
+      label: '💳 Şoför Cari Hesapları',
       icon: Users,
-      component: DriverAccounts,
-      description: 'Sistem şoförlerinin cari hesap durumu'
+      component: DriverPaymentManagement_IMPROVED,
+      description: 'Şoförlerden alacak/verecek durumu ve ödeme/tahsilat işlemleri'
     },
     {
-      id: 'manual-drivers',
-      label: 'Manuel Şoför Cari',
-      icon: Users,
-      component: ManualDriverAccounts,
-      description: 'Dış şoförlerin cari hesap durumu'
-    },
-    {
-      id: 'income',
-      label: 'Gelirler',
-      icon: DollarSign,
-      component: Income,
-      description: 'Rezervasyonlardan komisyon düştükten sonra net kazancınız'
-    },
-    {
-      id: 'expenses',
-      label: 'Giderler',
-      icon: CreditCard,
-      component: Expenses,
-      description: 'Şoför ödemeleri ve manuel giderler'
+      id: 'income-expense',
+      label: '💰 Gelir-Gider Yönetimi',
+      icon: TrendingUp,
+      component: IncomeExpenseManagement,
+      description: 'Gelir-gider tablosu, manuel işlem ekleme ve finansal kayıt takibi'
     }
   ];
 

@@ -25,22 +25,10 @@ const ReservationFinance = () => {
     try {
       setLoading(true);
 
-      // Önce tamamlanmış rezervasyonları deneyelim
+      // Basit sorgu - index gerektirmez
       const reservationsRef = collection(db, 'reservations');
-      let q = query(
-        reservationsRef,
-        where('status', '==', 'completed'),
-        orderBy('completedAt', 'desc')
-      );
-
-      let snapshot = await getDocs(q);
+      const snapshot = await getDocs(reservationsRef);
       
-      // Eğer tamamlanmış rezervasyon yoksa, tüm rezervasyonları getir
-      if (snapshot.empty) {
-        console.log('📊 Rezervasyon Finansı: Tamamlanmış rezervasyon bulunamadı, tüm rezervasyonları kontrol ediliyor...');
-        snapshot = await getDocs(reservationsRef);
-      }
-
       console.log('📊 Rezervasyon Finansı: Toplam rezervasyon sayısı:', snapshot.docs.length);
       
       const reservationData = [];
@@ -71,7 +59,8 @@ const ReservationFinance = () => {
         const data = doc.data();
         const driverId = data.assignedDriver || data.assignedDriverId || data.driverId;
         
-        if (data.totalPrice) {
+        // Sadece tamamlanmış rezervasyonları işle
+        if (data.status === 'completed' && data.totalPrice) {
           let driverName = 'Bilinmeyen Şoför';
           let driverShare = 0; // Şoföre giden para
           let ourRevenue = data.totalPrice; // Bizim gelirimiz

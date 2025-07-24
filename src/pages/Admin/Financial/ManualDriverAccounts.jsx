@@ -123,6 +123,35 @@ const ManualDriverAccounts = () => {
         createdAt: new Date(),
         processedBy: 'admin_manual'
       });
+      
+      // Şirket finansal kaydını güncelle
+      try {
+        // companyAccountUtils'i import et
+        const companyAccountUtils = await import('../../../utils/companyAccountUtils');
+        
+        if (paymentType === 'payment') {
+          // Şoföre ödeme yapıldıysa şirket gideri olarak kaydet
+          await companyAccountUtils.recordDriverPayment(
+            selectedDriver.id,
+            'manual',
+            selectedDriver.name,
+            amount,
+            transactionNote
+          );
+        } else {
+          // Şoförden tahsilat yapıldıysa şirket geliri olarak kaydet
+          await companyAccountUtils.recordDriverCollection(
+            selectedDriver.id,
+            'manual',
+            selectedDriver.name,
+            amount,
+            transactionNote
+          );
+        }
+      } catch (error) {
+        console.error('Şirket finansal kaydı oluşturma hatası:', error);
+        // Şirket kaydı oluşturulamasa bile şoför kaydı güncellendi, işleme devam et
+      }
 
       toast.success(`${paymentType === 'payment' ? 'Ödeme' : 'Tahsilat'} başarıyla kaydedildi`);
       

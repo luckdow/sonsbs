@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import QRScannerComponent from '../../components/QR/QRScannerComponent';
-import { updateManualDriverFinancials } from '../../utils/financialIntegration';
+import { updateManualDriverFinancials, updateDriverFinancials } from '../../utils/financialIntegration_IMPROVED';
 import { Car, QrCode, CheckCircle, XCircle, Clock, MapPin, User, Euro } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -119,11 +119,24 @@ const DriverQRScanner = () => {
         updatedAt: serverTimestamp()
       });
 
-      // Manuel şoför finansal işlemlerini güncelle
-      await updateManualDriverFinancials(currentReservation.id, {
-        driverInfo: currentReservation.manualDriverInfo,
-        reservationData: currentReservation
-      });
+      // Şoför tipine göre finansal işlemleri güncelle
+      if (currentReservation.assignedDriver === 'manual' || currentReservation.manualDriverInfo) {
+        // Manuel şoför için
+        console.log('🚕 Manuel şoför için finansal işlem güncelleniyor...');
+        await updateManualDriverFinancials(currentReservation.id, {
+          ...currentReservation,
+          status: 'completed',
+          completedAt: serverTimestamp()
+        });
+      } else if (currentReservation.assignedDriver || currentReservation.assignedDriverId) {
+        // Sisteme kayıtlı şoför için
+        console.log('👨‍💼 Sistem şoförü için finansal işlem güncelleniyor...');
+        await updateDriverFinancials(currentReservation.id, {
+          ...currentReservation,
+          status: 'completed',
+          completedAt: serverTimestamp()
+        });
+      }
 
       setTripStatus('completed');
       toast.success('🎉 Yolculuk tamamlandı! Finansal kayıtlar güncellendi.');
