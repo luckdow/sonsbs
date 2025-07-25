@@ -118,8 +118,6 @@ class EmailService {
   // Rezervasyon onay e-postası gönder
   async sendReservationConfirmation(reservationData) {
     try {
-      console.log('📧 Rezervasyon onay e-postası gönderiliyor...', reservationData);
-      
       // Ayarları yükle
       if (!this.settings) {
         await this.loadSettings();
@@ -134,12 +132,6 @@ class EmailService {
       // Template'i işle
       const subject = this.replaceTemplateVariables(template.subject, reservationData);
       const body = this.replaceTemplateVariables(template.template, reservationData);
-
-      // E-posta gönder
-      console.log('📧 E-posta Gönderiliyor:');
-      console.log('Alıcı:', reservationData.customerInfo?.email);
-      console.log('Konu:', subject);
-      console.log('İçerik:\n', body);
 
       // EmailJS ile gerçek e-posta gönder
       if (this.settings?.emailSettings?.emailjsServiceId && 
@@ -208,8 +200,6 @@ class EmailService {
   // Ödeme onay e-postası gönder
   async sendPaymentConfirmation(reservationData) {
     try {
-      console.log('💳 Ödeme onay e-postası gönderiliyor...', reservationData);
-      
       // Ayarları yükle
       if (!this.settings) {
         await this.loadSettings();

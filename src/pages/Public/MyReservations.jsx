@@ -50,10 +50,7 @@ const MyReservations = () => {
   // QR kod oluştur
   const generateQRCode = async (reservationCode, customerPhone) => {
     try {
-      console.log('🔲 QR kod oluşturuluyor:', reservationCode);
-      
       if (!customerPhone) {
-        console.log('❌ QR kod için telefon numarası yok');
         return;
       }
       
@@ -122,8 +119,6 @@ const MyReservations = () => {
 
   // Rezervasyon düzenleme - Modal açılacak
   const handleEditReservation = (reservation) => {
-    console.log('🖊️ Rezervasyon düzenleme başlatılıyor:', reservation.id);
-    
     // Form verilerini hazırla
     const formData = {
       firstName: reservation.customerInfo?.firstName || reservation.personalInfo?.firstName || '',
@@ -245,8 +240,6 @@ const MyReservations = () => {
       return;
     }
     
-    console.log('MyReservations: Firebase listeners başlatılıyor...');
-    
     // Rezervasyonları dinle - email bazlı filtreleme
     const reservationsQuery = query(
       collection(db, 'reservations')
@@ -281,7 +274,6 @@ const MyReservations = () => {
           return false;
         });
         
-        console.log('Kullanıcı rezervasyonları (çifte kayıt temizlendi):', userReservations);
         setReservations(userReservations);
       },
       (error) => {

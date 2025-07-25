@@ -165,6 +165,7 @@ const ReservationIndex = () => {
       (snapshot) => {
         const reservationData = snapshot.docs.map(doc => {
           const data = doc.data();
+          
           return {
             id: doc.id,
             ...data
@@ -394,19 +395,13 @@ const ReservationIndex = () => {
   // Manuel rezervasyon tamamlama - Sadece gerçek Firebase veriler
   const handleCompleteReservation = async (reservationId) => {
     try {
-      console.log('🚀 Rezervasyon tamamlama başlatıldı:', reservationId);
-      
       const reservation = reservations.find(r => r.id === reservationId);
       if (!reservation) {
-        console.error('❌ Rezervasyon bulunamadı:', reservationId);
         toast.error('Rezervasyon bulunamadı');
         return;
       }
 
-      console.log('📋 Rezervasyon verisi:', reservation);
-
       if (reservation.status === 'completed') {
-        console.log('⚠️ Rezervasyon zaten tamamlanmış');
         toast.error('Bu rezervasyon zaten tamamlanmış');
         return;
       }
@@ -414,20 +409,12 @@ const ReservationIndex = () => {
       // Şoför atama kontrolü - assignedDriver veya assignedDriverId kullan
       const driverId = reservation.assignedDriver || reservation.assignedDriverId || reservation.driverId;
       if (!driverId) {
-        console.error('❌ Şoför atanmamış');
         toast.error('Rezervasyona şoför atanmamış');
         return;
       }
 
-      console.log('👨‍💼 Atanmış şoför ID:', driverId);
-      console.log('💰 Toplam fiyat:', reservation.totalPrice);
-      console.log('💳 Ödeme yöntemi:', reservation.paymentMethod);
-
       // Firebase rezervasyon için finansal entegrasyon
-      console.log('🔄 Finansal entegrasyon başlatılıyor...');
       const result = await manualCompleteReservation(reservationId, 'admin-user');
-      
-      console.log('✅ Finansal entegrasyon tamamlandı:', result);
       
       // Başarı mesajı
       const paymentMsg = reservation.paymentMethod === 'cash' 

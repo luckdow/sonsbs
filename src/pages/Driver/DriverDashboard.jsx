@@ -232,19 +232,11 @@ const DriverDashboard = () => {
                 console.log('QR Scan Result:', result);
                 // QR kod sonucunda rezervasyon ID'sini al
                 const scannedReservationId = result;
-                
-                console.log('Mevcut rezervasyonlar ve ID\'leri:');
-                reservations.forEach(r => {
-                  console.log(`- Document ID: ${r.id}, ReservationID: ${r.reservationId}, Status: ${r.status}`);
-                });
-                
                 // Hem document ID'sine hem de reservationId field'ına bak
                 const reservation = reservations.find(r => 
                   r.id === scannedReservationId || 
                   r.reservationId === scannedReservationId
                 );
-                
-                console.log('Bulunan rezervasyon:', reservation);
                 
                 if (reservation) {
                   startTrip(reservation.id);

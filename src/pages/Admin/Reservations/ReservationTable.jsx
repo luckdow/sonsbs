@@ -89,12 +89,25 @@ const ReservationTable = ({
   };
 
   const getTripDetails = (reservation) => {
+    // transferType ve isRoundTrip field'larını kontrol et
+    let tripType = 'one-way'; // varsayılan
+    
+    if (reservation.transferType === 'round-trip' || reservation.isRoundTrip === true) {
+      tripType = 'round-trip';
+    } else if (reservation.tripDetails?.tripType) {
+      tripType = reservation.tripDetails.tripType;
+    } else if (reservation.tripType) {
+      tripType = reservation.tripType;
+    }
+    
+
+    
     return {
       date: reservation.tripDetails?.date || reservation.date,
       time: reservation.tripDetails?.time || reservation.time,
       returnDate: reservation.tripDetails?.returnDate || reservation.returnDate,
       returnTime: reservation.tripDetails?.returnTime || reservation.returnTime,
-      tripType: reservation.tripDetails?.tripType || reservation.tripType || 'one-way',
+      tripType: tripType,
       pickupLocation: formatLocation(reservation.tripDetails?.pickupLocation || reservation.pickupLocation),
       dropoffLocation: formatLocation(reservation.tripDetails?.dropoffLocation || reservation.dropoffLocation),
       passengerCount: reservation.tripDetails?.passengerCount || reservation.passengerCount || 1,

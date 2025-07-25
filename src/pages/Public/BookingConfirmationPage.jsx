@@ -202,51 +202,59 @@ const BookingConfirmationPage = () => {
     });
     
     // ÇOKLU ÇALIŞMAYI ÖNLE - 3 seviyeli kontrol
-    if (isProcessed || isGlobalProcessing) {
-      console.log('⚠️ BookingConfirmation: Zaten işlendi, tekrar çalışmıyor', { isProcessed, isGlobalProcessing });
+    if (isProcessed || isGlobalProcessing || !location.state?.bookingData) {
+      console.log('⚠️ BookingConfirmation: İşlem atlandı', { 
+        isProcessed, 
+        isGlobalProcessing, 
+        hasData: !!location.state?.bookingData 
+      });
       return;
     }
+
+    // Process flag'ini hemen set et
+    setIsProcessed(true);
+    setIsGlobalProcessing(true);
 
     // Async function for processing
     const processReservation = async () => {
       try {
-        // Get booking data from location state - SADECE BİR KEZ ÇALIŞ
         if (location.state?.bookingData) {
           console.log('🔄 BookingConfirmation: İşlem başlatılıyor...');
           console.log('📋 Gelen booking data:', location.state.bookingData);
           
-          // İşlemi hemen işaretle - EN BAŞTA
-          setIsProcessed(true);
-          setIsGlobalProcessing(true);
-
-          // Clear location state to prevent re-processing
-          window.history.replaceState({}, document.title)
+          // Clear location state to prevent re-processing - EN BAŞTA
+          const data = { ...location.state.bookingData };
+          window.history.replaceState({}, document.title);
           
-          let data = location.state.bookingData;
-          
-          // BookingWizard personalInfo kullanıyor, admin paneli customerInfo bekliyor - dönüştür
-          if (data.personalInfo && !data.customerInfo) {
-            console.log('🔄 personalInfo -> customerInfo dönüşümü yapılıyor');
-            data.customerInfo = {
-              firstName: data.personalInfo.firstName,
-              lastName: data.personalInfo.lastName,
-              phone: data.personalInfo.phone,
-              email: data.personalInfo.email,
-              flightNumber: data.personalInfo.flightNumber,
-              flightTime: data.personalInfo.flightTime,
-              specialRequests: data.personalInfo.specialRequests
-            };
-            // personalInfo'yu kaldır
-            delete data.personalInfo;
-          }
+          console.log('💰 Fiyat bilgileri:', {
+            'data.totalPrice': data.totalPrice,
+            'data.selectedVehicle?.totalPrice': data.selectedVehicle?.totalPrice,
+            'data.selectedVehicle?.price': data.selectedVehicle?.price,
+            'data.tripType': data.tripType,
+            'data.transferType': data.transferType
+          });
+        
+        // BookingWizard personalInfo kullanıyor, admin paneli customerInfo bekliyor - dönüştür
+        if (data.personalInfo && !data.customerInfo) {
+          console.log('🔄 personalInfo -> customerInfo dönüşümü yapılıyor');
+          data.customerInfo = {
+            firstName: data.personalInfo.firstName,
+            lastName: data.personalInfo.lastName,
+            phone: data.personalInfo.phone,
+            email: data.personalInfo.email,
+            flightNumber: data.personalInfo.flightNumber,
+            flightTime: data.personalInfo.flightTime,
+            specialRequests: data.personalInfo.specialRequests
+          };
+          // personalInfo'yu kaldır
+          delete data.personalInfo;
+        }
           
           console.log('📊 BookingWizard\'dan gelen tam data:', JSON.stringify(data, null, 2));
           setBookingData(data);
           
           // Rezervasyon ID'si oluştur
-          console.log('🎯 Rezervasyon ID oluşturuluyor...');
           const reservationCode = await generateReservationCode();
-          console.log('✅ Oluşturulan rezervasyon ID:', reservationCode);
           setReservationId(reservationCode);
           
           // Otomatik kullanıcı hesabı oluştur
@@ -329,7 +337,6 @@ const BookingConfirmationPage = () => {
   // Rezervasyonu Firebase'e admin panelin beklediği formatta kaydet
   const saveReservationToFirebase = async (data, reservationCode) => {
     try {
-      console.log('💾 Firebase kayıt işlemi başlatılıyor:', reservationCode);
       
       const reservationData = {
         // Admin panelin tam olarak beklediği yapı
@@ -339,8 +346,8 @@ const BookingConfirmationPage = () => {
         direction: data.direction === 'airport-to-hotel' ? 'from_airport' : 'to_airport',
         
         // ARAÇ TİPİ VE GİDİŞ-DÖNÜŞ BİLGİLERİNİ EKLE
-        transferType: data.transferType || 'one-way', // Gidiş-dönüş bilgisi
-        isRoundTrip: data.transferType === 'round-trip', // Boolean olarak da ekle
+        transferType: data.tripType || data.transferType || 'one-way', // Gidiş-dönüş bilgisi
+        isRoundTrip: (data.tripType || data.transferType) === 'round-trip', // Boolean olarak da ekle
         vehicleType: data.selectedVehicle?.name || data.selectedVehicle?.type || 'Belirtilmemiş',
         vehicleId: data.selectedVehicle?.id || '',
         
@@ -373,21 +380,17 @@ const BookingConfirmationPage = () => {
           type: data.selectedVehicle?.type || data.selectedVehicle?.name || 'Belirtilmemiş',
           capacity: data.selectedVehicle?.capacity || 0,
           price: data.selectedVehicle?.price || 0,
-          totalPrice: data.selectedVehicle?.totalPrice || data.totalPrice || 0
+          totalPrice: data.totalPrice || data.selectedVehicle?.totalPrice || data.selectedVehicle?.price || 0
         },
         paymentMethod: data.paymentMethod || 'cash',
-        totalPrice: data.selectedVehicle?.totalPrice || data.totalPrice || data.selectedVehicle?.price || 0,
+        totalPrice: data.totalPrice || data.selectedVehicle?.totalPrice || data.selectedVehicle?.price || 0,
         calculatedDistance: data.distance || 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
-      console.log('📋 Kaydedilecek rezervasyon yapısı:', reservationData);
-
       // Firebase'e kaydet
       const docRef = await addDoc(collection(db, 'reservations'), reservationData);
-      console.log('✅ Rezervasyon admin paneline kaydedildi:', docRef.id);
-      console.log('🎯 Rezervasyon kodu:', reservationCode);
       toast.success(`Rezervasyonunuz başarıyla kaydedildi! Rezervasyon kodunuz: ${reservationCode}`);
       
       // E-posta gönder
