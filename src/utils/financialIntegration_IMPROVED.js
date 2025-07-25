@@ -360,9 +360,76 @@ export const updateCompanyFinancials = async (reservationId, reservationData, dr
     // Şirket finansal kayıtlarına ekle
     await addDoc(collection(db, 'company_financials'), companyFinancialRecord);
 
+    // Gelir-Gider yönetimi için financial_transactions koleksiyonuna gelir kaydı ekle
+    // REZERVASYON TAMAMLANDIĞINDA: Tüm para gelir olarak girilmeli
+    const reservationNumber = reservationData.reservationNumber || reservationData.reservationId || reservationId;
+    const incomeTransactionRecord = {
+      type: 'credit', // Gelir
+      amount: totalPrice, // Tüm para gelir olarak girmeli (sadece komisyon değil)
+      description: `Rezervasyon Geliri - ${reservationNumber}`,
+      category: 'Rezervasyon Geliri',
+      source: 'reservation_completion',
+      reservationId: reservationId,
+      reservationNumber: reservationNumber,
+      paymentMethod: paymentMethod,
+      driverType: driverResult.driverType,
+      customerName: `${customerInfo?.firstName || ''} ${customerInfo?.lastName || ''}`,
+      tripRoute: `${tripDetails?.pickupLocation || 'Bilinmiyor'} → ${tripDetails?.dropoffLocation || 'Bilinmiyor'}`,
+      createdAt: new Date(),
+      createdBy: 'system_auto',
+      date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    };
+
+    // Gelir kaydını financial_transactions koleksiyonuna ekle
+    await addDoc(collection(db, 'financial_transactions'), incomeTransactionRecord);
+
+    // Gider kaydı değişkenini tanımla
+    let expenseTransactionRecord = null;
+
+    // NOT: Şoför ödemesi rezervasyon tamamlandığında DEĞİL, 
+    // admin panelinden ödeme yapıldığında gider olarak eklenecek
+    // Bu yüzden burada gider kaydı eklenmez
+
     return {
       success: true,
-      companyRecord: companyFinancialRecord
+      companyRecord: companyFinancialRecord,
+      incomeTransaction: incomeTransactionRecord,
+      expenseTransaction: expenseTransactionRecord
+    };
+
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Şoför ödemesi yapıldığında gider kaydı ekle
+ * @param {string} driverId - Şoför ID
+ * @param {number} amount - Ödeme miktarı
+ * @param {string} description - Açıklama
+ * @param {object} additionalData - Ek veriler
+ */
+export const addDriverPaymentExpense = async (driverId, amount, description, additionalData = {}) => {
+  try {
+    const expenseRecord = {
+      type: 'debit', // Gider
+      amount: amount,
+      description: description,
+      category: 'Şoför Ödemesi',
+      source: 'driver_payment',
+      driverId: driverId,
+      createdAt: new Date(),
+      createdBy: additionalData.paidBy || 'admin',
+      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+      ...additionalData
+    };
+
+    // Gider kaydını financial_transactions koleksiyonuna ekle
+    await addDoc(collection(db, 'financial_transactions'), expenseRecord);
+
+    return {
+      success: true,
+      expenseRecord: expenseRecord
     };
 
   } catch (error) {

@@ -238,7 +238,29 @@ export const generatePDFFromElementOld = async (elementId, fileName = 'document.
 };
 
 /**
- * Manuel şoför ataması için özel PDF oluştur
+ * Test amaçlı basit PDF oluştur
+ */
+export const testPDF = () => {
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    pdf.setFontSize(20);
+    pdf.text('Test PDF - Turkce Karakter Testi', 20, 30);
+    pdf.setFontSize(14);
+    pdf.text('Bu bir test PDF dosyasidir', 20, 50);
+    pdf.text('Musteri: Test Musteri', 20, 70);
+    pdf.text('Sofor: Test Sofor', 20, 90);
+    
+    pdf.save('test-pdf.pdf');
+    console.log('Test PDF oluşturuldu!');
+    return true;
+  } catch (error) {
+    console.error('Test PDF hatası:', error);
+    return false;
+  }
+};
+
+/**
+ * Manuel şoför ataması için basitleştirilmiş PDF oluştur
  * @param {Object} reservation - Rezervasyon bilgileri
  * @param {Object} manualDriver - Manuel şoför bilgileri
  * @param {Object} companyInfo - Şirket bilgileri
@@ -249,189 +271,276 @@ export const generateManualDriverPDF = async (reservation, manualDriver, company
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     
-    // Helper fonksiyonlar
+    // Renkler tanımla
+    const colors = {
+      primary: [41, 128, 185],     // Mavi
+      secondary: [52, 152, 219],   // Açık mavi
+      success: [39, 174, 96],      // Yeşil
+      warning: [241, 196, 15],     // Sarı
+      danger: [231, 76, 60],       // Kırmızı
+      dark: [52, 73, 94],          // Koyu gri
+      light: [236, 240, 241],      // Açık gri
+      white: [255, 255, 255]       // Beyaz
+    };
+
+    // Helper fonksiyonlar - Türkçe karakter dönüştürme
+    const turkishToEnglish = (text) => {
+      if (!text) return 'Belirtilmemis';
+      return text
+        .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+        .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+        .replace(/ş/g, 's').replace(/Ş/g, 'S')
+        .replace(/ı/g, 'i').replace(/İ/g, 'I')
+        .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+        .replace(/ç/g, 'c').replace(/Ç/g, 'C');
+    };
+
     const formatLocation = (location) => {
-      if (!location) return 'Belirtilmemiş';
-      if (typeof location === 'string') return location;
+      if (!location) return 'Belirtilmemis';
+      if (typeof location === 'string') return turkishToEnglish(location);
       if (typeof location === 'object') {
-        return location.address || location.name || location.formatted_address || location.description || 'Lokasyon bilgisi mevcut';
+        return turkishToEnglish(location.address || location.name || location.formatted_address || location.description || 'Lokasyon bilgisi mevcut');
       }
-      return String(location);
+      return turkishToEnglish(String(location));
     };
 
     const formatDate = (dateStr) => {
-      if (!dateStr) return 'Belirtilmemiş';
+      if (!dateStr) return 'Belirtilmemis';
       const [year, month, day] = dateStr.split('-');
       return `${day}/${month}/${year}`;
     };
+
+    // Başlık banner (mavi arka plan) - Daha da küçük
+    pdf.setFillColor(...colors.primary);
+    pdf.rect(0, 0, pageWidth, 20, 'F');
     
-    // Şirket logosu ve başlık
-    pdf.setFontSize(20);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(companyInfo?.name || 'SBS Transfer', 20, 25);
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(companyInfo?.address || 'Transfer Hizmeti', 20, 35);
-    pdf.text(`Tel: ${companyInfo?.phone || '+90 555 123 45 67'}`, 20, 42);
-    pdf.text(`E-mail: ${companyInfo?.email || 'info@sbstransfer.com'}`, 20, 49);
-    
-    // Başlık çizgisi
-    pdf.setLineWidth(1);
-    pdf.line(20, 55, pageWidth - 20, 55);
-    
-    // Başlık
+    // Şirket adı (beyaz yazı) - Daha küçük font
+    pdf.setTextColor(...colors.white);
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('TRANSFER GÖREVİ - DIŞ ŞOFÖR', 20, 70);
+    pdf.text(turkishToEnglish(companyInfo?.name || 'SBS TRANSFER HIZMETLERI LTD. STI.'), 20, 13);
     
-    let yPos = 85;
-    
-    // Rezervasyon Bilgileri
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Rezervasyon Bilgileri', 20, yPos);
-    yPos += 15;
-    
-    pdf.setFontSize(12);
+    // Alt başlık (beyaz yazı)
+    pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
+    pdf.text('PROFESYONEL TRANSFER HIZMETI', 20, 18);
+
+    // Şirket bilgileri kutusu (açık mavi arka plan) - Daha da küçük
+    pdf.setFillColor(...colors.secondary);
+    pdf.rect(0, 20, pageWidth, 12, 'F');
     
-    // Daha kompakt layout
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Rezervasyon No:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(reservation.reservationId || 'Belirtilmemis', 65, yPos);
-    yPos += 6;
+    pdf.setTextColor(...colors.white);
+    pdf.setFontSize(8);
+    pdf.text(`Tel: ${companyInfo?.phone || '+90 242 835 07 07'}`, 20, 25);
+    pdf.text(`Email: ${companyInfo?.email || 'info@sonsbs.com'}`, 20, 29);
+    pdf.text(`Aksu/Antalya`, 130, 25);
+    pdf.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')} - ${new Date().toLocaleTimeString('tr-TR').slice(0,5)}`, 130, 29);
+
+    // Ana başlık (koyu gri arka plan) - Daha da küçük
+    pdf.setFillColor(...colors.dark);
+    pdf.rect(0, 35, pageWidth, 10, 'F');
     
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Musteri:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`${reservation.customerInfo?.firstName || ''} ${reservation.customerInfo?.lastName || ''}`, 45, yPos);
-    yPos += 6;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Telefon:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(reservation.customerInfo?.phone || 'Belirtilmemis', 50, yPos);
-    yPos += 6;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Tarih:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(formatDate(reservation.tripDetails?.date), 45, yPos);
-    yPos += 6;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Saat:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(reservation.tripDetails?.time || 'Belirtilmemis', 40, yPos);
-    yPos += 8;
-    
-    // Güzergah Bilgileri
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Guzergah Bilgileri', 20, yPos);
-    yPos += 12;
-    
+    pdf.setTextColor(...colors.white);
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Kalkis:', 20, yPos);
-    yPos += 5;
+    pdf.text('TRANSFER GOREVI - DIS SOFOR', 20, 42);
+
+    let yPos = 52;
+
+    // REZERVASYON BİLGİLERİ KUTUSU - Daha da küçük
+    pdf.setFillColor(...colors.warning);
+    pdf.rect(10, yPos, pageWidth - 20, 6, 'F');
+    
+    pdf.setTextColor(...colors.dark);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('REZERVASYON BILGILERI', 15, yPos + 4);
+    
+    yPos += 9;
+
+    // Transfer tipi belirleme
+    const transferType = reservation.tripDetails?.direction === 'roundtrip' ? 'Gidis-Donus' :
+                        reservation.tripDetails?.direction === 'oneway' ? 'Tek Yon' :
+                        reservation.tripDetails?.isRoundTrip ? 'Gidis-Donus' : 'Tek Yon';
+
+    // Rezervasyon bilgileri tablosu - Daha büyük fontlar
+    const reservationTable = [
+      ['Rezervasyon No:', reservation.reservationNumber || reservation.reservationId || 'Belirtilmemis'],
+      ['Musteri:', turkishToEnglish(`${reservation.customerInfo?.firstName || ''} ${reservation.customerInfo?.lastName || ''}`.trim() || 'Belirtilmemis')],
+      ['Telefon:', reservation.customerInfo?.phone || 'Belirtilmemis'],
+      ['Email:', reservation.customerInfo?.email || 'Belirtilmemis'],
+      ['Transfer Tipi:', transferType],
+      ['Tarih:', formatDate(reservation.tripDetails?.date) || 'Belirtilmemis'],
+      ['Saat:', reservation.tripDetails?.time || 'Belirtilmemis'],
+      ['Yolcu Sayisi:', `${reservation.customerInfo?.passengerCount || 1} kisi`]
+    ];
+
+    reservationTable.forEach((row, index) => {
+      if (index % 2 === 0) {
+        pdf.setFillColor(...colors.light);
+        pdf.rect(15, yPos - 1, pageWidth - 30, 8, 'F');
+      }
+      
+      pdf.setTextColor(...colors.dark);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(row[0], 20, yPos + 3);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(row[1], 85, yPos + 3);
+      yPos += 8;
+    });
+
+    yPos += 6;
+
+    // TRANSFER BİLGİLERİ KUTUSU - Daha da küçük
+    pdf.setFillColor(...colors.danger);
+    pdf.rect(10, yPos, pageWidth - 20, 6, 'F');
+    
+    pdf.setTextColor(...colors.white);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('TRANSFER BILGILERI', 15, yPos + 4);
+    
+    yPos += 9;
+
+    // Rota bilgileri - Daha dengeli
+    pdf.setFillColor(...colors.light);
+    pdf.rect(15, yPos, pageWidth - 30, 22, 'F');
+    
+    pdf.setTextColor(...colors.dark);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('KALKIS:', 20, yPos + 6);
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', 'normal');
     const pickupText = formatLocation(reservation.tripDetails?.pickupLocation);
-    const pickupLines = pdf.splitTextToSize(pickupText, pageWidth - 40);
-    pdf.text(pickupLines, 25, yPos);
-    yPos += (pickupLines.length * 5) + 4;
+    const pickupLines = pdf.splitTextToSize(pickupText, pageWidth - 60);
+    pdf.text(pickupLines, 20, yPos + 9);
     
+    pdf.setFontSize(10);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Varis:', 20, yPos);
-    yPos += 5;
+    pdf.text('VARIS:', 20, yPos + 15);
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', 'normal');
     const dropoffText = formatLocation(reservation.tripDetails?.dropoffLocation);
-    const dropoffLines = pdf.splitTextToSize(dropoffText, pageWidth - 40);
-    pdf.text(dropoffLines, 25, yPos);
-    yPos += (dropoffLines.length * 5) + 8;
+    const dropoffLines = pdf.splitTextToSize(dropoffText, pageWidth - 60);
+    pdf.text(dropoffLines, 20, yPos + 18);
+
+    yPos += 27;
+
+    // ÖDEME BİLGİLERİ KUTUSU - Daha da küçük
+    pdf.setFillColor(...colors.primary);
+    pdf.rect(10, yPos, pageWidth - 20, 6, 'F');
     
-    // Yolcu ve Araç Bilgileri
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Yolcu ve Arac Bilgileri', 20, yPos);
-    yPos += 12;
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Yolcu Sayisi:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`${reservation.tripDetails?.passengerCount || 1} kisi`, 60, yPos);
-    yPos += 6;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Bagaj:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`${reservation.tripDetails?.luggageCount || 0} adet`, 45, yPos);
-    yPos += 6;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Arac Plakasi:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(manualDriver.plateNumber || 'Belirtilmemis', 65, yPos);
-    yPos += 8;
-    
-    // Şoför Bilgileri
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Sofor Bilgileri', 20, yPos);
-    yPos += 12;
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Sofor Adi:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(manualDriver.name || 'Belirtilmemis', 55, yPos);
-    yPos += 6;
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Telefon:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(manualDriver.phone || 'Belirtilmemis', 50, yPos);
-    yPos += 8;
-    
-    // Ücret Bilgileri
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Ucret Bilgileri', 20, yPos);
-    yPos += 12;
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Seyahat Ucreti:', 20, yPos);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`${manualDriver.price} EUR`, 75, yPos);
-    yPos += 12;
-    
-    // Uyarılar
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Onemli Notlar:', 20, yPos);
-    yPos += 8;
-    
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('• Belirlenen saatte hazir olunuz', 25, yPos);
-    yPos += 6;
-    pdf.text('• Musteri ile nezaketle iletisim kurunuz', 25, yPos);
-    yPos += 6;
-    pdf.text('• Seyahat tamamlandiginda rapor veriniz', 25, yPos);
-    
-    // Alt bilgi
-    yPos = pageHeight - 30;
+    pdf.setTextColor(...colors.white);
     pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'italic');
-    pdf.text('Bu belge manuel sofor atamasi icin olusturulmustur.', 20, yPos);
-    pdf.text(`Olusturma Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, 20, yPos + 7);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('ODEME BILGILERI', 15, yPos + 4);
     
-    return pdf.output('datauristring');
+    yPos += 9;
+
+    // Ödeme bilgileri - Daha büyük fontlar
+    const paymentMethod = reservation.paymentMethod === 'cash' ? 'Nakit' :
+                         reservation.paymentMethod === 'card' ? 'Kredi Karti' :
+                         reservation.paymentMethod === 'bank_transfer' ? 'Havale' : 'Belirtilmemis';
+    
+    // Nakit ödeme durumunda şoförün müşteriden alacağı tutar
+    const collectFromCustomer = reservation.paymentMethod === 'cash' 
+      ? `€${reservation.totalPrice || '0'}` 
+      : 'Odeme Yapilmis';
+    
+    const paymentTable = [
+      ['Odeme Sekli:', paymentMethod],
+      ['Toplam Tutar:', `€${reservation.totalPrice || '0'}`],
+      ['Sofor Hak Edis:', `€${manualDriver.price || '0'}`],
+      ['Musteriden Alinacak:', collectFromCustomer]
+    ];
+
+    paymentTable.forEach((row, index) => {
+      if (index % 2 === 0) {
+        pdf.setFillColor(...colors.light);
+        pdf.rect(15, yPos - 1, pageWidth - 30, 8, 'F');
+      }
+      
+      pdf.setTextColor(...colors.dark);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(row[0], 20, yPos + 3);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(row[1], 85, yPos + 3);
+      yPos += 8;
+    });
+
+    yPos += 6;
+
+    // ÖNEMLI NOTLAR KUTUSU - Dengeli boyut
+    pdf.setFillColor(...colors.warning);
+    pdf.rect(10, yPos, pageWidth - 20, 6, 'F');
+    
+    pdf.setTextColor(...colors.dark);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('ONEMLI NOTLAR', 15, yPos + 4);
+    
+    yPos += 8;
+
+    pdf.setFillColor(...colors.light);
+    pdf.rect(15, yPos, pageWidth - 30, 20, 'F');
+    
+    pdf.setTextColor(...colors.dark);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('• Musteri ile iletisime gecerek tam lokasyonu teyit edin', 20, yPos + 5);
+    pdf.text('• Zamaninda ve temiz aracla hizmet verin', 20, yPos + 10);
+    pdf.text('• Herhangi bir problem durumunda sirketi arayin', 20, yPos + 15);
+    pdf.text('• Bu belgeyi aracta bulundurun', 20, yPos + 20);
+
+    // Alt bilgi (footer) - Biraz daha büyük
+    pdf.setFillColor(...colors.dark);
+    pdf.rect(0, pageHeight - 12, pageWidth, 12, 'F');
+    
+    pdf.setTextColor(...colors.white);
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'italic');
+    pdf.text('Bu belge elektronik ortamda olusturulmustur. Imza gerektirmez.', 20, pageHeight - 7);
+    pdf.text(`Yazdirma Tarihi: ${new Date().toLocaleDateString('tr-TR')} ${new Date().toLocaleTimeString('tr-TR').slice(0,5)}`, 20, pageHeight - 3);
+
+    // PDF'i indir - Daha güvenilir yöntem
+    try {
+      const fileName = `Manuel_Sofor_${reservation.reservationNumber || 'Transfer'}_${new Date().getTime()}.pdf`;
+      
+      // Blob oluştur ve link ile indir
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      
+      // Link oluştur ve otomatik indir
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pdfUrl;
+      downloadLink.download = fileName;
+      downloadLink.style.display = 'none';
+      
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      // URL'yi temizle
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+      
+      console.log(`✅ PDF indirildi: ${fileName}`);
+      return true;
+      
+    } catch (downloadError) {
+      console.error('❌ PDF indirme hatası:', downloadError);
+      // Fallback - direkt save
+      const fileName = `Manuel_Sofor_${reservation.reservationNumber || 'Transfer'}_${new Date().getTime()}.pdf`;
+      pdf.save(fileName);
+      return true;
+    }
+    
   } catch (error) {
-    console.error('Manuel şoför PDF oluşturma hatası:', error);
+    console.error('PDF oluşturma hatası:', error);
     throw error;
   }
 };

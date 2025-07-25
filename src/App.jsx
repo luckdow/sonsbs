@@ -22,7 +22,6 @@ import DriverLayout from './components/Layout/DriverLayout'
 
 // Public Pages
 import HomePage from './pages/Public/HomePage_OPTIMIZED'
-import TestPage from './pages/Public/TestPage'
 import VehicleSelectionPage from './pages/Public/VehicleSelectionPage'
 import CustomerInfoPage from './pages/Public/CustomerInfoPage'
 import PaymentPage from './pages/Public/PaymentPage'
@@ -74,7 +73,6 @@ function App() {
               {/* Public Routes */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
-                <Route path="test" element={<TestPage />} />
                 <Route path="rezervasyon" element={<BookingWizard />} />
                 <Route path="araç-seçimi" element={<VehicleSelectionPage />} />
                 <Route path="müşteri-bilgileri" element={<CustomerInfoPage />} />

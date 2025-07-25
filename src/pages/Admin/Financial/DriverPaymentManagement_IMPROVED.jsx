@@ -18,7 +18,7 @@ import {
   Euro
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { collection, getDocs, doc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, query, orderBy, where } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 
 // İyileştirilmiş finansal utils
@@ -266,19 +266,195 @@ const DriverPaymentManagement_IMPROVED = () => {
     }
   };
 
-  // Şoför detaylarını göster
+  // Şoför detaylarını göster - GELİŞTİRİLMİŞ VE GÜVENLİ
   const showDriverDetails = async (driver) => {
     try {
+      console.log('🔍 Şoför detayları yükleniyor:', driver);
       setSelectedDriver(driver);
       
-      // Detaylı finansal özet getir
-      const financialSummary = await getDriverFinancialSummary(driver.id, driver.type);
-      setSelectedDriver(prev => ({ ...prev, financialSummary }));
+      // Detaylı finansal özet getir - Hata yakalama ile
+      let financialSummary = null;
+      try {
+        financialSummary = await getDriverFinancialSummary(driver.id, driver.type);
+        console.log('💰 Finansal özet alındı:', financialSummary);
+      } catch (error) {
+        console.warn('⚠️ Finansal özet alınamadı:', error);
+        // Varsayılan değerler
+        financialSummary = {
+          totalEarnings: 0,
+          reservationCount: 0,
+          totalPayments: 0,
+          netBalance: driver.balance || 0
+        };
+      }
+      
+      // Son rezervasyon detaylarını getir - Hata yakalama ile
+      let recentReservations = [];
+      try {
+        recentReservations = await getDriverRecentReservations(driver.id, driver.type);
+        console.log('📋 Son rezervasyonlar alındı:', recentReservations.length, 'adet');
+      } catch (error) {
+        console.warn('⚠️ Son rezervasyonlar alınamadı:', error);
+        recentReservations = [];
+      }
+      
+      // Performans istatistiklerini hesapla - Güvenli hesaplama
+      let performanceStats = null;
+      try {
+        performanceStats = calculateDriverPerformance(driver, financialSummary);
+        console.log('📊 Performans istatistikleri hesaplandı:', performanceStats);
+      } catch (error) {
+        console.warn('⚠️ Performans istatistikleri hesaplanamadı:', error);
+        performanceStats = {
+          totalTrips: 0,
+          avgEarningPerTrip: 0,
+          recentActivityCount: 0,
+          lastActivityDate: null,
+          cashTrips: 0,
+          cardTrips: 0,
+          totalCashCommission: 0,
+          totalCardEarnings: 0
+        };
+      }
+      
+      setSelectedDriver(prev => ({ 
+        ...prev, 
+        financialSummary,
+        recentReservations,
+        performanceStats
+      }));
       
       setShowDetailModal(true);
+      console.log('✅ Şoför detayları başarıyla yüklendi');
+      
     } catch (error) {
       console.error('❌ Şoför detayları alınamadı:', error);
-      toast.error('Şoför detayları yüklenirken hata oluştu');
+      toast.error(`Şoför detayları yüklenirken hata oluştu: ${error.message}`);
+      
+      // Hata durumunda bile modal aç, temel bilgileri göster
+      setSelectedDriver(prev => ({ 
+        ...prev, 
+        financialSummary: { totalEarnings: 0, reservationCount: 0, totalPayments: 0, netBalance: driver.balance || 0 },
+        recentReservations: [],
+        performanceStats: { totalTrips: 0, avgEarningPerTrip: 0, recentActivityCount: 0, lastActivityDate: null }
+      }));
+      setShowDetailModal(true);
+    }
+  };
+
+  // Son rezervasyonları getir - GÜVENLİ
+  const getDriverRecentReservations = async (driverId, driverType) => {
+    try {
+      console.log('📋 Son rezervasyonlar sorgulanıyor:', { driverId, driverType });
+      
+      // Daha basit sorgu - önce tüm tamamlanan rezervasyonları al
+      const reservationsSnapshot = await getDocs(
+        query(
+          collection(db, 'reservations'),
+          where('status', '==', 'completed'),
+          orderBy('completedAt', 'desc')
+        )
+      );
+      
+      // Client tarafında filtreleme yap
+      const allReservations = reservationsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Şofore ait olanları filtrele
+      const driverReservations = allReservations.filter(reservation => {
+        if (driverType === 'regular') {
+          return reservation.assignedDriver === driverId || 
+                 reservation.assignedDriverId === driverId ||
+                 reservation.driverId === driverId;
+        } else {
+          // Manuel şoför için
+          return reservation.assignedDriver === 'manual' && 
+                 reservation.manualDriverInfo &&
+                 reservation.manualDriverInfo.phone &&
+                 driverId.includes(reservation.manualDriverInfo.phone.replace(/[^0-9]/g, ''));
+        }
+      });
+      
+      // Son 10 tanesi al
+      const recentReservations = driverReservations.slice(0, 10);
+      
+      console.log('✅ Son rezervasyonlar bulundu:', recentReservations.length, 'adet');
+      return recentReservations;
+      
+    } catch (error) {
+      console.error('❌ Son rezervasyonlar alınamadı:', error);
+      
+      // Hata durumunda boş array dön
+      return [];
+    }
+  };
+
+  // Performans istatistiklerini hesapla - GÜVENLİ
+  const calculateDriverPerformance = (driver, financialSummary) => {
+    try {
+      console.log('📊 Performans hesaplanıyor:', { driver: driver?.displayName, financialSummary });
+      
+      // Güvenli değer alma
+      const totalTrips = driver?.completedTrips || financialSummary?.reservationCount || 0;
+      const totalEarnings = financialSummary?.totalEarnings || 0;
+      const avgEarningPerTrip = totalTrips > 0 ? (totalEarnings / totalTrips) : 0;
+      
+      // Son 30 günün işlem sayısı (güvenli hesaplama)
+      let recentTransactions = [];
+      try {
+        if (driver?.transactions && Array.isArray(driver.transactions)) {
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          
+          recentTransactions = driver.transactions.filter(t => {
+            try {
+              const transactionDate = t?.date?.seconds ? 
+                new Date(t.date.seconds * 1000) : 
+                new Date(t?.date || Date.now());
+              return transactionDate >= thirtyDaysAgo;
+            } catch (error) {
+              console.warn('⚠️ İşlem tarihi okunamadı:', t);
+              return false;
+            }
+          });
+        }
+      } catch (error) {
+        console.warn('⚠️ Son işlemler hesaplanamadı:', error);
+        recentTransactions = [];
+      }
+
+      const result = {
+        totalTrips,
+        avgEarningPerTrip: Math.round(avgEarningPerTrip * 100) / 100, // 2 ondalık basamak
+        recentActivityCount: recentTransactions.length,
+        lastActivityDate: driver?.lastTransactionDate || null,
+        // Ödeme metodları analizi - güvenli erişim
+        cashTrips: driver?.totalCashTrips || 0,
+        cardTrips: driver?.totalCardTrips || 0,
+        // Finansal analiz - güvenli erişim
+        totalCashCommission: driver?.totalCashCommission || 0,
+        totalCardEarnings: driver?.totalCardEarnings || 0
+      };
+      
+      console.log('✅ Performans hesaplandı:', result);
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Performans hesaplanamadı:', error);
+      
+      // Hata durumunda varsayılan değerler
+      return {
+        totalTrips: 0,
+        avgEarningPerTrip: 0,
+        recentActivityCount: 0,
+        lastActivityDate: null,
+        cashTrips: 0,
+        cardTrips: 0,
+        totalCashCommission: 0,
+        totalCardEarnings: 0
+      };
     }
   };
 
@@ -695,7 +871,7 @@ const DriverPaymentManagement_IMPROVED = () => {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-gray-900">
-                    👤 {selectedDriver.displayName} - Finansal Detaylar
+                    👤 {selectedDriver.displayName} - Detaylı Rapor
                   </h3>
                   <button
                     onClick={() => setShowDetailModal(false)}
@@ -705,79 +881,175 @@ const DriverPaymentManagement_IMPROVED = () => {
                   </button>
                 </div>
 
-                {selectedDriver.financialSummary && (
-                  <div className="space-y-6">
-                    {/* Özet Kartları */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-green-50 p-4 rounded-lg">
-                        <p className="text-sm text-green-600 font-medium">Toplam Kazanç</p>
-                        <p className="text-xl font-bold text-green-800">
-                          {formatCurrency(selectedDriver.financialSummary.totalEarnings)}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <p className="text-sm text-blue-600 font-medium">Rezervasyon Sayısı</p>
-                        <p className="text-xl font-bold text-blue-800">
-                          {selectedDriver.financialSummary.reservationCount}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-red-50 p-4 rounded-lg">
-                        <p className="text-sm text-red-600 font-medium">Toplam Ödeme</p>
-                        <p className="text-xl font-bold text-red-800">
-                          {formatCurrency(selectedDriver.financialSummary.totalPayments)}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-purple-50 p-4 rounded-lg">
-                        <p className="text-sm text-purple-600 font-medium">Net Bakiye</p>
-                        <p className={`text-xl font-bold ${
-                          selectedDriver.financialSummary.netBalance >= 0 
-                            ? 'text-purple-800' 
-                            : 'text-orange-600'
-                        }`}>
-                          {formatCurrency(selectedDriver.financialSummary.netBalance)}
-                        </p>
-                      </div>
+                <div className="space-y-6">
+                  {/* Özet Kartları */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <p className="text-sm text-green-600 font-medium">Toplam Kazanç</p>
+                      <p className="text-xl font-bold text-green-800">
+                        {formatCurrency(selectedDriver.financialSummary?.totalEarnings || 0)}
+                      </p>
                     </div>
-
-                    {/* Son İşlemler */}
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-800 mb-4">Son İşlemler</h4>
-                      <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {selectedDriver.transactions?.slice(0, 10).map((transaction, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                              <p className="font-medium text-gray-800">
-                                {transaction.type === 'earning' ? '💰 Kazanç' : 
-                                 transaction.type === 'payment' ? '💳 Ödeme' : 
-                                 transaction.type === 'collection' ? '📥 Tahsilat' : 
-                                 '💸 Komisyon Borcu'}
-                              </p>
-                              <p className="text-sm text-gray-600">{transaction.note}</p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(transaction.date.seconds * 1000).toLocaleString('tr-TR')}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className={`font-bold ${
-                                transaction.type === 'earning' || transaction.type === 'collection' 
-                                  ? 'text-green-600' 
-                                  : 'text-red-600'
-                              }`}>
-                                {transaction.type === 'earning' || transaction.type === 'collection' ? '+' : '-'}
-                                {formatCurrency(transaction.amount)}
-                              </p>
-                            </div>
-                          </div>
-                        )) || (
-                          <p className="text-gray-500 text-center py-4">Henüz işlem kaydı bulunmuyor</p>
-                        )}
-                      </div>
+                    
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <p className="text-sm text-blue-600 font-medium">Tamamlanan Sefer</p>
+                      <p className="text-xl font-bold text-blue-800">
+                        {selectedDriver.performanceStats?.totalTrips || 0}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <p className="text-sm text-purple-600 font-medium">Ortalama Sefer Kazancı</p>
+                      <p className="text-xl font-bold text-purple-800">
+                        {formatCurrency(selectedDriver.performanceStats?.avgEarningPerTrip || 0)}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <p className="text-sm text-orange-600 font-medium">Mevcut Bakiye</p>
+                      <p className={`text-xl font-bold ${
+                        (selectedDriver.balance || 0) >= 0 
+                          ? 'text-orange-800' 
+                          : 'text-red-600'
+                      }`}>
+                        {formatCurrency(Math.abs(selectedDriver.balance || 0))}
+                        <span className="text-sm font-normal ml-1">
+                          {(selectedDriver.balance || 0) > 0 ? '(Borçlu)' : 
+                           (selectedDriver.balance || 0) < 0 ? '(Alacaklı)' : '(Dengeli)'}
+                        </span>
+                      </p>
                     </div>
                   </div>
-                )}
+
+                  {/* Performans İstatistikleri */}
+                  {selectedDriver.performanceStats && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="text-lg font-medium text-gray-800 mb-4">📊 Performans Analizi</h4>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-gray-800">
+                            {selectedDriver.performanceStats.cashTrips}
+                          </p>
+                          <p className="text-sm text-gray-600">Nakit Sefer</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-gray-800">
+                            {selectedDriver.performanceStats.cardTrips}
+                          </p>
+                          <p className="text-sm text-gray-600">Kart/Havale Sefer</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-gray-800">
+                            {formatCurrency(selectedDriver.performanceStats.totalCashCommission)}
+                          </p>
+                          <p className="text-sm text-gray-600">Nakit Komisyon</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-gray-800">
+                            {formatCurrency(selectedDriver.performanceStats.totalCardEarnings)}
+                          </p>
+                          <p className="text-sm text-gray-600">Kart Kazanç</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Son Rezervasyonlar */}
+                  {selectedDriver.recentReservations && selectedDriver.recentReservations.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-800 mb-4">🚗 Son Seferler</h4>
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {selectedDriver.recentReservations.map((reservation, index) => (
+                          <div key={reservation.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-800">
+                                  {reservation.reservationNumber || reservation.reservationId}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {reservation.tripDetails?.pickupLocation || 'Başlangıç'} → {reservation.tripDetails?.dropoffLocation || 'Varış'}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {reservation.completedAt ? 
+                                    new Date(reservation.completedAt.seconds * 1000).toLocaleString('tr-TR') :
+                                    'Tarih bilinmiyor'
+                                  }
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-green-600">
+                                  {formatCurrency(reservation.totalPrice || 0)}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {reservation.paymentMethod === 'cash' ? '💰 Nakit' : '💳 Kart'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Son İşlemler */}
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-800 mb-4">💼 Son Finansal İşlemler</h4>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {selectedDriver.transactions?.slice(0, 10).map((transaction, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {transaction.type === 'earning' ? '💰 Rezervasyon Kazancı' : 
+                               transaction.type === 'commission_debt' ? '💸 Komisyon Borcu' :
+                               transaction.type === 'payment' ? '💳 Ödeme Aldınız' : 
+                               transaction.type === 'collection' ? '📥 Tahsilat Yaptınız' : 
+                               '� Diğer İşlem'}
+                            </p>
+                            <p className="text-sm text-gray-600">{transaction.note}</p>
+                            {transaction.reservationId && (
+                              <p className="text-xs text-blue-600">#{transaction.reservationId}</p>
+                            )}
+                            <p className="text-xs text-gray-500">
+                              {new Date(transaction.date.seconds ? transaction.date.seconds * 1000 : transaction.date).toLocaleString('tr-TR')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-bold ${
+                              transaction.type === 'earning' || transaction.type === 'collection' 
+                                ? 'text-green-600' 
+                                : 'text-red-600'
+                            }`}>
+                              {transaction.type === 'earning' || transaction.type === 'collection' ? '+' : '-'}
+                              {formatCurrency(transaction.amount)}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Bakiye: {formatCurrency(Math.abs(transaction.balanceAfter || 0))}
+                            </p>
+                          </div>
+                        </div>
+                      )) || (
+                        <p className="text-gray-500 text-center py-4">Henüz işlem kaydı bulunmuyor</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {selectedDriver.financialSummary && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="text-lg font-medium text-blue-800 mb-2">💡 Özet Bilgiler</h4>
+                      <div className="text-sm text-blue-700 space-y-1">
+                        <p>• Toplam {selectedDriver.performanceStats?.totalTrips || 0} sefer tamamlandı</p>
+                        <p>• Son işlem: {selectedDriver.performanceStats?.lastActivityDate ? 
+                            new Date(selectedDriver.performanceStats.lastActivityDate.seconds * 1000).toLocaleDateString('tr-TR') :
+                            'Henüz işlem yok'
+                          }</p>
+                        <p>• Şoför tipi: {selectedDriver.type === 'regular' ? 'Sisteme Kayıtlı' : 'Manuel'}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           </motion.div>

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { doc, updateDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { updateManualDriverFinancials } from '../../utils/financialIntegration';
+import { updateManualDriverFinancials } from '../../utils/financialIntegration_IMPROVED';
 import { QrCode, Camera, CheckCircle, XCircle, Navigation, MapPin, Clock, User, Phone } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QrScanner from 'qr-scanner';

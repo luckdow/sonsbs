@@ -311,28 +311,27 @@ const ReservationIndex = () => {
         // PDF oluştur ve indir
         try {
           const companyInfo = {
-            name: 'SBS Transfer Hizmetleri Ltd. Şti.',
-            address: 'Transfer Hizmeti',
-            phone: '+90 555 123 45 67',
-            email: 'info@sonsbs.com'
+            name: 'SBS TURKEY TURİZM SANAYİ VE TİCARET LİMİTED ŞİRKETİ',
+            address: 'GÜZELYURT MAH. SERİK CAD. NO: 138 /2 AKSU/ ANTALYA',
+            phone: '+90 532 574 26 82',
+            email: 'sbstravel@gmail.com',
+            website: 'www.gatetransfer.com'
           };
           
-          const pdfData = await generateManualDriverPDF(reservationToUpdate, manualDriverInfo, companyInfo);
+          const pdfResult = await generateManualDriverPDF(reservationToUpdate, manualDriverInfo, companyInfo);
           
-          // PDF'i indir
-          const link = document.createElement('a');
-          link.href = pdfData;
-          link.download = `manuel-sofor-${reservationToUpdate.reservationId}-${manualDriverInfo.name.replace(/\s+/g, '-')}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          // PDF başarıyla oluşturuldu mesajı
+          if (pdfResult) {
+            console.log('PDF başarıyla oluşturuldu ve indirildi');
+          }
           
         } catch (pdfError) {
-      // Debug log removed
-          toast.error('PDF oluşturma başarısız: ' + pdfError.message);
+          console.error('PDF oluşturma hatası:', pdfError);
+          alert('PDF oluşturulurken bir hata oluştu: ' + pdfError.message);
         }
         
-        toast.success(`Manuel şoför (${manualDriverInfo.name}) atandı! WhatsApp gönderildi ve PDF indirildi.`);
+        // Pop-up bildirimi kaldırıldı - sadece işlem sonucu gösterilecek
+        // toast.success(`Manuel şoför (${manualDriverInfo.name}) atandı! WhatsApp gönderildi ve PDF indirildi.`);
         
       } else {
         // Normal sistem şoförü ataması

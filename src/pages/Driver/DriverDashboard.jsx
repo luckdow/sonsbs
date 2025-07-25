@@ -23,7 +23,7 @@ import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { collection, onSnapshot, updateDoc, doc, query, where } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { processQRScanCompletion } from '../../utils/financialIntegration';
+import { processQRScanCompletion } from '../../utils/financialIntegration_IMPROVED';
 import QRScannerComponent from '../../components/QR/QRScannerComponent';
 import QRScanner from './QRScanner';
 import toast from 'react-hot-toast';
