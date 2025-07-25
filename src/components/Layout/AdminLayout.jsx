@@ -15,8 +15,7 @@ import {
   Bell,
   UserCheck,
   ChevronRight,
-  Package,
-  TestTube
+  Package
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -306,18 +305,6 @@ const AdminLayout = () => {
       href: '/admin/finans',
       icon: DollarSign,
       description: 'Gelir, gider ve raporlar'
-    },
-    {
-      name: 'Push Test',
-      href: '/admin/push-test',
-      icon: Bell,
-      description: 'Push bildirim test sayfası'
-    },
-    {
-      name: 'Bildirim Test',
-      href: '/admin/notification-test',
-      icon: TestTube,
-      description: 'Gerçek bildirim test merkezi'
     },
     {
       name: 'Ayarlar',

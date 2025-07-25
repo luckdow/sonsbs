@@ -56,7 +56,6 @@ const DriverDashboard = () => {
   // Real-time reservations listener
   useEffect(() => {
     if (!currentUser?.uid && !user?.uid) {
-      console.log('DriverDashboard: User ID bulunamadı');
       return;
     }
 
@@ -229,7 +228,6 @@ const DriverDashboard = () => {
               isOpen={true}
               onClose={() => setIsQRScannerOpen(false)}
               onScan={(result) => {
-                console.log('QR Scan Result:', result);
                 // QR kod sonucunda rezervasyon ID'sini al
                 const scannedReservationId = result;
                 // Hem document ID'sine hem de reservationId field'ına bak
@@ -243,7 +241,6 @@ const DriverDashboard = () => {
                   setIsQRScannerOpen(false);
                   toast.success(`QR kod başarıyla okundu! Rezervasyon: ${reservation.reservationId || reservation.id}`);
                 } else {
-                  console.error('Rezervasyon bulunamadı. Aranan ID:', scannedReservationId);
                   toast.error(`Bu QR koda ait rezervasyon bulunamadı: ${scannedReservationId}`);
                 }
               }}
