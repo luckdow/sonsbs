@@ -72,7 +72,6 @@ const VehicleFeaturesModal = ({ vehicle, onClose, onUpdate }) => {
         onClose();
       }
     } catch (error) {
-      console.error('Özellikler güncellenirken hata:', error);
     } finally {
       setIsSubmitting(false);
     }

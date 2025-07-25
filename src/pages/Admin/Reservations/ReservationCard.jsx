@@ -70,7 +70,10 @@ const ReservationCard = ({
           <p className="text-sm text-gray-500">
             {reservation.paymentMethod === 'cash' && '💵 Nakit'}
             {reservation.paymentMethod === 'card' && '💳 Kredi Kartı'}
+            {reservation.paymentMethod === 'credit_card' && '💳 Kredi Kartı'}
             {reservation.paymentMethod === 'transfer' && '🏦 Havale'}
+            {reservation.paymentMethod === 'bank_transfer' && '🏦 Havale'}
+            {!['cash', 'card', 'credit_card', 'transfer', 'bank_transfer'].includes(reservation.paymentMethod) && '💵 Nakit'}
           </p>
         </div>
       </div>

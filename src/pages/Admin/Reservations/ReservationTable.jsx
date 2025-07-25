@@ -119,7 +119,9 @@ const ReservationTable = ({
   const getPaymentMethodDisplay = (paymentMethod) => {
     const paymentMethods = {
       'credit_card': { label: 'Kredi Kartı', icon: '💳', color: 'text-blue-600 bg-blue-50' },
-      'bank_transfer': { label: 'Banka Havalesi', icon: '🏦', color: 'text-green-600 bg-green-50' },
+      'card': { label: 'Kredi Kartı', icon: '💳', color: 'text-blue-600 bg-blue-50' },
+      'bank_transfer': { label: 'Havale', icon: '🏦', color: 'text-green-600 bg-green-50' },
+      'transfer': { label: 'Havale', icon: '🏦', color: 'text-green-600 bg-green-50' },
       'cash': { label: 'Nakit', icon: '💵', color: 'text-yellow-600 bg-yellow-50' },
       'eft': { label: 'EFT', icon: '📱', color: 'text-purple-600 bg-purple-50' }
     };

@@ -21,13 +21,11 @@ const VehicleIndex = () => {
 
   // Firebase'den araç verilerini dinle
   useEffect(() => {
-    console.log('Araç verileri yükleniyor...');
     setLoading(true);
     
     const unsubscribeVehicles = onSnapshot(
       collection(db, 'vehicles'),
       (snapshot) => {
-        console.log('Vehicles koleksiyonu güncellendi, döküman sayısı:', snapshot.docs.length);
         const vehicleData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
@@ -36,7 +34,6 @@ const VehicleIndex = () => {
         setLoading(false);
       },
       (error) => {
-        console.error('Araç verileri yüklenirken hata:', error);
         setLoading(false);
       }
     );
@@ -55,11 +52,9 @@ const VehicleIndex = () => {
       };
       
       await addDoc(collection(db, 'vehicles'), newVehicle);
-      console.log('Araç başarıyla eklendi');
       setShowAddModal(false);
       return true;
     } catch (error) {
-      console.error('Araç eklenirken hata:', error);
       return false;
     }
   };
@@ -73,12 +68,10 @@ const VehicleIndex = () => {
       };
       
       await updateDoc(doc(db, 'vehicles', vehicleId), updatedVehicle);
-      console.log('Araç başarıyla güncellendi');
       setShowEditModal(false);
       setSelectedVehicle(null);
       return true;
     } catch (error) {
-      console.error('Araç güncellenirken hata:', error);
       return false;
     }
   };
@@ -87,10 +80,8 @@ const VehicleIndex = () => {
   const handleDeleteVehicle = async (vehicleId) => {
     try {
       await deleteDoc(doc(db, 'vehicles', vehicleId));
-      console.log('Araç başarıyla silindi');
       return true;
     } catch (error) {
-      console.error('Araç silinirken hata:', error);
       return false;
     }
   };
@@ -120,10 +111,8 @@ const VehicleIndex = () => {
         status: newStatus, 
         updatedAt: new Date() 
       });
-      console.log('Araç durumu güncellendi');
       return true;
     } catch (error) {
-      console.error('Araç durumu güncellenirken hata:', error);
       return false;
     }
   };

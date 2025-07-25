@@ -48,7 +48,6 @@ const ResetPasswordPage = () => {
         duration: 4000,
       });
     } catch (error) {
-      console.error('Reset password error:', error);
       
       let errorMessage = 'Şifre sıfırlama e-postası gönderilirken hata oluştu';
       

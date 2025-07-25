@@ -9,7 +9,6 @@ import { db } from '../config/firebase';
  */
 export const updateCompanyFinancials = async (reservationId, reservationData, financialResult) => {
   try {
-    console.log('🏢 updateCompanyFinancials başlatıldı:', { reservationId, reservationData, financialResult });
     
     const {
       totalPrice,
@@ -50,7 +49,7 @@ export const updateCompanyFinancials = async (reservationId, reservationData, fi
         driverAmount = totalPrice - commission;
         companyAmount = commission;
       } else {
-        console.error('Şoför bulunamadı:', actualDriverId);
+        // Şoför bulunamadı durumunda varsayılan değerleri kullan
       }
     }
 
@@ -81,7 +80,7 @@ export const updateCompanyFinancials = async (reservationId, reservationData, fi
         companyData = companyDoc.data();
       }
     } catch (error) {
-      console.log('Şirket hesabı getirilemedi, yeni oluşturulacak', error);
+      // Debug log removed
     }
 
     // Mevcut bakiyeleri al
@@ -133,13 +132,6 @@ export const updateCompanyFinancials = async (reservationId, reservationData, fi
     // setDoc kullanarak belgeyi oluştur/güncelle (merge: true ile)
     await setDoc(doc(db, 'company_accounts', 'main_account'), updatedCompanyData, { merge: true });
 
-    console.log(`Şirket finansal kaydı güncellendi:`, {
-      revenue: companyRevenue,
-      expense: companyExpense,
-      netAmount: companyRevenue - companyExpense,
-      paymentMethod: paymentMethod
-    });
-
     return {
       success: true,
       revenue: companyRevenue,
@@ -149,7 +141,7 @@ export const updateCompanyFinancials = async (reservationId, reservationData, fi
     };
 
   } catch (error) {
-    console.error('Şirket finansal güncelleme hatası:', error);
+      // Debug log removed
     return {
       success: false,
       error: error.message
@@ -176,7 +168,7 @@ export const recordDriverPayment = async (driverId, driverType, driverName, amou
         companyData = companyDoc.data();
       }
     } catch (error) {
-      console.log('Şirket hesabı getirilemedi, yeni oluşturulacak', error);
+      // Debug log removed
     }
 
     // Mevcut bakiyeleri al
@@ -231,7 +223,7 @@ export const recordDriverPayment = async (driverId, driverType, driverName, amou
     };
 
   } catch (error) {
-    console.error('Şirket finansal güncelleme hatası:', error);
+      // Debug log removed
     return {
       success: false,
       error: error.message
@@ -258,7 +250,7 @@ export const recordDriverCollection = async (driverId, driverType, driverName, a
         companyData = companyDoc.data();
       }
     } catch (error) {
-      console.log('Şirket hesabı getirilemedi, yeni oluşturulacak', error);
+      // Debug log removed
     }
 
     // Mevcut bakiyeleri al
@@ -313,7 +305,7 @@ export const recordDriverCollection = async (driverId, driverType, driverName, a
     };
 
   } catch (error) {
-    console.error('Şirket finansal güncelleme hatası:', error);
+      // Debug log removed
     return {
       success: false,
       error: error.message

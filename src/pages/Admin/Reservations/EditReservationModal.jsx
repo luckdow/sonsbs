@@ -134,7 +134,7 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
       // Sadece formData'yı gönder, reservation.id'yi onUpdate fonksiyonunda kullan
       await onUpdate(reservation.id, formData);
     } catch (error) {
-      console.error('Rezervasyon güncelleme hatası:', error);
+      // Debug log removed
       alert('Rezervasyon güncellenirken hata oluştu');
     } finally {
       setLoading(false);
@@ -416,9 +416,9 @@ const EditReservationModal = ({ reservation, onClose, onUpdate }) => {
                   onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="cash">Nakit</option>
-                  <option value="card">Kredi Kartı</option>
-                  <option value="transfer">Havale</option>
+                  <option value="cash">💵 Nakit</option>
+                  <option value="credit_card">💳 Kredi Kartı</option>
+                  <option value="bank_transfer">🏦 Havale</option>
                 </select>
               </div>
             </div>

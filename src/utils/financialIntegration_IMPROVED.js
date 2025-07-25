@@ -22,8 +22,6 @@ import { db } from '../config/firebase';
  */
 export const updateDriverFinancials = async (reservationId, reservationData) => {
   try {
-    console.log('💰 updateDriverFinancials başlatıldı:', { reservationId, reservationData });
-    
     const driverId = reservationData.assignedDriver || reservationData.assignedDriverId || reservationData.driverId;
     const {
       totalPrice,
@@ -33,25 +31,20 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
       manualDriverInfo
     } = reservationData;
 
-    console.log('🔍 Driver bilgileri:', { driverId, totalPrice, paymentMethod, manualDriverInfo });
-
     // Manuel şoför kontrolü
     const isManualDriver = driverId === 'manual' && manualDriverInfo;
     
     if (isManualDriver) {
-      console.log('➡️ Manuel şoför finansal işlemi çağrılıyor...');
       return await updateManualDriverFinancials(reservationId, reservationData);
     }
 
     if (!driverId || !totalPrice) {
-      console.log('⚠️ Eksik veri: driverId veya totalPrice bulunamadı');
       return;
     }
 
     // Şoför bilgilerini users koleksiyonundan getir
     const driverDoc = await getDoc(doc(db, 'users', driverId));
     if (!driverDoc.exists()) {
-      console.error('Şoför bulunamadı:', driverId);
       throw new Error(`Şoför bulunamadı: ${driverId}`);
     }
 
@@ -66,33 +59,20 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
     let balanceChange = 0;
     let transactionNote = '';
 
-    // ÖDEMEMetoduna göre cari hesap güncellemesi - DÜZELTİLMİŞ MANTIK
+    // ÖDEME Metoduna göre cari hesap güncellemesi - DÜZELTİLMİŞ MANTIK
     if (paymentMethod === 'cash') {
       // Nakit ödeme: Şoför müşteriden tüm parayı aldı, firmaya komisyon borçlu
       balanceChange = -commission; // Negatif çünkü şofor firmaya komisyon borçlu
       transactionNote = `Nakit rezervasyon komisyon borcu - ${reservationId}`;
-      console.log('💰 Nakit ödeme: Şoför komisyon borçlu', { commission, balanceChange });
     } else if (paymentMethod === 'card' || paymentMethod === 'credit_card' || paymentMethod === 'bank_transfer') {
       // Kart/Havale ödeme: Firma müşteriden parayı aldı, şofore kazancını ödemeli
       balanceChange = +driverEarning; // Pozitif çünkü firma şofore kazancını borçlu
       transactionNote = `Kart/Havale rezervasyon kazancı - ${reservationId}`;
-      console.log('💳 Kart/Havale ödeme: Şofore kazanç ödenecek', { driverEarning, balanceChange });
     } else {
-      console.warn('⚠️ Bilinmeyen ödeme yöntemi:', paymentMethod);
+      // Bilinmeyen ödeme yöntemi için varsayılan davranış
     }
 
     const newBalance = currentBalance + balanceChange;
-
-    console.log('💳 Sistem şoförü finansal güncelleme:', {
-      driverId,
-      totalPrice,
-      paymentMethod,
-      commission,
-      driverEarning,
-      currentBalance,
-      balanceChange,
-      newBalance
-    });
 
     // İşlem kaydı oluştur
     const transaction = {
@@ -133,15 +113,6 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
       totalCardEarnings: (paymentMethod === 'card' || paymentMethod === 'bank_transfer') ? (driverData.totalCardEarnings || 0) + driverEarning : (driverData.totalCardEarnings || 0)
     });
 
-    console.log(`✅ Şoför ${driverId} cari hesabı güncellendi:`, {
-      oldBalance: currentBalance,
-      newBalance: newBalance,
-      change: balanceChange,
-      paymentMethod: paymentMethod,
-      commission: commission,
-      driverEarning: driverEarning
-    });
-
     // Şirket finansal durumunu güncelle
     await updateCompanyFinancials(reservationId, reservationData, {
       success: true,
@@ -160,7 +131,6 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
     };
 
   } catch (error) {
-    console.error('❌ Şoför finansal güncelleme hatası:', error);
     throw error;
   }
 };
@@ -181,7 +151,6 @@ export const updateManualDriverFinancials = async (reservationId, reservationDat
     } = reservationData;
 
     if (!manualDriverInfo || !manualDriverInfo.price) {
-      console.log('⚠️ Manuel şoför bilgileri veya hak ediş tutarı bulunamadı');
       return;
     }
 
@@ -207,7 +176,7 @@ export const updateManualDriverFinancials = async (reservationId, reservationDat
       balanceChange = +driverEarning; // Pozitif çünkü firma manuel şofore hak edişini borçlu
       transactionNote = `Kart/Havale rezervasyon - Hak ediş alacağı - ${reservationId}`;
     } else {
-      console.warn('⚠️ Manuel şoför - Bilinmeyen ödeme yöntemi:', paymentMethod);
+      // Bilinmeyen ödeme yöntemi için varsayılan davranış
     }
 
     // Manuel şoför cari hesap kaydını kontrol et veya oluştur
@@ -215,7 +184,7 @@ export const updateManualDriverFinancials = async (reservationId, reservationDat
     try {
       manualDriverDoc = await getDoc(doc(db, 'manual_drivers', manualDriverId));
     } catch (error) {
-      console.log('Manuel şoför belgesi kontrol edilemedi:', error);
+      // Hata durumunda sessizce devam et
     }
 
     let currentBalance = 0;
@@ -292,15 +261,6 @@ export const updateManualDriverFinancials = async (reservationId, reservationDat
     // setDoc kullanarak belgeyi oluştur/güncelle (merge: true ile)
     await setDoc(doc(db, 'manual_drivers', manualDriverId), manualDriverData, { merge: true });
 
-    console.log(`✅ Manuel şoför ${driverName} cari hesabı güncellendi:`, {
-      oldBalance: currentBalance,
-      newBalance: newBalance,
-      change: balanceChange,
-      paymentMethod: paymentMethod,
-      driverEarning: driverEarning,
-      companyRevenue: companyRevenue
-    });
-
     // Şirket finansal durumunu güncelle
     await updateCompanyFinancials(reservationId, reservationData, {
       success: true,
@@ -321,7 +281,6 @@ export const updateManualDriverFinancials = async (reservationId, reservationDat
     };
 
   } catch (error) {
-    console.error('❌ Manuel şoför finansal güncelleme hatası:', error);
     throw error;
   }
 };
@@ -401,21 +360,12 @@ export const updateCompanyFinancials = async (reservationId, reservationData, dr
     // Şirket finansal kayıtlarına ekle
     await addDoc(collection(db, 'company_financials'), companyFinancialRecord);
 
-    console.log(`💼 Şirket finansal kaydı oluşturuldu:`, {
-      reservationId: reservationId,
-      companyRevenue: companyRevenue,
-      companyExpense: companyExpense,
-      netProfit: companyFinancialRecord.netProfit,
-      paymentMethod: paymentMethod
-    });
-
     return {
       success: true,
       companyRecord: companyFinancialRecord
     };
 
   } catch (error) {
-    console.error('❌ Şirket finansal güncelleme hatası:', error);
     throw error;
   }
 };
@@ -466,7 +416,6 @@ export const processQRScanCompletion = async (reservationId, scannedBy) => {
     };
 
   } catch (error) {
-    console.error('❌ QR scan completion error:', error);
     throw error;
   }
 };
@@ -507,7 +456,6 @@ export const manualCompleteReservation = async (reservationId, completedBy) => {
     };
 
   } catch (error) {
-    console.error('❌ Manual completion error:', error);
     throw error;
   }
 };

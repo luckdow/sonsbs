@@ -66,6 +66,7 @@ const ReservationIndex = () => {
                reservationDate < oneMonthLater && 
                !['cancelled', 'completed'].includes(r.status);
       }),
+      assigned: reservations.filter(r => r.status === 'assigned'), // Şoför atananlar
       completed: reservations.filter(r => r.status === 'completed'),
       cancelled: reservations.filter(r => r.status === 'cancelled'),
       pending: reservations.filter(r => r.status === 'pending' || r.status === 'confirmed'),
@@ -176,7 +177,7 @@ const ReservationIndex = () => {
         setLoading(false);
       },
       (error) => {
-        console.error('Rezervasyonlar yüklenirken hata:', error);
+        // Hata durumunda sessizce yoksay
         setReservations([]);
         setLoading(false);
       }
@@ -209,7 +210,7 @@ const ReservationIndex = () => {
         setDrivers(driverData);
       },
       (error) => {
-        console.error('Şoförler yüklenirken hata:', error);
+        // Hata durumunda sessizce yoksay
         setDrivers([]);
       }
     );
@@ -229,7 +230,7 @@ const ReservationIndex = () => {
         setVehicles(vehicleData);
       },
       (error) => {
-        console.error('Araçlar yüklenirken hata:', error);
+        // Hata durumunda sessizce yoksay
         setVehicles([]);
       }
     );
@@ -257,7 +258,7 @@ const ReservationIndex = () => {
       toast.success('Rezervasyon başarıyla eklendi!');
       
     } catch (error) {
-      console.error('Rezervasyon eklenirken hata:', error);
+      // Debug log removed
       toast.error('Rezervasyon eklenirken bir hata oluştu: ' + error.message);
     }
   };
@@ -269,7 +270,7 @@ const ReservationIndex = () => {
       // Rezervasyonu bul
       const reservationToUpdate = reservations.find(res => res.id === reservationId);
       if (!reservationToUpdate) {
-        console.error('❌ Rezervasyon bulunamadı:', reservationId);
+      // Debug log removed
         toast.error('Rezervasyon bulunamadı');
         return;
       }
@@ -303,14 +304,14 @@ const ReservationIndex = () => {
           const whatsappMessage = generateManualDriverWhatsAppMessage(reservationToUpdate, manualDriverInfo);
           sendWhatsAppMessage(manualDriverInfo.phone, whatsappMessage);
         } catch (whatsappError) {
-          console.error('WhatsApp gönderim hatası:', whatsappError);
+      // Debug log removed
           toast.error('WhatsApp gönderimi başarısız: ' + whatsappError.message);
         }
         
         // PDF oluştur ve indir
         try {
           const companyInfo = {
-            name: 'SONSBS Transfer Servisi',
+            name: 'SBS Transfer Hizmetleri Ltd. Şti.',
             address: 'Transfer Hizmeti',
             phone: '+90 555 123 45 67',
             email: 'info@sonsbs.com'
@@ -327,7 +328,7 @@ const ReservationIndex = () => {
           document.body.removeChild(link);
           
         } catch (pdfError) {
-          console.error('PDF oluşturma hatası:', pdfError);
+      // Debug log removed
           toast.error('PDF oluşturma başarısız: ' + pdfError.message);
         }
         
@@ -361,7 +362,7 @@ const ReservationIndex = () => {
       setSelectedReservation(null);
       
     } catch (error) {
-      console.error('Şoför atama hatası:', error);
+      // Debug log removed
       toast.error('Şoför atama sırasında bir hata oluştu: ' + error.message);
     }
   };
@@ -372,7 +373,7 @@ const ReservationIndex = () => {
       // Rezervasyonu bul
       const reservationToUpdate = reservations.find(res => res.id === reservationId);
       if (!reservationToUpdate) {
-        console.error('Rezervasyon bulunamadı:', reservationId);
+      // Debug log removed
         toast.error('Rezervasyon bulunamadı');
         return;
       }
@@ -387,7 +388,7 @@ const ReservationIndex = () => {
       setSelectedReservation(null);
       toast.success('Rezervasyon başarıyla güncellendi!');
     } catch (error) {
-      console.error('Rezervasyon güncelleme hatası:', error);
+      // Debug log removed
       toast.error('Rezervasyon güncellenirken bir hata oluştu: ' + error.message);
     }
   };
@@ -424,7 +425,7 @@ const ReservationIndex = () => {
       toast.success(`Rezervasyon tamamlandı! ${paymentMsg}`);
       
     } catch (error) {
-      console.error('❌ Rezervasyon tamamlama hatası:', error);
+      // Debug log removed
       toast.error('Rezervasyon tamamlanırken hata oluştu: ' + error.message);
     }
   };
@@ -444,7 +445,7 @@ const ReservationIndex = () => {
       
       toast.success('Rezervasyon başarıyla silindi!');
     } catch (error) {
-      console.error('Rezervasyon silme hatası:', error);
+      // Debug log removed
       toast.error('Rezervasyon silinirken bir hata oluştu: ' + error.message);
     }
   };
@@ -471,6 +472,7 @@ const ReservationIndex = () => {
     { key: 'today', label: 'Bugün', count: categorizedReservations.today.length, color: 'text-red-600 bg-red-50' },
     { key: 'thisWeek', label: 'Bu Hafta', count: categorizedReservations.thisWeek.length, color: 'text-purple-600 bg-purple-50' },
     { key: 'thisMonth', label: 'Bu Ay', count: categorizedReservations.thisMonth.length, color: 'text-indigo-600 bg-indigo-50' },
+    { key: 'assigned', label: 'Şoför Atananlar', count: categorizedReservations.assigned.length, color: 'text-orange-600 bg-orange-50' },
     { key: 'calendar', label: 'Yıllık Takvim', count: 0, color: 'text-blue-600 bg-blue-50', isSpecial: true, icon: Calendar },
     { key: 'all', label: 'Tüm Rezervasyonlar', count: categorizedReservations.all.length, color: 'text-slate-600 bg-slate-50' },
     { key: 'pending', label: 'Bekleyen', count: categorizedReservations.pending.length, color: 'text-yellow-600 bg-yellow-50' },

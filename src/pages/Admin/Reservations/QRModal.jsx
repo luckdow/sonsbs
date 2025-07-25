@@ -58,7 +58,7 @@ const QRModal = ({ reservation, onClose }) => {
           });
         });
       } catch (error) {
-        console.error('Paylaşım hatası:', error);
+      // Debug log removed
       }
     }
   };

@@ -100,7 +100,6 @@ const LoginPage = () => {
       navigateBasedOnRole(profile);
       
     } catch (error) {
-      console.error('Login error:', error);
       
       let errorMessage = 'Giriş yapılırken bir hata oluştu';
       
@@ -136,7 +135,6 @@ const LoginPage = () => {
       navigateBasedOnRole(profile);
       
     } catch (error) {
-      console.error('Google sign-in error:', error);
       
       let errorMessage = 'Google ile giriş yapılırken bir hata oluştu';
       

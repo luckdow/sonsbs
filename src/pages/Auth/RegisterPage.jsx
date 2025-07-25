@@ -118,7 +118,6 @@ const RegisterPage = () => {
       
       navigate('/giriş');
     } catch (error) {
-      console.error('Register error:', error);
       
       let errorMessage = 'Kayıt olurken bir hata oluştu';
       
@@ -146,7 +145,6 @@ const RegisterPage = () => {
       });
       navigate('/');
     } catch (error) {
-      console.error('Google sign-in error:', error);
       
       let errorMessage = 'Google ile kayıt olurken bir hata oluştu';
       

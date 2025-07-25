@@ -15,7 +15,15 @@ import {
   Bell,
   UserCheck,
   ChevronRight,
-  Package
+  ChevronLeft,
+  Package,
+  Zap,
+  Activity,
+  TrendingUp,
+  MapPin,
+  Clock,
+  Star,
+  Shield
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -38,6 +46,18 @@ const AdminLayout = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushToken, setPushToken] = useState(null);
+  
+  // Gerçek veri state'leri
+  const [realStats, setRealStats] = useState({
+    totalReservations: 0,
+    totalVehicles: 0,
+    totalDrivers: 0,
+    totalRevenue: 0,
+    extraServices: 0,
+    todayReservations: 0,
+    monthlyRevenue: 0,
+    activeDrivers: 0
+  });
 
   // Click outside handler for notifications
   useEffect(() => {
@@ -56,6 +76,98 @@ const AdminLayout = () => {
     if (!user) return;
 
     let isMounted = true; // Component mounted kontrolü
+    
+    // Gerçek verileri çek
+    const fetchRealData = () => {
+      // Rezervasyonları dinle
+      const reservationsQuery = query(
+        collection(db, 'reservations'),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const unsubReservations = onSnapshot(reservationsQuery, (snapshot) => {
+        if (!isMounted) return;
+        
+        const reservations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Bugünün rezervasyonları
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const todayReservations = reservations.filter(res => {
+          const resDate = new Date(res.createdAt);
+          return resDate >= today && resDate < tomorrow;
+        });
+        
+        // Bu ayın geliri
+        const thisMonth = new Date();
+        thisMonth.setDate(1);
+        thisMonth.setHours(0, 0, 0, 0);
+        
+        const monthlyRevenue = reservations
+          .filter(res => {
+            const resDate = new Date(res.createdAt);
+            return resDate >= thisMonth && res.status !== 'cancelled';
+          })
+          .reduce((sum, res) => sum + (res.totalPrice || 0), 0);
+        
+        // Toplam gelir
+        const totalRevenue = reservations
+          .filter(res => res.status !== 'cancelled')
+          .reduce((sum, res) => sum + (res.totalPrice || 0), 0);
+        
+        setRealStats(prev => ({
+          ...prev,
+          totalReservations: reservations.length,
+          todayReservations: todayReservations.length,
+          monthlyRevenue,
+          totalRevenue
+        }));
+      });
+      
+      // Araçları dinle
+      const vehiclesQuery = query(collection(db, 'vehicles'));
+      const unsubVehicles = onSnapshot(vehiclesQuery, (snapshot) => {
+        if (!isMounted) return;
+        setRealStats(prev => ({
+          ...prev,
+          totalVehicles: snapshot.size
+        }));
+      });
+      
+      // Şoförleri dinle
+      const driversQuery = query(collection(db, 'drivers'));
+      const unsubDrivers = onSnapshot(driversQuery, (snapshot) => {
+        if (!isMounted) return;
+        const drivers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const activeDrivers = drivers.filter(driver => driver.isActive !== false);
+        
+        setRealStats(prev => ({
+          ...prev,
+          totalDrivers: drivers.length,
+          activeDrivers: activeDrivers.length
+        }));
+      });
+      
+      // Ek hizmetleri dinle
+      const extraServicesQuery = query(collection(db, 'extraServices'));
+      const unsubExtraServices = onSnapshot(extraServicesQuery, (snapshot) => {
+        if (!isMounted) return;
+        setRealStats(prev => ({
+          ...prev,
+          extraServices: snapshot.size
+        }));
+      });
+      
+      return () => {
+        unsubReservations();
+        unsubVehicles();
+        unsubDrivers();
+        unsubExtraServices();
+      };
+    };
     
     const setupNotificationSystem = async () => {
       console.log('🔔 Admin bildirim sistemi başlatılıyor...');
@@ -100,8 +212,19 @@ const AdminLayout = () => {
       }
     };
 
+    // Gerçek verileri çek ve unsubscribe fonksiyonlarını al
+    const unsubscribeDataListeners = fetchRealData();
+
     // FCM kurulumunu başlat
     setupNotificationSystem();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      if (unsubscribeDataListeners) {
+        unsubscribeDataListeners();
+      }
+    };
 
     // Firebase listeners
     const oneHourAgo = new Date();
@@ -274,43 +397,71 @@ const AdminLayout = () => {
       href: '/admin',
       icon: BarChart3,
       exact: true,
-      description: 'Genel bakış ve istatistikler'
-    },
-    {
-      name: 'Araç Yönetimi',
-      href: '/admin/vehicles',
-      icon: Car,
-      description: 'Araç ekleme, düzenleme ve yönetimi'
-    },
-    {
-      name: 'Şoför Yönetimi',
-      href: '/admin/şoförler',
-      icon: Users,
-      description: 'Şoför kayıtları ve atamalar'
-    },
-    {
-      name: 'Ek Hizmetler',
-      href: '/admin/ek-hizmetler',
-      icon: Package,
-      description: 'Ek hizmet yönetimi ve fiyatlandırma'
+      description: 'Genel bakış ve istatistikler',
+      gradient: 'from-blue-500 to-cyan-500',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      stats: null
     },
     {
       name: 'Rezervasyonlar',
       href: '/admin/rezervasyonlar',
       icon: Calendar,
-      description: 'Rezervasyon takibi ve yönetimi'
+      description: 'Rezervasyon takibi ve yönetimi',
+      gradient: 'from-purple-500 to-pink-500',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      stats: realStats.totalReservations || '0'
+    },
+    {
+      name: 'Araç Yönetimi',
+      href: '/admin/vehicles',
+      icon: Car,
+      description: 'Araç ekleme, düzenleme ve yönetimi',
+      gradient: 'from-green-500 to-emerald-500',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      stats: realStats.totalVehicles || '0'
+    },
+    {
+      name: 'Şoför Yönetimi',
+      href: '/admin/şoförler',
+      icon: Users,
+      description: 'Şoför kayıtları ve atamalar',
+      gradient: 'from-orange-500 to-red-500',
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      stats: realStats.totalDrivers || '0'
     },
     {
       name: 'Finansal Yönetim',
       href: '/admin/finans',
       icon: DollarSign,
-      description: 'Gelir, gider ve raporlar'
+      description: 'Gelir, gider ve raporlar',
+      gradient: 'from-yellow-500 to-orange-500',
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50',
+      stats: realStats.totalRevenue ? `€${(realStats.totalRevenue / 1000).toFixed(1)}k` : '€0'
+    },
+    {
+      name: 'Ek Hizmetler',
+      href: '/admin/ek-hizmetler',
+      icon: Package,
+      description: 'Ek hizmet yönetimi ve fiyatlandırma',
+      gradient: 'from-indigo-500 to-purple-500',
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+      stats: realStats.extraServices || '0'
     },
     {
       name: 'Ayarlar',
       href: '/admin/ayarlar',
       icon: Settings,
-      description: 'Sistem ayarları ve konfigürasyon'
+      description: 'Sistem ayarları ve konfigürasyon',
+      gradient: 'from-gray-500 to-slate-500',
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
+      stats: null
     }
   ];
 
@@ -318,7 +469,20 @@ const AdminLayout = () => {
     if (exact) {
       return location.pathname === href;
     }
-    return location.pathname.startsWith(href);
+    
+    // Normal karşılaştırma
+    if (location.pathname.startsWith(href)) {
+      return true;
+    }
+    
+    // URL decode edilmiş karşılaştırma (Türkçe karakterler için)
+    try {
+      const decodedPathname = decodeURIComponent(location.pathname);
+      const decodedHref = decodeURIComponent(href);
+      return decodedPathname.startsWith(decodedHref);
+    } catch (error) {
+      return false;
+    }
   };
 
   // Sidebar animation variants
@@ -388,7 +552,7 @@ const AdminLayout = () => {
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors relative z-10 backdrop-blur-sm"
           >
-            {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <X className="w-5 h-5" />}
+            {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </motion.button>
         )}
         {isMobile && (
@@ -415,7 +579,7 @@ const AdminLayout = () => {
                 <Car className="w-4 h-4 text-blue-400" />
                 <span className="text-sm font-medium text-slate-300">Araçlar</span>
               </div>
-              <p className="text-2xl font-bold text-white">{state.vehicles?.length || 0}</p>
+              <p className="text-2xl font-bold text-white">{realStats.totalVehicles}</p>
             </motion.div>
             <motion.div 
               className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 backdrop-blur-sm p-4 rounded-2xl border border-emerald-500/20 shadow-lg"
@@ -425,7 +589,27 @@ const AdminLayout = () => {
                 <Calendar className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm font-medium text-slate-300">Rezervasyon</span>
               </div>
-              <p className="text-2xl font-bold text-white">{state.reservations?.length || 0}</p>
+              <p className="text-2xl font-bold text-white">{realStats.totalReservations}</p>
+            </motion.div>
+            <motion.div 
+              className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 backdrop-blur-sm p-4 rounded-2xl border border-orange-500/20 shadow-lg"
+              whileHover={{ scale: 1.02, y: -2 }}
+            >
+              <div className="flex items-center space-x-2 mb-2">
+                <Users className="w-4 h-4 text-orange-400" />
+                <span className="text-sm font-medium text-slate-300">Şoförler</span>
+              </div>
+              <p className="text-2xl font-bold text-white">{realStats.activeDrivers}</p>
+            </motion.div>
+            <motion.div 
+              className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/10 backdrop-blur-sm p-4 rounded-2xl border border-yellow-500/20 shadow-lg"
+              whileHover={{ scale: 1.02, y: -2 }}
+            >
+              <div className="flex items-center space-x-2 mb-2">
+                <DollarSign className="w-4 h-4 text-yellow-400" />
+                <span className="text-sm font-medium text-slate-300">Aylık Gelir</span>
+              </div>
+              <p className="text-2xl font-bold text-white">€{realStats.monthlyRevenue}</p>
             </motion.div>
           </div>
         </div>
@@ -436,6 +620,16 @@ const AdminLayout = () => {
         {navigation.map((item, index) => {
           const isActive = isActiveRoute(item.href, item.exact);
           
+          // Debug için
+          if (item.name === 'Şoför Yönetimi') {
+            console.log('Şoför Yönetimi Debug:', {
+              currentPath: location.pathname,
+              decodedPath: decodeURIComponent(location.pathname),
+              itemHref: item.href,
+              isActive: isActive
+            });
+          }
+          
           return (
             <motion.div
               key={item.name}
@@ -445,51 +639,97 @@ const AdminLayout = () => {
             >
               <Link
                 to={item.href}
-                onClick={isMobile ? () => setSidebarOpen(false) : undefined}
+                onClick={(e) => {
+                  if (isMobile) {
+                    setSidebarOpen(false);
+                  }
+                  // Sayfa üstüne scroll et
+                  setTimeout(() => {
+                    window.scrollTo({ 
+                      top: 0, 
+                      behavior: 'smooth' 
+                    });
+                  }, 100);
+                }}
                 className="group relative block"
                 title={sidebarCollapsed ? item.name : undefined}
               >
                 <motion.div
                   className={`flex items-center ${sidebarCollapsed ? 'px-3 py-4 justify-center' : 'px-4 py-4'} text-sm font-medium rounded-2xl transition-all duration-300 relative overflow-hidden ${
                     isActive
-                      ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-xl shadow-blue-500/25'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                      ? `bg-gradient-to-r ${item.gradient} text-white shadow-xl shadow-blue-500/25 border border-white/20`
+                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50 border border-transparent hover:border-slate-600/50'
                   }`}
-                  variants={navItemVariants}
-                  initial="inactive"
-                  animate={isActive ? "active" : "inactive"}
-                  whileHover={!isActive ? "hover" : undefined}
+                  whileHover={{ scale: sidebarCollapsed ? 1.1 : 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                 >
+                  {/* Glow effect for active item */}
                   {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 via-indigo-600/90 to-purple-600/90 backdrop-blur-sm rounded-2xl"></div>
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-2xl"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
                   )}
-                  <item.icon 
-                    className={`w-6 h-6 ${sidebarCollapsed ? '' : 'mr-4'} transition-transform group-hover:scale-110 relative z-10 ${
-                      isActive ? 'text-white drop-shadow-lg' : 'text-slate-400 group-hover:text-blue-400'
-                    }`} 
-                  />
+                  
+                  {/* Icon with enhanced styling */}
+                  <motion.div
+                    className={`w-10 h-10 ${sidebarCollapsed ? '' : 'mr-4'} flex items-center justify-center rounded-xl transition-all duration-300 relative z-10 ${
+                      isActive 
+                        ? 'bg-white/20 backdrop-blur-sm shadow-lg' 
+                        : 'bg-slate-700/50 group-hover:bg-slate-600/50'
+                    }`}
+                    whileHover={{ rotate: isActive ? 0 : 5 }}
+                  >
+                    <item.icon
+                      className={`w-5 h-5 transition-all duration-300 ${
+                        isActive ? 'text-white drop-shadow-sm' : 'text-slate-400 group-hover:text-white'
+                      }`}
+                    />
+                  </motion.div>
+
+                  {/* Text and Stats */}
                   {!sidebarCollapsed && (
-                    <div className="flex-1 relative z-10">
-                      <div className="font-semibold">{item.name}</div>
-                      {!isActive && (
-                        <div className="text-xs text-slate-400 group-hover:text-slate-300 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex-1 flex items-center justify-between relative z-10">
+                      <div>
+                        <div className={`font-semibold transition-colors ${
+                          isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'
+                        }`}>
+                          {item.name}
+                        </div>
+                        <div className={`text-xs mt-0.5 transition-colors ${
+                          isActive ? 'text-white/80' : 'text-slate-500 group-hover:text-slate-400'
+                        }`}>
                           {item.description}
                         </div>
+                      </div>
+                      
+                      {/* Stats Badge */}
+                      {item.stats && (
+                        <motion.div
+                          className={`px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                            isActive 
+                              ? 'bg-white/20 text-white' 
+                              : 'bg-slate-700/50 text-slate-400 group-hover:bg-slate-600/50 group-hover:text-slate-300'
+                          }`}
+                          whileHover={{ scale: 1.1 }}
+                        >
+                          {item.stats}
+                        </motion.div>
                       )}
                     </div>
                   )}
-                  {isActive && !sidebarCollapsed && (
+
+                  {/* Hover indicator */}
+                  {!isActive && (
                     <motion.div
-                      layoutId="activeIndicator"
-                      className="w-2 h-2 bg-white rounded-full shadow-lg relative z-10"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                    />
-                  )}
-                  {!isActive && !sidebarCollapsed && (
-                    <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity relative z-10" />
+                      className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      initial={{ x: -10 }}
+                      whileHover={{ x: 0 }}
+                    >
+                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                    </motion.div>
                   )}
                 </motion.div>
               </Link>
@@ -498,37 +738,29 @@ const AdminLayout = () => {
         })}
       </nav>
 
-      {/* User Profile */}
-      <div className="p-4 border-t border-slate-700/50 bg-gradient-to-br from-slate-800/50 to-slate-900/50">
-        <motion.div 
-          className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'space-x-3'} p-4 bg-gradient-to-br from-slate-700/50 to-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-600/30 shadow-xl`}
-          whileHover={{ scale: 1.02, y: -2 }}
-        >
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <UserCheck className="w-6 h-6 text-white" />
+      {/* Bottom Section */}
+      <div className="border-t border-slate-700/50 p-4 bg-gradient-to-r from-slate-800/50 to-slate-900/50">
+        {!sidebarCollapsed && (
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <UserCheck className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white">Admin Panel</p>
+              <p className="text-xs text-slate-400">Yönetici Modu Aktif</p>
+            </div>
           </div>
-          {!sidebarCollapsed && (
-            <>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">
-                  {user?.displayName || 'Admin'}
-                </p>
-                <p className="text-xs text-slate-400 truncate">
-                  {user?.email}
-                </p>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleLogout}
-                className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
-                title="Çıkış Yap"
-              >
-                <LogOut className="w-5 h-5" />
-              </motion.button>
-            </>
-          )}
-        </motion.div>
+        )}
+        
+        <motion.button
+          onClick={handleLogout}
+          className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3 text-sm font-medium text-red-400 hover:text-white hover:bg-red-600/20 rounded-xl transition-all duration-300 border border-red-500/30 hover:border-red-500/50 group`}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <LogOut className={`w-5 h-5 ${sidebarCollapsed ? '' : 'mr-3'} group-hover:rotate-12 transition-transform`} />
+          {!sidebarCollapsed && <span>Çıkış Yap</span>}
+        </motion.button>
       </div>
     </div>
   );

@@ -235,7 +235,6 @@ const AddVehicleModal = ({ onClose, onSubmit }) => {
         onClose();
       }
     } catch (error) {
-      console.error('Araç eklenirken hata:', error);
     } finally {
       setIsSubmitting(false);
     }

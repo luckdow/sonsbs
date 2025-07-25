@@ -40,7 +40,7 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
         
         setManualDrivers(drivers);
       } catch (error) {
-        console.error('Manuel şoförler yüklenirken hata:', error);
+        // Hata durumunda sessizce yoksay, kullanıcıya bildirim gerekmez
       }
     };
 
@@ -132,9 +132,8 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
         // Manuel şoför ataması - özel işlem
         await onAssign(reservation.id, null, null, manualDriver);
         
-        // ✅ Manuel şoföre WhatsApp gönder
+        // Manuel şoföre WhatsApp gönder
         try {
-          console.log('📤 WhatsApp gönderim başlatılıyor...');
           const whatsappSuccess = sendManualDriverWhatsApp(reservation, manualDriver);
           
           if (whatsappSuccess) {
@@ -143,12 +142,10 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
             alert(`✅ Şoför atandı!\n\n⚠️ WhatsApp mesajı gönderilemedi.\nLütfen manuel olarak ${manualDriver.phone} numarasına mesaj gönderin.`);
           }
         } catch (whatsappError) {
-          console.error('❌ WhatsApp gönderme hatası:', whatsappError);
           alert(`✅ Şoför atandı!\n\n❌ WhatsApp gönderiminde hata oluştu.\nLütfen manuel olarak ${manualDriver.phone} numarasına mesaj gönderin.`);
         }
       }
     } catch (error) {
-      console.error('Şoför atama hatası:', error);
       alert('Şoför atama sırasında bir hata oluştu');
     } finally {
       setLoading(false);
@@ -170,52 +167,102 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
         </div>
 
         {/* Content Area with Scroll */}
+                {/* Content Area with Scroll */}
         <div className="flex-1 overflow-y-auto">
-          {/* Rezervasyon Özeti */}
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
-            <h3 className="font-medium text-gray-900 mb-2">{reservation.reservationId}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-600">
-              <div>
-                <strong>Müşteri:</strong><br />
-                {reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}
+          {/* Rezervasyon Özeti - Yenilenmiş Tasarım */}
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+            {/* Rezervasyon ID */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="bg-white px-4 py-2 rounded-full shadow-sm border border-blue-200">
+                <h3 className="text-md font-bold text-blue-800">{reservation.reservationId}</h3>
               </div>
-              <div>
-                <strong>Tarih & Saat:</strong><br />
-                {reservation.tripDetails?.date} - {reservation.tripDetails?.time}
+            </div>
+
+            {/* Ana Bilgiler - Kart Tasarımı */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Sol Kart - Rota Bilgisi */}
+              <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                <div className="flex items-center mb-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <h4 className="font-medium text-gray-800 text-xs uppercase tracking-wide">Transfer Rotası</h4>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Kalkış</p>
+                      <p className="font-medium text-gray-900 leading-tight text-sm">
+                        {formatLocation(reservation.tripDetails?.pickupLocation)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="ml-2 border-l border-dashed border-gray-300 h-3"></div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Varış</p>
+                      <p className="font-medium text-gray-900 leading-tight text-sm">
+                        {formatLocation(reservation.tripDetails?.dropoffLocation)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <strong>Rota:</strong><br />
-                {formatLocation(reservation.tripDetails?.pickupLocation)} → {formatLocation(reservation.tripDetails?.dropoffLocation)}
-              </div>
-              <div>
-                <strong>Yolcu:</strong><br />
-                {reservation.tripDetails?.passengerCount} kişi
+
+              {/* Sağ Kart - Diğer Bilgiler */}
+              <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                <div className="flex items-center mb-2">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                  <h4 className="font-medium text-gray-800 text-xs uppercase tracking-wide">Rezervasyon Detayları</h4>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Müşteri</p>
+                    <p className="font-medium text-gray-900 text-sm">
+                      {reservation.customerInfo?.firstName} {reservation.customerInfo?.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Yolcu Sayısı</p>
+                    <p className="font-medium text-gray-900 text-sm">
+                      {reservation.tripDetails?.passengerCount} kişi
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Tarih & Saat</p>
+                    <p className="font-medium text-gray-900 text-md">
+                      {reservation.tripDetails?.date} - {reservation.tripDetails?.time}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-4 space-y-6">
-            {/* Atama Türü Seçimi */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Atama Türü Seçimi - Küçük Tasarım */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Atama Türü *
+              <label className="block text-md font-medium text-gray-700 mb-3">
+                Şoför Atama Türü
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setAssignmentType('system');
                     setSelectedDriver('');
                   }}
-                  className={`p-6 border rounded-lg transition-all ${
+                  className={`p-3 border rounded-lg transition-all flex items-center gap-3 ${
                     assignmentType === 'system'
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                      : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <User className="w-8 h-8 mx-auto mb-3" />
-                  <div className="text-lg font-medium">Sistem Şoförü</div>
-                  <div className="text-sm text-gray-500 mt-1">Kayıtlı şoförlerden seç</div>
+                  <User className="w-5 h-5" />
+                  <div className="text-left">
+                    <div className="font-medium">Sistem Şoförü</div>
+                    <div className="text-xs opacity-75">Kayıtlı şoförlerden seç</div>
+                  </div>
                 </button>
                 
                 <button
@@ -224,15 +271,17 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
                     setAssignmentType('manual');
                     setSelectedDriver('');
                   }}
-                  className={`p-6 border rounded-lg transition-all ${
+                  className={`p-3 border rounded-lg transition-all flex items-center gap-3 ${
                     assignmentType === 'manual'
                       ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                      : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <UserPlus className="w-8 h-8 mx-auto mb-3" />
-                  <div className="text-lg font-medium">Manuel Şoför</div>
-                  <div className="text-sm text-gray-500 mt-1">Dış şoför bilgisi gir</div>
+                  <UserPlus className="w-5 h-5" />
+                  <div className="text-left">
+                    <div className="font-medium">Manuel Şoför</div>
+                    <div className="text-xs opacity-75">Dış şoför bilgisi gir</div>
+                  </div>
                 </button>
               </div>
             </div>

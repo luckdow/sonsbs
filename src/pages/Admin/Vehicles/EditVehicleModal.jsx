@@ -270,7 +270,6 @@ const EditVehicleModal = ({ vehicle, onClose, onSubmit }) => {
         onClose();
       }
     } catch (error) {
-      console.error('Araç güncellenirken hata:', error);
     } finally {
       setIsSubmitting(false);
     }

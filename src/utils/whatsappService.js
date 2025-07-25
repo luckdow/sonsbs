@@ -3,7 +3,9 @@
 /**
  * WhatsApp Web'de mesaj gönderir
  * @param {string} phoneNumber - Telefon numarası (+90 formatında)
- * @param {string} message - Gönderilecek mesaj
+ *    const message = `SBS TRANSFER HİZMETLERİ LTD. ŞTİ.
+Seyahat Talebionst message = `SBS TRANSFER HİZMETLERİ LTD. ŞTİ.
+Yeni Seyahat Göreviaram {string} message - Gönderilecek mesaj
  */
 export const sendWhatsAppMessage = (phoneNumber, message) => {
   try {
@@ -94,7 +96,7 @@ export const generateReservationWhatsAppMessage = (reservation, driverInfo, pric
     return `${day}/${month}/${year}`;
   };
 
-  const message = `SONSBS TRANSFER SERVISI
+  const message = `SBS TRANSFER HİZMETLERİ LTD. ŞTİ.
 *Rezervasyon Detaylari*
 
 Rezervasyon No: ${reservation.reservationId}
@@ -118,7 +120,7 @@ Arac Plakasi: ${driverInfo.plateNumber}
 *Lutfen belirlenen saatte hazir olunuz.*
 *Iyi yolculuklar dileriz!*
 
-_SONSBS Transfer Servisi_`;
+_SBS Transfer Hizmetleri Ltd. Şti._`;
 
   return message;
 };
@@ -161,7 +163,7 @@ Sizin hak edisiniz: ${manualDriver.price} EUR
 (Hak edisinizi firmadan alacaksiniz)`;
   }
 
-  const message = `SONSBS TRANSFER SERVISI
+  const message = `SBS TRANSFER HİZMETLERİ LTD. ŞTİ.
 Yeni Seyahat Gorevi
 
 Merhaba ${manualDriver.name},
@@ -187,7 +189,7 @@ Bu link ile yolculugu baslatip tamamlayabilirsiniz.
 
 Iyi yolculuklar.
 
-SONSBS Transfer Servisi`;
+SBS Transfer Hizmetleri Ltd. Şti.`;
 
   return message;
 };

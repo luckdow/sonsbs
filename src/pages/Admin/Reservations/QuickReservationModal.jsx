@@ -96,7 +96,7 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
         });
       });
     } catch (error) {
-      console.error('Fiyat hesaplama hatası:', error);
+      // Debug log removed
       setCalculating(false);
       const basePrice = isRoundTrip ? 200 : 100; // Varsayılan fiyat
       return { price: basePrice, distance: 0 };
@@ -262,7 +262,7 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
       
       await onSubmit(reservationData);
     } catch (error) {
-      console.error('Rezervasyon ekleme hatası:', error);
+      // Debug log removed
     } finally {
       setLoading(false);
     }
@@ -673,8 +673,8 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'cash', label: 'Nakit', desc: 'Araçta ödeme' },
-                    { value: 'card', label: 'Kredi Kartı', desc: 'Online ödeme' },
-                    { value: 'transfer', label: 'Havale', desc: 'Banka havalesi' }
+                    { value: 'credit_card', label: 'Kredi Kartı', desc: 'Online ödeme' },
+                    { value: 'bank_transfer', label: 'Havale', desc: 'Banka havalesi' }
                   ].map((method) => (
                     <label
                       key={method.value}
