@@ -47,6 +47,8 @@ import ExtraServicesManagement from './pages/Admin/ExtraServicesManagement'
 import ReservationManagement from './pages/Admin/Reservations'
 import FinancialManagement from './pages/Admin/Financial'
 import SettingsPage from './pages/Admin/SettingsPage'
+import PushNotificationTest from './pages/Admin/PushNotificationTest'
+import NotificationTestPage from './pages/Admin/NotificationTestPage'
 
 // Driver Pages
 import DriverDashboard from './pages/Driver/DriverDashboard'
@@ -135,6 +137,8 @@ function App() {
                 <Route path="ek-hizmetler" element={<ExtraServicesManagement />} />
                 <Route path="rezervasyonlar" element={<ReservationManagement />} />
                 <Route path="finans" element={<FinancialManagement />} />
+                <Route path="push-test" element={<PushNotificationTest />} />
+                <Route path="notification-test" element={<NotificationTestPage />} />
                 <Route path="ayarlar" element={<SettingsPage />} />
               </Route>
 

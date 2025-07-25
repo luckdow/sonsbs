@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB6903uKvs3vjCkfreIvzensUFa25wVB9c",
@@ -21,5 +22,18 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Messaging için güvenli initialization (sadece browser'da)
+let messaging = null;
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  try {
+    messaging = getMessaging(app);
+    console.log('✅ Firebase Messaging initialized');
+  } catch (error) {
+    console.error('❌ Firebase Messaging initialization error:', error);
+  }
+}
+
+export { messaging };
 
 export default app;
