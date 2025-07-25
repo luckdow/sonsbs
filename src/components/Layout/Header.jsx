@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Car, Phone, Mail, Menu, X, User, Calendar, LogOut } from 'lucide-react';
+import { Car, Phone, Mail, Menu, X, User, Calendar, LogOut, ChevronDown } from 'lucide-react';
 import { APP_CONFIG } from '../../config/constants';
 import { useAuth } from '../../contexts/AuthContext';
 import Logo from '../UI/Logo';
@@ -139,6 +139,55 @@ const Header = () => {
                 </Link>
               </div>
             ))}
+            
+            {/* Şehirler Dropdown */}
+            <div className="relative group">
+              <button className="relative font-medium transition-colors duration-300 text-white hover:text-yellow-200 flex items-center space-x-1">
+                <span>Şehirler</span>
+                <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
+              </button>
+              
+              {/* Dropdown Menu */}
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="py-2">
+                  <Link
+                    to="/antalya-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Antalya Transfer
+                  </Link>
+                  <Link
+                    to="/kemer-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Kemer Transfer
+                  </Link>
+                  <Link
+                    to="/side-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Side Transfer
+                  </Link>
+                  <Link
+                    to="/belek-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Belek Transfer
+                  </Link>
+                  <Link
+                    to="/alanya-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Alanya Transfer
+                  </Link>
+                </div>
+              </div>
+            </div>
           </nav>
 
           {/* Contact Info & Actions */}
@@ -206,6 +255,32 @@ const Header = () => {
                 </Link>
               </div>
             ))}
+
+            {/* Mobile City Links */}
+            <div className="px-4">
+              <h4 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                Transfer Şehirleri
+              </h4>
+              <div className="space-y-1">
+                {[
+                  { path: '/antalya-transfer', label: 'Antalya Transfer' },
+                  { path: '/kemer-transfer', label: 'Kemer Transfer' },
+                  { path: '/side-transfer', label: 'Side Transfer' },
+                  { path: '/belek-transfer', label: 'Belek Transfer' },
+                  { path: '/alanya-transfer', label: 'Alanya Transfer' }
+                ].map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="block px-2 py-1 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Car className="w-3 h-3 inline mr-2" />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
             
             {/* Mobile User Actions */}
             {user ? (

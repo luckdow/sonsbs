@@ -10,6 +10,12 @@ import TermsPage from './pages/Static/TermsPage'
 import KVKKPage from './pages/Static/KVKKPage'
 import CookiePolicyPage from './pages/Static/CookiePolicyPage'
 import RefundCancellationPage from './pages/Static/RefundCancellationPage'
+
+// City Pages
+import AntalyaTransferPage from './pages/City/AntalyaTransferPage'
+import KemerTransferPage from './pages/City/KemerTransferPage'
+import SideTransferPage from './pages/City/SideTransferPage'
+
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
@@ -91,6 +97,11 @@ function App() {
                 <Route path="kvkk" element={<KVKKPage />} />
                 <Route path="cerez-politikasi" element={<CookiePolicyPage />} />
                 <Route path="iade-iptal" element={<RefundCancellationPage />} />
+                
+                {/* City Pages */}
+                <Route path="antalya-transfer" element={<AntalyaTransferPage />} />
+                <Route path="kemer-transfer" element={<KemerTransferPage />} />
+                <Route path="side-transfer" element={<SideTransferPage />} />
               </Route>
 
               {/* Booking Confirmation - Standalone Route */}
