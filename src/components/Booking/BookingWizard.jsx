@@ -91,12 +91,16 @@ const BookingWizard = () => {
   const handleNext = () => {
     if (currentStep < steps.length) {
       setCurrentStep(prev => prev + 1);
+      // Sayfa başına scroll
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
+      // Sayfa başına scroll
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 

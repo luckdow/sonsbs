@@ -206,7 +206,44 @@ const ReservationTable = ({
                   </td>
                   
                   <td className="px-2 py-3 whitespace-nowrap">
-                    <StatusBadge status={reservation.status} />
+                    <div className="space-y-1">
+                      <StatusBadge status={reservation.status} />
+                      {/* İptal bilgileri */}
+                      {reservation.status === 'cancelled' && (
+                        <div className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                          {reservation.cancellationReason && (
+                            <div className="font-medium">{reservation.cancellationReason}</div>
+                          )}
+                          {reservation.cancelledBy && (
+                            <div className="text-red-500 mt-1">
+                              İptal eden: {reservation.cancelledBy}
+                            </div>
+                          )}
+                          {reservation.cancelledAt && (
+                            <div className="text-red-400 text-xs">
+                              {new Date(reservation.cancelledAt).toLocaleString('tr-TR')}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {/* Düzenleme bilgileri */}
+                      {reservation.lastEditedAt && (
+                        <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          <div className="font-medium flex items-center">
+                            <RotateCcw className="w-3 h-3 mr-1" />
+                            Düzenlendi
+                          </div>
+                          {reservation.editedBy && (
+                            <div className="text-blue-500 mt-1">
+                              Düzenleyen: {reservation.editedBy}
+                            </div>
+                          )}
+                          <div className="text-blue-400 text-xs">
+                            {new Date(reservation.lastEditedAt).toLocaleString('tr-TR')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </td>
                   
                   <td className="px-2 py-3 whitespace-nowrap">
@@ -658,6 +695,63 @@ const ReservationTable = ({
                             )}
                           </div>
                         </div>
+                        
+                        {/* Düzenleme Geçmişi - Eğer düzenleme yapılmışsa */}
+                        {(reservation.editHistory || reservation.lastEditedAt) && (
+                          <div className="mt-4 bg-white rounded-lg p-3 shadow-sm border border-blue-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="p-1 bg-blue-100 rounded">
+                                <RotateCcw className="w-3 h-3 text-blue-600" />
+                              </div>
+                              <h4 className="font-medium text-blue-900 text-sm">Düzenleme Geçmişi</h4>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              {/* Son düzenleme */}
+                              {reservation.lastEditedAt && (
+                                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-medium text-blue-800">Son Düzenleme</span>
+                                    <span className="text-xs text-blue-600">
+                                      {new Date(reservation.lastEditedAt).toLocaleString('tr-TR')}
+                                    </span>
+                                  </div>
+                                  {reservation.editedBy && (
+                                    <div className="text-xs text-blue-700">
+                                      <strong>Düzenleyen:</strong> {reservation.editedBy}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {/* Düzenleme geçmişi detayları */}
+                              {reservation.editHistory && reservation.editHistory.length > 0 && (
+                                <div className="space-y-1">
+                                  {reservation.editHistory.slice(-3).reverse().map((edit, index) => (
+                                    <div key={index} className="bg-gray-50 rounded p-2 border border-gray-200">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-xs font-medium text-gray-700">
+                                          {edit.changes || 'Bilgiler güncellendi'}
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                          {new Date(edit.editedAt).toLocaleString('tr-TR')}
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-gray-600">
+                                        Düzenleyen: {edit.editedBy}
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {reservation.editHistory.length > 3 && (
+                                    <div className="text-xs text-gray-500 text-center">
+                                      ve {reservation.editHistory.length - 3} daha fazla düzenleme...
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div> {/* max-w-7xl mx-auto kapanışı */}
                     </td>
                   </tr>

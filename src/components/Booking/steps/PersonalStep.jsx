@@ -288,7 +288,22 @@ const PersonalStep = ({ bookingData, updateBookingData, onNext, onBack }) => {
             className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
           />
           <label htmlFor="acceptTerms" className="text-sm text-gray-700 leading-relaxed">
-            <span className="font-medium">Kullanım Şartları</span> ve <span className="font-medium">Gizlilik Politikası</span>'nı 
+            <a 
+              href="/kullanim-sartlari" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-blue-600 hover:text-blue-800 underline"
+            >
+              Kullanım Şartları
+            </a> ve{' '}
+            <a 
+              href="/gizlilik-politikasi" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-blue-600 hover:text-blue-800 underline"
+            >
+              Gizlilik Politikası
+            </a>'nı 
             okudum ve kabul ediyorum. Kişisel verilerimin işlenmesine ve transfer hizmeti için kullanılmasına onay veriyorum. *
           </label>
         </div>

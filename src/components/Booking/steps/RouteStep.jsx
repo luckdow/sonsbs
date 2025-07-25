@@ -629,7 +629,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
       {/* Location Selection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Pickup Location */}
-        <div className="space-y-2">
+        <div className="space-y-2 relative">
           <label className="block text-sm font-medium text-gray-700">Nereden</label>
           <div className="relative">
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
@@ -658,33 +658,33 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
           
           {/* Google Places Dropdown for Pickup */}
           {showPickupSuggestions && googlePickupSuggestions.length > 0 && (
-            <div className="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-32 sm:max-h-40 overflow-hidden">
-              <div className="px-2 py-1 sm:px-3 sm:py-2 border-b border-gray-100 bg-blue-50">
+            <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-hidden">
+              <div className="px-3 py-2 border-b border-gray-100 bg-blue-50">
                 <p className="text-xs font-medium text-blue-700 flex items-center">
-                  <span className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded text-white text-[8px] sm:text-[10px] flex items-center justify-center mr-1">G</span>
+                  <span className="w-3 h-3 bg-blue-500 rounded text-white text-[8px] flex items-center justify-center mr-2">G</span>
                   Google Önerileri
                 </p>
               </div>
-              <div className="max-h-28 sm:max-h-36 overflow-y-auto">
+              <div className="max-h-40 overflow-y-auto">
                 {googlePickupSuggestions.slice(0, 4).map((place, index) => (
                   <button
                     key={`google-${index}`}
                     type="button"
                     onClick={() => handlePlaceSelect(place, true)}
-                    className="w-full px-2 py-2 sm:px-3 sm:py-2 hover:bg-blue-50 flex items-center text-left border-b border-gray-50 last:border-b-0 transition-colors"
+                    className="w-full px-3 py-2 hover:bg-blue-50 focus:bg-blue-50 flex items-center text-left border-b border-gray-50 last:border-b-0 transition-colors"
                   >
                     <div className="flex items-center space-x-2 w-full min-w-0">
-                      <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-2 h-2 sm:w-3 sm:h-3 text-blue-600" />
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-3 h-3 text-blue-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 truncate text-xs sm:text-sm">{place.name}</div>
-                        <div className="text-[10px] sm:text-xs text-gray-500 truncate">{place.address}</div>
+                        <div className="font-medium text-gray-900 truncate text-sm">{place.name}</div>
+                        <div className="text-xs text-gray-500 truncate">{place.address}</div>
                       </div>
                       {place.rating > 0 && (
                         <div className="flex items-center space-x-1 flex-shrink-0">
-                          <Star className="w-2 h-2 text-yellow-400 fill-current" />
-                          <span className="text-[10px] text-gray-600">{place.rating}</span>
+                          <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                          <span className="text-xs text-gray-600">{place.rating}</span>
                         </div>
                       )}
                     </div>
@@ -696,7 +696,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
         </div>
 
         {/* Dropoff Location */}
-        <div className="space-y-2">
+        <div className="space-y-2 relative">
           <label className="block text-sm font-medium text-gray-700">Nereye</label>
           <div className="relative">
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
@@ -725,33 +725,33 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
           
           {/* Google Places Dropdown for Dropoff */}
           {showDropoffSuggestions && googleDropoffSuggestions.length > 0 && (
-            <div className="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-32 sm:max-h-40 overflow-hidden">
-              <div className="px-2 py-1 sm:px-3 sm:py-2 border-b border-gray-100 bg-blue-50">
+            <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-hidden">
+              <div className="px-3 py-2 border-b border-gray-100 bg-blue-50">
                 <p className="text-xs font-medium text-blue-700 flex items-center">
-                  <span className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded text-white text-[8px] sm:text-[10px] flex items-center justify-center mr-1">G</span>
+                  <span className="w-3 h-3 bg-blue-500 rounded text-white text-[8px] flex items-center justify-center mr-2">G</span>
                   Google Önerileri
                 </p>
               </div>
-              <div className="max-h-28 sm:max-h-36 overflow-y-auto">
+              <div className="max-h-40 overflow-y-auto">
                 {googleDropoffSuggestions.slice(0, 4).map((place, index) => (
                   <button
                     key={`google-${index}`}
                     type="button"
                     onClick={() => handlePlaceSelect(place, false)}
-                    className="w-full px-2 py-2 sm:px-3 sm:py-2 hover:bg-blue-50 flex items-center text-left border-b border-gray-50 last:border-b-0 transition-colors"
+                    className="w-full px-3 py-2 hover:bg-blue-50 focus:bg-blue-50 flex items-center text-left border-b border-gray-50 last:border-b-0 transition-colors"
                   >
                     <div className="flex items-center space-x-2 w-full min-w-0">
-                      <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-2 h-2 sm:w-3 sm:h-3 text-blue-600" />
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-3 h-3 text-blue-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 truncate text-xs sm:text-sm">{place.name}</div>
-                        <div className="text-[10px] sm:text-xs text-gray-500 truncate">{place.address}</div>
+                        <div className="font-medium text-gray-900 truncate text-sm">{place.name}</div>
+                        <div className="text-xs text-gray-500 truncate">{place.address}</div>
                       </div>
                       {place.rating > 0 && (
                         <div className="flex items-center space-x-1 flex-shrink-0">
-                          <Star className="w-2 h-2 text-yellow-400 fill-current" />
-                          <span className="text-[10px] text-gray-600">{place.rating}</span>
+                          <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                          <span className="text-xs text-gray-600">{place.rating}</span>
                         </div>
                       )}
                     </div>
