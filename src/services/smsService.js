@@ -141,7 +141,7 @@ class SMSService {
 📅 Tarih: ${data.transferDate} ${data.transferTime}
 🚗 Araç: ${data.vehicleType}
 👥 Yolcu: ${data.passengerCount} kişi
-💰 Ücret: ${data.totalAmount} TL
+💰 Ücret: €${data.totalAmount}
 
 🛣️ GÜZERGAH:
 🟢 ${data.pickupLocation}
@@ -161,7 +161,7 @@ ${data.flightNumber ? `✈️ Uçuş: ${data.flightNumber}` : ''}
 ✅ Ödemeniz alındı!
 
 📋 Rezervasyon: ${data.reservationNumber}
-💰 Tutar: ${data.totalAmount} TL
+💰 Tutar: €${data.totalAmount}
 💳 Yöntem: ${data.paymentMethod}
 📅 Tarih: ${new Date().toLocaleDateString('tr-TR')}
 

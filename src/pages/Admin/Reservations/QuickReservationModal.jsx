@@ -583,7 +583,7 @@ const QuickReservationModal = ({ onClose, onSubmit, vehicles = [] }) => {
                   {vehicles.map((vehicle) => (
                     <option key={vehicle.id} value={vehicle.id}>
                       {vehicle.brand} {vehicle.model} - {vehicle.plateNumber} 
-                      {vehicle.kmRate && ` (${vehicle.kmRate} TL/km)`}
+                      {vehicle.kmRate && ` (€${vehicle.kmRate}/km)`}
                     </option>
                   ))}
                 </select>

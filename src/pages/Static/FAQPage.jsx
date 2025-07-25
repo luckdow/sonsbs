@@ -92,7 +92,7 @@ const FAQPage = () => {
         {
           id: 'payment-methods',
           question: 'Hangi ödeme yöntemlerini kabul ediyorsunuz?',
-          answer: 'Nakit (TL, EUR, USD), kredi kartı ve online ödeme seçeneklerini kabul ediyoruz. Ödeme işlemini transfer öncesinde veya sonrasında yapabilirsiniz. Büyük gruplar için havale/EFT ile ön ödeme imkanı da bulunmaktadır.'
+          answer: 'Nakit (EUR, USD), kredi kartı ve online ödeme seçeneklerini kabul ediyoruz. Ödeme işlemini transfer öncesinde veya sonrasında yapabilirsiniz. Büyük gruplar için havale/EFT ile ön ödeme imkanı da bulunmaktadır.'
         },
         {
           id: 'pricing',

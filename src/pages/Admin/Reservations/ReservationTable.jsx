@@ -566,7 +566,7 @@ const ReservationTable = ({
                                 <div className="min-w-0">
                                   <p className="text-xs font-medium text-gray-700">Tutar</p>
                                   <p className="text-base text-gray-900 font-bold">
-                                    {reservation.totalPrice} TL
+                                    €{reservation.totalPrice}
                                   </p>
                                 </div>
                               </div>

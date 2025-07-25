@@ -35,7 +35,7 @@ const TermsPage = () => {
         'Ödemeler online kredi kartı, nakit veya banka havalesi ile yapılabilir.',
         'Online ödemeler güvenli SSL şifreleme ile korunmaktadır.',
         'Nakit ödemeler transfer başlangıcında şoföre yapılabilir.',
-        'Fiyatlar Türk Lirası, Euro veya USD cinsinden belirtilir ve güncel kurlarla hesaplanır.',
+        'Fiyatlar Euro veya USD cinsinden belirtilir ve güncel kurlarla hesaplanır.',
         'Ödeme yapılmayan rezervasyonlar otomatik olarak iptal edilir.'
       ]
     },
