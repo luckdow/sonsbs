@@ -1146,8 +1146,44 @@ const MyReservations = () => {
                   {/* Araç Bilgileri */}
                   <div>
                     <label className="text-sm text-gray-600">Seçilen Araç</label>
-                    <p className="font-medium">{selectedReservation.selectedVehicle?.name || selectedReservation.vehicleInfo?.name || 'Belirlenmedi'}</p>
+                    <p className="font-medium">
+                      {selectedReservation.selectedVehicle?.name || 
+                       selectedReservation.selectedVehicle?.type ||
+                       selectedReservation.vehicleType ||
+                       selectedReservation.vehicleInfo?.name || 
+                       'Belirlenmedi'}
+                    </p>
                   </div>
+                  
+                  {/* Transfer Tipi */}
+                  <div>
+                    <label className="text-sm text-gray-600">Transfer Tipi</label>
+                    <p className="font-medium">
+                      {selectedReservation.transferType === 'round-trip' || selectedReservation.isRoundTrip 
+                        ? 'Gidiş-Dönüş' 
+                        : 'Tek Yön'}
+                    </p>
+                  </div>
+                  
+                  {/* Dönüş bilgileri (eğer gidiş-dönüş ise) */}
+                  {(selectedReservation.transferType === 'round-trip' || selectedReservation.isRoundTrip) && (
+                    <>
+                      <div>
+                        <label className="text-sm text-gray-600">Dönüş Tarihi</label>
+                        <p className="font-medium">
+                          {selectedReservation.returnDate 
+                            ? new Date(selectedReservation.returnDate).toLocaleDateString('tr-TR')
+                            : 'Belirtilmemiş'}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-600">Dönüş Saati</label>
+                        <p className="font-medium">
+                          {selectedReservation.returnTime || 'Belirtilmemiş'}
+                        </p>
+                      </div>
+                    </>
+                  )}
                   
                   <div>
                     <label className="text-sm text-gray-600">Toplam Ücret</label>

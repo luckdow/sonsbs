@@ -121,6 +121,31 @@ const ReservationCard = ({
                 <span>✈️ {reservation.tripDetails.flightNumber}</span>
               )}
             </div>
+            
+            {/* Araç Tipi ve Transfer Tipi */}
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center gap-4 text-sm text-gray-600">
+                <span>🚗 {reservation.selectedVehicle?.name || reservation.vehicleType || 'Belirtilmemiş'}</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  reservation.transferType === 'round-trip' || reservation.isRoundTrip 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {reservation.transferType === 'round-trip' || reservation.isRoundTrip 
+                    ? '🔄 Gidiş-Dönüş' 
+                    : '➡️ Tek Yön'}
+                </span>
+              </div>
+              
+              {/* Dönüş bilgileri (eğer gidiş-dönüş ise) */}
+              {(reservation.transferType === 'round-trip' || reservation.isRoundTrip) && (
+                <div className="mt-2 text-xs text-gray-500">
+                  Dönüş: {reservation.returnDate 
+                    ? new Date(reservation.returnDate).toLocaleDateString('tr-TR')
+                    : 'Belirtilmemiş'} - {reservation.returnTime || 'Belirtilmemiş'}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -240,6 +240,7 @@ const BookingConfirmationPage = () => {
             delete data.personalInfo;
           }
           
+          console.log('📊 BookingWizard\'dan gelen tam data:', JSON.stringify(data, null, 2));
           setBookingData(data);
           
           // Rezervasyon ID'si oluştur
@@ -336,6 +337,17 @@ const BookingConfirmationPage = () => {
         reservationId: reservationCode,    // Hem reservationCode hem reservationId ekle - uyumluluk için
         status: 'pending',  // Bekleyen olarak kaydet, admin onaylayacak
         direction: data.direction === 'airport-to-hotel' ? 'from_airport' : 'to_airport',
+        
+        // ARAÇ TİPİ VE GİDİŞ-DÖNÜŞ BİLGİLERİNİ EKLE
+        transferType: data.transferType || 'one-way', // Gidiş-dönüş bilgisi
+        isRoundTrip: data.transferType === 'round-trip', // Boolean olarak da ekle
+        vehicleType: data.selectedVehicle?.name || data.selectedVehicle?.type || 'Belirtilmemiş',
+        vehicleId: data.selectedVehicle?.id || '',
+        
+        // DÖNÜŞ BİLGİLERİ (eğer gidiş-dönüş ise)
+        returnDate: data.returnDate || null,
+        returnTime: data.returnTime || null,
+        
         customerInfo: {
           firstName: data.customerInfo?.firstName || '',
           lastName: data.customerInfo?.lastName || '',
@@ -355,7 +367,14 @@ const BookingConfirmationPage = () => {
           luggageCount: data.baggageCount || 0,
           flightNumber: data.customerInfo?.flightNumber || ''
         },
-        selectedVehicle: data.selectedVehicle?.id || '',
+        selectedVehicle: {
+          id: data.selectedVehicle?.id || '',
+          name: data.selectedVehicle?.name || data.selectedVehicle?.type || 'Belirtilmemiş',
+          type: data.selectedVehicle?.type || data.selectedVehicle?.name || 'Belirtilmemiş',
+          capacity: data.selectedVehicle?.capacity || 0,
+          price: data.selectedVehicle?.price || 0,
+          totalPrice: data.selectedVehicle?.totalPrice || data.totalPrice || 0
+        },
         paymentMethod: data.paymentMethod || 'cash',
         totalPrice: data.selectedVehicle?.totalPrice || data.totalPrice || data.selectedVehicle?.price || 0,
         calculatedDistance: data.distance || 0,
