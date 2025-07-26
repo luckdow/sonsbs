@@ -158,18 +158,18 @@ const Header = () => {
                     Antalya Transfer
                   </Link>
                   <Link
+                    to="/lara-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Lara Transfer
+                  </Link>
+                  <Link
                     to="/kemer-transfer"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
                     Kemer Transfer
-                  </Link>
-                  <Link
-                    to="/side-transfer"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
-                  >
-                    <Car className="w-4 h-4 mr-3 text-blue-600" />
-                    Side Transfer
                   </Link>
                   <Link
                     to="/belek-transfer"
@@ -179,11 +179,46 @@ const Header = () => {
                     Belek Transfer
                   </Link>
                   <Link
+                    to="/side-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Side Transfer
+                  </Link>
+                  <Link
                     to="/alanya-transfer"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
                     Alanya Transfer
+                  </Link>
+                  <Link
+                    to="/kas-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Kaş Transfer
+                  </Link>
+                  <Link
+                    to="/kalkan-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Kalkan Transfer
+                  </Link>
+                  <Link
+                    to="/manavgat-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Manavgat Transfer
+                  </Link>
+                  <Link
+                    to="/serik-transfer"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                  >
+                    <Car className="w-4 h-4 mr-3 text-blue-600" />
+                    Serik Transfer
                   </Link>
                 </div>
               </div>
@@ -264,10 +299,15 @@ const Header = () => {
               <div className="space-y-1">
                 {[
                   { path: '/antalya-transfer', label: 'Antalya Transfer' },
+                  { path: '/lara-transfer', label: 'Lara Transfer' },
                   { path: '/kemer-transfer', label: 'Kemer Transfer' },
-                  { path: '/side-transfer', label: 'Side Transfer' },
                   { path: '/belek-transfer', label: 'Belek Transfer' },
-                  { path: '/alanya-transfer', label: 'Alanya Transfer' }
+                  { path: '/side-transfer', label: 'Side Transfer' },
+                  { path: '/alanya-transfer', label: 'Alanya Transfer' },
+                  { path: '/kas-transfer', label: 'Kaş Transfer' },
+                  { path: '/kalkan-transfer', label: 'Kalkan Transfer' },
+                  { path: '/manavgat-transfer', label: 'Manavgat Transfer' },
+                  { path: '/serik-transfer', label: 'Serik Transfer' }
                 ].map((item) => (
                   <Link
                     key={item.path}

@@ -12,11 +12,16 @@ import CookiePolicyPage from './pages/Static/CookiePolicyPage'
 import RefundCancellationPage from './pages/Static/RefundCancellationPage'
 
 // City Pages
-import AntalyaTransferPage from './pages/City/AntalyaTransferPage'
-import KemerTransferPage from './pages/City/KemerTransferPage'
-import SideTransferPage from './pages/City/SideTransferPage'
-import BelekTransferPage from './pages/City/BelekTransferPage'
-import AlanyaTransferPage from './pages/City/AlanyaTransferPage'
+import AntalyaTransfer from './pages/City/AntalyaTransfer'
+import LaraTransfer from './pages/City/LaraTransfer'
+import KasTransfer from './pages/City/KasTransfer'
+import KalkanTransfer from './pages/City/KalkanTransfer'
+import ManavgatTransfer from './pages/City/ManavgatTransfer'
+import SerikTransfer from './pages/City/SerikTransfer'
+import KemerTransfer from './pages/City/KemerTransfer'
+import BelekTransfer from './pages/City/BelekTransfer'
+import AlanyaTransfer from './pages/City/AlanyaTransfer'
+import SideTransfer from './pages/City/SideTransfer'
 
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
@@ -101,11 +106,16 @@ function App() {
                 <Route path="iade-iptal" element={<RefundCancellationPage />} />
                 
                 {/* City Pages */}
-                <Route path="antalya-transfer" element={<AntalyaTransferPage />} />
-                <Route path="kemer-transfer" element={<KemerTransferPage />} />
-                <Route path="side-transfer" element={<SideTransferPage />} />
-                <Route path="belek-transfer" element={<BelekTransferPage />} />
-                <Route path="alanya-transfer" element={<AlanyaTransferPage />} />
+                <Route path="antalya-transfer" element={<AntalyaTransfer />} />
+                <Route path="lara-transfer" element={<LaraTransfer />} />
+                <Route path="kas-transfer" element={<KasTransfer />} />
+                <Route path="kalkan-transfer" element={<KalkanTransfer />} />
+                <Route path="manavgat-transfer" element={<ManavgatTransfer />} />
+                <Route path="serik-transfer" element={<SerikTransfer />} />
+                <Route path="kemer-transfer" element={<KemerTransfer />} />
+                <Route path="belek-transfer" element={<BelekTransfer />} />
+                <Route path="alanya-transfer" element={<AlanyaTransfer />} />
+                <Route path="side-transfer" element={<SideTransfer />} />
               </Route>
 
               {/* Booking Confirmation - Standalone Route */}
