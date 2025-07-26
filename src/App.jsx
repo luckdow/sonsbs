@@ -15,6 +15,8 @@ import RefundCancellationPage from './pages/Static/RefundCancellationPage'
 import AntalyaTransferPage from './pages/City/AntalyaTransferPage'
 import KemerTransferPage from './pages/City/KemerTransferPage'
 import SideTransferPage from './pages/City/SideTransferPage'
+import BelekTransferPage from './pages/City/BelekTransferPage'
+import AlanyaTransferPage from './pages/City/AlanyaTransferPage'
 
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
@@ -102,6 +104,8 @@ function App() {
                 <Route path="antalya-transfer" element={<AntalyaTransferPage />} />
                 <Route path="kemer-transfer" element={<KemerTransferPage />} />
                 <Route path="side-transfer" element={<SideTransferPage />} />
+                <Route path="belek-transfer" element={<BelekTransferPage />} />
+                <Route path="alanya-transfer" element={<AlanyaTransferPage />} />
               </Route>
 
               {/* Booking Confirmation - Standalone Route */}
