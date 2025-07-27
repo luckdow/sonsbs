@@ -1,104 +1,16 @@
 {
-  "name": "GATE Transfer - Antalya Transfer Hizmetleri",
-  "short_name": "GATE Transfer",
-  "description": "Antalya havalimanı transfer hizmetleri, VIP transfer, grup transfer ve otel transferi. Çevrimdışı özellikler ile PWA desteği.",
+  "name": "Gate Transfer - Antalya Transfer Hizmetleri",
+  "short_name": "Gate Transfer",
+  "description": "Antalya havalimanı transfer hizmetleri",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#ffffff",
   "theme_color": "#1e40af",
-  "orientation": "portrait-primary",
-  "scope": "/",
-  "lang": "tr",
-  "dir": "ltr",
-  "prefer_related_applications": false,
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "launch_handler": {
-    "client_mode": "navigate-existing"  
-  },
   "icons": [
     {
-      "src": "/images/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/images/icon-512.png", 
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/images/icon-192.png",
-      "sizes": "192x192", 
-      "type": "image/png",
-      "purpose": "monochrome"
+      "src": "/favicon.ico",
+      "sizes": "16x16",
+      "type": "image/x-icon"
     }
-  ],
-  "categories": ["travel", "transport", "business", "lifestyle"],
-  "shortcuts": [
-    {
-      "name": "Rezervasyon Yap",
-      "short_name": "Rezervasyon",
-      "description": "Hızlı rezervasyon oluştur",
-      "url": "/rezervasyon",
-      "icons": [
-        {
-          "src": "/images/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Rezervasyonlarım", 
-      "short_name": "Rezervasyonlar",
-      "description": "Mevcut rezervasyonları görüntüle",
-      "url": "/rezervasyonlarim",
-      "icons": [
-        {
-          "src": "/images/icon-192.png", 
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "İletişim",
-      "short_name": "İletişim", 
-      "description": "Bizimle iletişime geç",
-      "url": "/iletisim",
-      "icons": [
-        {
-          "src": "/images/icon-192.png",
-          "sizes": "192x192" 
-        }
-      ]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/images/screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Ana Sayfa - Masaüstü Görünüm"
-    },
-    {
-      "src": "/images/screenshot-narrow.png", 
-      "sizes": "720x1280",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Ana Sayfa - Mobil Görünüm"
-    }
-  ],
-  "related_applications": [],
-  "protocol_handlers": [
-    {
-      "protocol": "web+gatetransfer",
-      "url": "/rezervasyon?ref=%s"
-    }
-  ],
-  "handle_links": "preferred",
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  ]
 }
