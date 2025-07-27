@@ -1,0 +1,123 @@
+# GATE Transfer - Multilingual SEO Robots.txt
+# Supports: Turkish (TR), English (EN), German (DE), Russian (RU), Arabic (AR)
+
+User-agent: *
+Allow: /
+
+# Sitemaps - Multilingual Support
+Sitemap: https://gatetransfer.com/sitemap.xml
+Sitemap: https://gatetransfer.com/sitemap-multilingual.xml
+Sitemap: https://gatetransfer.com/en/sitemap-en.xml
+Sitemap: https://gatetransfer.com/de/sitemap-de.xml
+Sitemap: https://gatetransfer.com/ru/sitemap-ru.xml
+Sitemap: https://gatetransfer.com/ar/sitemap-ar.xml
+Sitemap: https://gatetransfer.com/sitemap-images.xml
+
+# Priority Pages for All Languages
+Allow: /
+Allow: /en/
+Allow: /de/
+Allow: /ru/
+Allow: /ar/
+
+# City Pages - All Languages
+Allow: /antalya
+Allow: /en/antalya
+Allow: /de/antalya
+Allow: /ru/antalya
+Allow: /ar/antalya
+
+Allow: /lara
+Allow: /en/lara
+Allow: /de/lara
+Allow: /ru/lara
+Allow: /ar/lara
+
+Allow: /kemer
+Allow: /en/kemer
+Allow: /de/kemer
+Allow: /ru/kemer
+Allow: /ar/kemer
+
+Allow: /belek
+Allow: /en/belek
+Allow: /de/belek
+Allow: /ru/belek
+Allow: /ar/belek
+
+Allow: /side
+Allow: /en/side
+Allow: /de/side
+Allow: /ru/side
+Allow: /ar/side
+
+Allow: /alanya
+Allow: /en/alanya
+Allow: /de/alanya
+Allow: /ru/alanya
+Allow: /ar/alanya
+
+# Service Pages - All Languages
+Allow: /services/
+Allow: /en/services/
+Allow: /de/services/
+Allow: /ru/services/
+Allow: /ar/services/
+
+# Booking Pages - All Languages
+Allow: /rezervasyon
+Allow: /en/booking
+Allow: /de/buchung
+Allow: /ru/booking
+Allow: /ar/booking
+
+# Blog Pages - Multilingual
+Allow: /blog/
+Allow: /en/blog/
+Allow: /de/blog/
+Allow: /ru/blog/
+
+# Static Pages - All Languages
+Allow: /about
+Allow: /en/about
+Allow: /de/about
+Allow: /ru/about
+Allow: /ar/about
+
+Allow: /contact
+Allow: /en/contact
+Allow: /de/contact
+Allow: /ru/contact
+Allow: /ar/contact
+
+# Block Admin and Development Files
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /firebase-debug.log
+Disallow: /*.json$
+Disallow: /src/
+Disallow: /node_modules/
+
+# Block Duplicate Content
+Disallow: /*?*
+Disallow: /*#*
+
+# Allow Images and Assets
+Allow: /images/
+Allow: /icons/
+Allow: /favicon.ico
+Allow: /manifest.json
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.svg$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.webp$
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Host declaration
+Host: https://gatetransfer.com

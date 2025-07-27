@@ -1,0 +1,207 @@
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import { 
+  multilingualKeywords, 
+  multilingualSeoTemplates, 
+  generateMultilingualKeywords,
+  generateHreflangTags,
+  hreflangMapping
+} from '../../data/multilingualSeoKeywords';
+
+const MultilingualSEO = ({ 
+  currentLanguage = 'tr',
+  pageType = 'city', // 'city', 'service', 'blog', 'home'
+  location = '',
+  title = '',
+  description = '',
+  canonicalUrl = '',
+  currentPath = '',
+  customKeywords = '',
+  schemaData = null,
+  openGraphImage = '',
+  availableLanguages = ['tr', 'en', 'de', 'ru', 'ar']
+}) => {
+  
+  // Generate title based on language and page type
+  const generateTitle = () => {
+    if (title) return title;
+    
+    const templates = multilingualSeoTemplates[currentLanguage];
+    if (!templates) return 'GATE Transfer';
+    
+    if (pageType === 'city' && location) {
+      return templates.cityPageTitle(location);
+    }
+    
+    if (pageType === 'service' && location) {
+      return templates.servicePageTitle(location);
+    }
+    
+    return 'GATE Transfer';
+  };
+
+  // Generate description based on language and page type
+  const generateDescription = () => {
+    if (description) return description;
+    
+    const templates = multilingualSeoTemplates[currentLanguage];
+    if (!templates) return 'Professional transfer services in Antalya';
+    
+    if (pageType === 'city' && location) {
+      return templates.cityPageDescription(location);
+    }
+    
+    if (pageType === 'service' && location) {
+      return templates.servicePageDescription(location);
+    }
+    
+    return 'Professional transfer services in Antalya';
+  };
+
+  // Generate keywords
+  const generateKeywords = () => {
+    let keywords = generateMultilingualKeywords(currentLanguage, pageType, location);
+    if (customKeywords) {
+      keywords = keywords ? `${keywords}, ${customKeywords}` : customKeywords;
+    }
+    return keywords;
+  };
+
+  // Generate hreflang tags
+  const hreflangTags = generateHreflangTags(currentPath, availableLanguages);
+
+  // Generate structured data
+  const generateStructuredData = () => {
+    if (schemaData) return schemaData;
+
+    const baseSchema = {
+      "@context": "https://schema.org",
+      "@type": "TravelAgency",
+      "name": "GATE Transfer",
+      "url": `https://gatetransfer.com${currentPath}`,
+      "logo": "https://gatetransfer.com/images/logo.png",
+      "description": generateDescription(),
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "TR",
+        "addressLocality": "Antalya"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+90-242-123-4567",
+        "contactType": "customer service",
+        "availableLanguage": availableLanguages.map(lang => hreflangMapping[lang])
+      },
+      "serviceArea": {
+        "@type": "GeoCircle",
+        "geoMidpoint": {
+          "@type": "GeoCoordinates",
+          "latitude": 36.8969,
+          "longitude": 30.7133
+        },
+        "geoRadius": 100000
+      }
+    };
+
+    if (pageType === 'city' && location) {
+      baseSchema["@type"] = "Service";
+      baseSchema.serviceType = `${location} Transfer Service`;
+      baseSchema.provider = {
+        "@type": "Organization",
+        "name": "GATE Transfer"
+      };
+    }
+
+    return baseSchema;
+  };
+
+  const pageTitle = generateTitle();
+  const pageDescription = generateDescription();
+  const pageKeywords = generateKeywords();
+  const structuredData = generateStructuredData();
+
+  return (
+    <Helmet>
+      {/* Basic Meta Tags */}
+      <title>{pageTitle}</title>
+      <meta name="description" content={pageDescription} />
+      {pageKeywords && <meta name="keywords" content={pageKeywords} />}
+      
+      {/* Language and Content Type */}
+      <html lang={hreflangMapping[currentLanguage]} />
+      <meta httpEquiv="content-language" content={hreflangMapping[currentLanguage]} />
+      
+      {/* Canonical URL */}
+      {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+      
+      {/* Hreflang Tags */}
+      {hreflangTags.map((tag, index) => (
+        <link
+          key={index}
+          rel={tag.rel}
+          hreflang={tag.hreflang}
+          href={tag.href}
+        />
+      ))}
+      
+      {/* Open Graph Tags */}
+      <meta property="og:title" content={pageTitle} />
+      <meta property="og:description" content={pageDescription} />
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={canonicalUrl || `https://gatetransfer.com${currentPath}`} />
+      <meta property="og:site_name" content="GATE Transfer" />
+      <meta property="og:locale" content={hreflangMapping[currentLanguage]} />
+      {openGraphImage && <meta property="og:image" content={openGraphImage} />}
+      
+      {/* Alternative locales for Open Graph */}
+      {availableLanguages
+        .filter(lang => lang !== currentLanguage)
+        .map(lang => (
+          <meta
+            key={lang}
+            property="og:locale:alternate"
+            content={hreflangMapping[lang]}
+          />
+        ))}
+      
+      {/* Twitter Card Tags */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={pageTitle} />
+      <meta name="twitter:description" content={pageDescription} />
+      {openGraphImage && <meta name="twitter:image" content={openGraphImage} />}
+      
+      {/* Robots Meta */}
+      <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+      <meta name="googlebot" content="index, follow" />
+      
+      {/* Additional SEO Tags */}
+      <meta name="author" content="GATE Transfer" />
+      <meta name="revisit-after" content="7 days" />
+      <meta name="distribution" content="global" />
+      <meta name="rating" content="general" />
+      
+      {/* Mobile Optimization */}
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      
+      {/* Structured Data */}
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
+      
+      {/* Preconnect for Performance */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://www.google-analytics.com" />
+      
+      {/* DNS Prefetch */}
+      <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+      <link rel="dns-prefetch" href="//www.google-analytics.com" />
+      <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+    </Helmet>
+  );
+};
+
+export default MultilingualSEO;

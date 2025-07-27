@@ -2,8 +2,30 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import WebPerformanceOptimizer from './components/UI/WebPerformanceOptimizer.jsx'
+import { googleAnalytics, seoPerformanceMonitor } from './utils/googleSeoIntegration.js'
 import './critical.css'
 import './index.css'
+
+// Google Analytics ve SEO Performance Monitoring başlat
+if (typeof window !== 'undefined') {
+  // Google Analytics'i başlat
+  googleAnalytics.initialize();
+  
+  // SEO Performance monitoring'i başlat
+  seoPerformanceMonitor.monitorCoreWebVitals();
+  
+  // İlk sayfa görüntülemesini track et
+  setTimeout(() => {
+    googleAnalytics.trackPageView(
+      window.location.pathname,
+      document.title,
+      'tr',
+      'home',
+      'antalya',
+      'transfer'
+    );
+  }, 1000);
+}
 
 // Reduce motion for better performance on low-end devices
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

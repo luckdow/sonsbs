@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Ana Sayfa - Çoklu Dil -->
+  <url>
+    <loc>https://gatetransfer.com/</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/hero-antalya-transfer.jpg</image:loc>
+      <image:title>Antalya Transfer Hizmetleri</image:title>
+    </image:image>
+  </url>
+
+  <!-- Rezervasyon Sayfası - Çoklu Dil -->
+  <url>
+    <loc>https://gatetransfer.com/rezervasyon</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/rezervasyon" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/booking" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/buchung" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/booking" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/booking" />
+  </url>
+
+  <!-- Şehir Sayfaları - Çoklu Dil -->
+  <url>
+    <loc>https://gatetransfer.com/antalya</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/antalya" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/antalya" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/antalya" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/antalya" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/antalya" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/antalya-transfer.jpg</image:loc>
+      <image:title>Antalya Transfer</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/lara</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/lara" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/lara" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/lara" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/lara" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/lara" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/lara-transfer.jpg</image:loc>
+      <image:title>Lara Transfer</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/kemer</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/kemer" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/kemer" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/kemer" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/kemer" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/kemer" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/kemer-transfer.jpg</image:loc>
+      <image:title>Kemer Transfer</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/belek</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/belek" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/belek" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/belek" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/belek" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/belek" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/belek-transfer.jpg</image:loc>
+      <image:title>Belek Transfer</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/side</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/side" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/side" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/side" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/side" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/side" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/side-transfer.jpg</image:loc>
+      <image:title>Side Transfer</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/alanya</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/alanya" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/alanya" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/alanya" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/alanya" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/alanya" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/alanya-transfer.jpg</image:loc>
+      <image:title>Alanya Transfer</image:title>
+    </image:image>
+  </url>
+
+  <!-- Hizmet Sayfaları - Çoklu Dil -->
+  <url>
+    <loc>https://gatetransfer.com/services/airport</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/services/airport" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/services/airport" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/services/airport" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/services/airport" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/services/airport" />
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/services/hotel</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/services/hotel" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/services/hotel" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/services/hotel" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/services/hotel" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/services/hotel" />
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/services/vip</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/services/vip" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/services/vip" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/services/vip" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/services/vip" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/services/vip" />
+  </url>
+
+  <!-- Statik Sayfalar - Çoklu Dil -->
+  <url>
+    <loc>https://gatetransfer.com/about</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/about" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/about" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/about" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/about" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/about" />
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/contact</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/contact" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/contact" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/contact" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/contact" />
+    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/contact" />
+  </url>
+
+  <!-- Blog Sayfaları - Çoklu Dil -->
+  <url>
+    <loc>https://gatetransfer.com/blog/antalya-transfer-rehberi</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/blog/antalya-transfer-rehberi" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/blog/antalya-transfer-guide" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/blog/antalya-transfer-guide" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/blog/antalya-transfer-guide" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/blog/antalya-transfer-rehberi.svg</image:loc>
+      <image:title>Antalya Transfer Rehberi</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gatetransfer.com/blog/belek-golf-transfer</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/blog/belek-golf-transfer" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/blog/belek-golf-transfer" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/blog/belek-golf-transfer" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/blog/belek-golf-transfer" />
+    <image:image>
+      <image:loc>https://gatetransfer.com/images/blog/belek-golf-transfer.svg</image:loc>
+      <image:title>Belek Golf Transfer</image:title>
+    </image:image>
+  </url>
+
+</urlset>

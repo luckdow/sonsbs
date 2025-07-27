@@ -9,6 +9,10 @@ Disallow: /_next/
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /dist/
+Disallow: /temp/
+Disallow: /tmp/
+Disallow: /*.json$
+Disallow: /*.config.*$
 
 # Allow specific important files
 Allow: /images/
@@ -16,8 +20,25 @@ Allow: /favicon.ico
 Allow: /robots.txt
 Allow: /sitemap.xml
 Allow: /manifest.json
+Allow: /firebase-messaging-sw.js
+Allow: /sw-enhanced.js
 
-# Allow important pages
+# Google specific directives
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Bing specific directives  
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# Yandex specific directives
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 3
+
+# Allow important pages for all search engines
 Allow: /
 Allow: /hakkimizda
 Allow: /iletisim
