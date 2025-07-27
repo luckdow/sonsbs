@@ -32,5 +32,10 @@ export default defineConfig({
   // Performance optimizations
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom']
+  },
+  // SPA fallback for client-side routing
+  preview: {
+    port: 5000,
+    host: true
   }
 })

@@ -3,6 +3,23 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
+// Keep-alive fonksiyonu - Cold start problemini azaltmak için
+exports.keepAlive = functions.https.onRequest((req, res) => {
+  res.status(200).send('Functions are alive!');
+});
+
+// Her 5 dakikada bir fonksiyonları uyandırmak için scheduled fonksiyon
+exports.scheduledKeepAlive = functions.pubsub.schedule('every 5 minutes')
+  .onRun(async (context) => {
+    try {
+      console.log('Keep-alive job running');
+      return null;
+    } catch (error) {
+      console.error('Keep-alive job error:', error);
+      return null;
+    }
+  });
+
 // Rezervasyon değişikliklerini dinle ve push notification gönder
 exports.sendReservationNotification = functions.firestore
   .document('reservations/{reservationId}')
@@ -128,4 +145,8 @@ async function sendNotificationToAdmins(payload) {
   }
 }
 
-module.exports = { sendReservationNotification };
+module.exports = { 
+  sendReservationNotification,
+  keepAlive,
+  scheduledKeepAlive
+};
