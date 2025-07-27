@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+    historyApiFallback: true, // SPA routing support
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
       'Cross-Origin-Embedder-Policy': 'unsafe-none'
@@ -77,6 +78,7 @@ export default defineConfig({
   // SPA fallback for client-side routing
   preview: {
     port: 5000,
-    host: true
+    host: true,
+    historyApiFallback: true // SPA routing support for preview
   }
 })
