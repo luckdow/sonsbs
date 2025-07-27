@@ -1,0 +1,30 @@
+<!-- Blog placeholder görseli - SVG format -->
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blogGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#blogGradient)"/>
+  
+  <!-- Content -->
+  <g transform="translate(400, 200)">
+    <!-- Blog icon -->
+    <circle cx="0" cy="-20" r="40" fill="white" opacity="0.2"/>
+    <rect x="-20" y="-35" width="40" height="30" rx="4" fill="white"/>
+    <line x1="-12" y1="-25" x2="12" y2="-25" stroke="#3B82F6" stroke-width="2"/>
+    <line x1="-12" y1="-15" x2="8" y2="-15" stroke="#8B5CF6" stroke-width="2"/>
+    <line x1="-12" y1="-5" x2="12" y2="-5" stroke="#6B7280" stroke-width="1"/>
+    
+    <!-- Text -->
+    <text x="0" y="40" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="bold">
+      GATE Transfer Blog
+    </text>
+    <text x="0" y="70" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" opacity="0.9">
+      Transfer Rehberi & Seyahat İpuçları
+    </text>
+  </g>
+</svg>

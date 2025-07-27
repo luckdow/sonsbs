@@ -103,7 +103,7 @@ const Header = () => {
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled || location.pathname !== '/'
-          ? 'bg-gradient-to-r from-blue-600/95 via-purple-600/95 to-blue-700/95 backdrop-blur-xl shadow-xl border-b border-white/20' 
+          ? 'bg-gradient-to-br from-blue-900/95 via-indigo-900/95 to-purple-900/95 backdrop-blur-xl shadow-xl border-b border-white/20' 
           : 'bg-transparent'
       }`}
     >
@@ -120,24 +120,28 @@ const Header = () => {
           <nav className="hidden lg:flex items-center space-x-8">
             {[
               { path: '/', label: 'Ana Sayfa' },
-              { path: '/hakkimizda', label: 'Hakkımızda' },
-              { 
-                path: '/hizmetlerimiz', 
-                label: 'Hizmetlerimiz',
-                dropdown: [
-                  { path: '/havaalani-transfer', label: 'Havalimanı Transfer' },
-                  { path: '/vip-transfer', label: 'VIP Transfer' },
-                  { path: '/grup-transfer', label: 'Grup Transfer' },
-                  { path: '/otel-transfer', label: 'Otel Transfer' },
-                  { path: '/sehir-ici-transfer', label: 'Şehir İçi Transfer' },
-                  { path: '/dugun-transfer', label: 'Düğün Transfer' },
-                  { path: '/kurumsal-transfer', label: 'Kurumsal Transfer' },
-                  { path: '/karsilama-hizmeti', label: 'Karşılama Hizmeti' }
-                ]
-              },
-              { path: '/sss', label: 'SSS' },
-              { path: '/iletisim', label: 'İletişim' },
-              ...(user ? [{ path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }] : [])
+              // Kullanıcı giriş yapmışsa sadece Ana Sayfa ve Rezervasyonlarım göster
+              ...(user ? [
+                { path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }
+              ] : [
+                { path: '/hakkimizda', label: 'Hakkımızda' },
+                { 
+                  path: '/hizmetlerimiz', 
+                  label: 'Hizmetlerimiz',
+                  dropdown: [
+                    { path: '/havaalani-transfer', label: 'Havalimanı Transfer' },
+                    { path: '/vip-transfer', label: 'VIP Transfer' },
+                    { path: '/grup-transfer', label: 'Grup Transfer' },
+                    { path: '/otel-transfer', label: 'Otel Transfer' },
+                    { path: '/sehir-ici-transfer', label: 'Şehir İçi Transfer' },
+                    { path: '/dugun-transfer', label: 'Düğün Transfer' },
+                    { path: '/kurumsal-transfer', label: 'Kurumsal Transfer' },
+                    { path: '/karsilama-hizmeti', label: 'Karşılama Hizmeti' }
+                  ]
+                },
+                { path: '/sss', label: 'SSS' },
+                { path: '/iletisim', label: 'İletişim' }
+              ])
             ].map((item) => (
               <div key={item.path} className="relative group hover:scale-105 transition-transform duration-200">
                 <Link
@@ -176,12 +180,13 @@ const Header = () => {
               </div>
             ))}
             
-            {/* Şehirler Dropdown */}
-            <div className="relative group">
-              <button className="relative font-medium transition-colors duration-300 text-white hover:text-yellow-200 flex items-center space-x-1">
-                <span>Şehirler</span>
-                <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
-              </button>
+            {/* Şehirler Dropdown - Sadece giriş yapmamış kullanıcılar için göster */}
+            {!user && (
+              <div className="relative group">
+                <button className="relative font-medium transition-colors duration-300 text-white hover:text-yellow-200 flex items-center space-x-1">
+                  <span>Şehirler</span>
+                  <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
+                </button>
               
               {/* Dropdown Menu */}
               <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -268,7 +273,8 @@ const Header = () => {
                   </Link>
                 </div>
               </div>
-            </div>
+              </div>
+            )}
           </nav>
 
           {/* Contact Info & Actions */}
@@ -316,24 +322,29 @@ const Header = () => {
           <div className="py-4 space-y-4 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 rounded-b-2xl shadow-xl">
             {[
               { path: '/', label: 'Ana Sayfa' },
-              { path: '/hakkimizda', label: 'Hakkımızda' },
-              { 
-                path: '/hizmetlerimiz', 
-                label: 'Hizmetlerimiz',
-                dropdown: [
-                  { path: '/havaalani-transfer', label: 'Havalimanı Transfer' },
-                  { path: '/vip-transfer', label: 'VIP Transfer' },
-                  { path: '/grup-transfer', label: 'Grup Transfer' },
-                  { path: '/otel-transfer', label: 'Otel Transfer' },
-                  { path: '/sehir-ici-transfer', label: 'Şehir İçi Transfer' },
-                  { path: '/dugun-transfer', label: 'Düğün Transfer' },
-                  { path: '/kurumsal-transfer', label: 'Kurumsal Transfer' },
-                  { path: '/karsilama-hizmeti', label: 'Karşılama Hizmeti' }
-                ]
-              },
-              { path: '/sss', label: 'SSS' },
-              { path: '/iletisim', label: 'İletişim' },
-              ...(user ? [{ path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }] : [])
+              // Kullanıcı giriş yapmışsa sadece Ana Sayfa ve Rezervasyonlarım göster
+              ...(user ? [
+                { path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }
+              ] : [
+                { path: '/hakkimizda', label: 'Hakkımızda' },
+                { 
+                  path: '/hizmetlerimiz', 
+                  label: 'Hizmetlerimiz',
+                  dropdown: [
+                    { path: '/hizmetler/havaalani-transfer', label: 'Havalimanı Transfer' },
+                    { path: '/hizmetler/vip-transfer', label: 'VIP Transfer' },
+                    { path: '/hizmetler/grup-transfer', label: 'Grup Transfer' },
+                    { path: '/hizmetler/otel-transfer', label: 'Otel Transfer' },
+                    { path: '/hizmetler/sehir-ici-transfer', label: 'Şehir İçi Transfer' },
+                    { path: '/hizmetler/dugun-transfer', label: 'Düğün Transfer' },
+                    { path: '/hizmetler/kurumsal-transfer', label: 'Kurumsal Transfer' },
+                    { path: '/hizmetler/karsilama-hizmeti', label: 'Karşılama Hizmeti' }
+                  ]
+                },
+                { path: '/blog', label: 'Blog' },
+                { path: '/sss', label: 'SSS' },
+                { path: '/iletisim', label: 'İletişim' }
+              ])
             ].map((item) => (
               <div key={item.path}>
                 <div 
@@ -393,11 +404,12 @@ const Header = () => {
               </div>
             ))}
 
-            {/* Mobile City Links */}
-            <div className="px-4">
-              <h4 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                Transfer Şehirleri
-              </h4>
+            {/* Mobile City Links - Sadece giriş yapmamış kullanıcılar için göster */}
+            {!user && (
+              <div className="px-4">
+                <h4 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                  Transfer Şehirleri
+                </h4>
               <div className="space-y-1">
                 {[
                   { path: '/antalya-transfer', label: 'Antalya Transfer' },
@@ -425,7 +437,8 @@ const Header = () => {
                   </Link>
                 ))}
               </div>
-            </div>
+              </div>
+            )}
             
             {/* Mobile User Actions */}
             {user ? (

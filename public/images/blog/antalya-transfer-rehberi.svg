@@ -1,0 +1,21 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#bgGradient)"/>
+  <text x="400" y="160" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="white">
+    Antalya Transfer
+  </text>
+  <text x="400" y="200" font-family="Arial, sans-serif" font-size="28" text-anchor="middle" fill="white" opacity="0.9">
+    Rehberi 2025
+  </text>
+  <text x="400" y="240" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white" opacity="0.8">
+    Kemer • Side • Belek • Alanya
+  </text>
+  <text x="400" y="280" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="white" opacity="0.7">
+    Güvenli ve Konforlu Ulaşım
+  </text>
+</svg>

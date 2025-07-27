@@ -33,6 +33,11 @@ import DugunTransfer from './pages/Services/DugunTransfer'
 import KurumsalTransfer from './pages/Services/KurumsalTransfer'
 import KarsilamaHizmeti from './pages/Services/KarsilamaHizmeti'
 
+// Blog Pages
+import BlogPage from './pages/Blog/BlogPage'
+import BlogPostPage from './pages/Blog/BlogPostPage'
+import BlogCategoryPage from './pages/Blog/BlogCategoryPage'
+
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
@@ -130,6 +135,21 @@ function App() {
                 <Route path="side-transfer" element={<SideTransfer />} />
                 
                 {/* Service Pages */}
+                <Route path="hizmetler/havaalani-transfer" element={<HavaalaniTransfer />} />
+                <Route path="hizmetler/vip-transfer" element={<VipTransfer />} />
+                <Route path="hizmetler/grup-transfer" element={<GrupTransfer />} />
+                <Route path="hizmetler/otel-transfer" element={<OtelTransfer />} />
+                <Route path="hizmetler/sehir-ici-transfer" element={<SehirIciTransfer />} />
+                <Route path="hizmetler/dugun-transfer" element={<DugunTransfer />} />
+                <Route path="hizmetler/kurumsal-transfer" element={<KurumsalTransfer />} />
+                <Route path="hizmetler/karsilama-hizmeti" element={<KarsilamaHizmeti />} />
+                
+                {/* Blog Pages */}
+                <Route path="blog" element={<BlogPage />} />
+                <Route path="blog/kategori/:categorySlug" element={<BlogCategoryPage />} />
+                <Route path="blog/:slug" element={<BlogPostPage />} />
+                
+                {/* Legacy Service Routes - Redirect to new paths */}
                 <Route path="havaalani-transfer" element={<HavaalaniTransfer />} />
                 <Route path="vip-transfer" element={<VipTransfer />} />
                 <Route path="grup-transfer" element={<GrupTransfer />} />
