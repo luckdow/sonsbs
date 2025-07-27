@@ -93,8 +93,8 @@ const WebPerformanceOptimizer = () => {
     optimizeImages();
     measureWebVitals();
     
-    // Delay non-critical CSS loading
-    setTimeout(removeUnusedCSS, 100);
+    // Critical CSS optimization
+    setTimeout(optimizeCSS, 100);
 
     // Cleanup function
     return () => {
