@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail } from 'lucide-react';
+import { Phone, Mail } from 'lucide-react';
 
 const StaticPageLayout = ({ 
   title, 
@@ -9,7 +9,6 @@ const StaticPageLayout = ({
   keywords, 
   canonicalUrl, 
   children,
-  showBackButton = true,
   heroTitle,
   heroSubtitle
 }) => {
@@ -73,26 +72,44 @@ const StaticPageLayout = ({
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}
         {heroTitle && (
-          <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900 text-white py-16 md:py-20">
+          <section className="relative bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white py-8 md:py-12 overflow-hidden">
             <div className="absolute inset-0 bg-black/20"></div>
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {showBackButton && (
-                <div className="mb-6">
-                  <Link
-                    to="/"
-                    className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-colors group"
-                  >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    <span>Ana Sayfaya Dön</span>
-                  </Link>
-                </div>
-              )}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-purple-600/30"></div>
+            </div>
+            
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+              {/* Breadcrumb */}
+              <nav className="flex mb-6" aria-label="Breadcrumb">
+                <ol className="inline-flex items-center space-x-1 md:space-x-3">
+                  <li className="inline-flex items-center">
+                    <Link 
+                      to="/" 
+                      className="inline-flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                    >
+                      Ana Sayfa
+                    </Link>
+                  </li>
+                  <li>
+                    <div className="flex items-center">
+                      <svg className="w-3 h-3 text-gray-400 mx-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"></path>
+                      </svg>
+                      <span className="text-sm font-medium text-white">{heroTitle}</span>
+                    </div>
+                  </li>
+                </ol>
+              </nav>
+              
               <div className="text-center">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
-                  {heroTitle}
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                  <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    {heroTitle}
+                  </span>
                 </h1>
+                
                 {heroSubtitle && (
-                  <p className="text-lg md:text-xl lg:text-2xl text-blue-200 max-w-3xl mx-auto leading-relaxed">
+                  <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-3xl mx-auto leading-relaxed">
                     {heroSubtitle}
                   </p>
                 )}

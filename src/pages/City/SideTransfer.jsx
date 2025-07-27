@@ -25,14 +25,54 @@ const SideTransfer = () => {
   const [openFaq, setOpenFaq] = React.useState(0);
 
   const popularDestinations = [
-    { name: 'Antalya Havalimanı (AYT)', time: '1.5 saat', icon: <Plane className="w-5 h-5" /> },
-    { name: 'Side Antik Kenti', time: '5 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Apollon Tapınağı', time: '3 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Side Müzesi', time: '2 dk', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Manavgat Şelalesi', time: '10 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Manavgat Çarşısı', time: '8 dk', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Kumköy', time: '3 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Çolaklı', time: '5 dk', icon: <Building2 className="w-5 h-5" /> }
+    { 
+      name: 'Antalya Havalimanı (AYT)', 
+      time: '1.5 saat', 
+      icon: <Plane className="w-5 h-5" />,
+      description: 'Havalimanından Side antik kentine güvenli ve konforlu transfer'
+    },
+    { 
+      name: 'Side Antik Kenti', 
+      time: '5 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Tarihi Side antik kentinin kalbi olan merkezi bölgeye ulaşım'
+    },
+    { 
+      name: 'Apollon Tapınağı', 
+      time: '3 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Antik Apollon tapınağına deniz kenarında muhteşem manzara'
+    },
+    { 
+      name: 'Side Müzesi', 
+      time: '2 dk', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Side müzesine kültürel miras keşfi için özel transfer'
+    },
+    { 
+      name: 'Manavgat Şelalesi', 
+      time: '10 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Manavgat şelalesine doğa harikası içinde ferahlatıcı gezi'
+    },
+    { 
+      name: 'Manavgat Çarşısı', 
+      time: '8 dk', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Manavgat çarşı merkezine alışveriş ve keşif turu'
+    },
+    { 
+      name: 'Kumköy', 
+      time: '3 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Kumköy sahil şeridindeki otellere hızlı plaj transferi'
+    },
+    { 
+      name: 'Çolaklı', 
+      time: '5 dk', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Çolaklı turistik bölgesine sakin sahil kenarında yolculuk'
+    }
   ];
 
   const services = [

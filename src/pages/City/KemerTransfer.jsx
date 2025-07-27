@@ -25,14 +25,54 @@ const KemerTransfer = () => {
   const [openFaq, setOpenFaq] = React.useState(0);
 
   const popularDestinations = [
-    { name: 'Antalya Havalimanı (AYT)', time: '1.5 saat', icon: <Plane className="w-5 h-5" /> },
-    { name: 'Kemer Merkez', time: '5 dk', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Çamyuva', time: '10 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Tekirova', time: '15 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Antalya Merkez', time: '1 saat', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Göynük', time: '8 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Beldibi', time: '12 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Olimpos', time: '25 dk', icon: <MapPin className="w-5 h-5" /> }
+    { 
+      name: 'Antalya Havalimanı (AYT)', 
+      time: '1.5 saat', 
+      icon: <Plane className="w-5 h-5" />,
+      description: 'Havalimanından Kemer\'e Toros Dağları manzaralı konforlu yolculuk'
+    },
+    { 
+      name: 'Kemer Merkez', 
+      time: '5 dk', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Kemer şehir merkezi, marina ve AVM\'lere hızlı ulaşım'
+    },
+    { 
+      name: 'Çamyuva', 
+      time: '10 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Çamyuva sahil bölgesi otellere deniz kenarında transfer'
+    },
+    { 
+      name: 'Tekirova', 
+      time: '15 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Tekirova\'nın sakin koylarına doğa içinde yolculuk'
+    },
+    { 
+      name: 'Antalya Merkez', 
+      time: '1 saat', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Antalya şehir merkezi ve Kaleiçi\'ne güvenli transfer'
+    },
+    { 
+      name: 'Göynük', 
+      time: '8 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Göynük sahil şeridindeki otellere kısa mesafe ulaşım'
+    },
+    { 
+      name: 'Beldibi', 
+      time: '12 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Beldibi turistik bölgesine dağ eteği güzergahında transfer'
+    },
+    { 
+      name: 'Olimpos', 
+      time: '25 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Antik Olimpos kentine tarihi atmosferde keyifli yolculuk'
+    }
   ];
 
   const services = [
@@ -394,7 +434,8 @@ const KemerTransfer = () => {
                     </div>
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">{destination.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{destination.name}</h3>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{destination.description}</p>
                 <Link 
                   to="/rezervasyon"
                   onClick={() => window.scrollTo(0, 0)}

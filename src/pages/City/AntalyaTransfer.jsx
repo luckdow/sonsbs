@@ -26,14 +26,62 @@ const AntalyaTransfer = () => {
   const [openFaq, setOpenFaq] = React.useState(0);
 
   const popularDestinations = [
-    { name: 'Antalya Havalimanı (AYT)', time: '45 dk', price: '€20-30', icon: <Plane className="w-5 h-5" /> },
-    { name: 'Kaleiçi Tarihi Bölge', time: '25 dk', price: '€25-35', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Lara Beach Oteller', time: '35 dk', price: '€25-40', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Konyaaltı Sahil', time: '30 dk', price: '€25-35', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Antalya Merkez', time: '20 dk', price: '€20-30', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Side Antik Kenti', time: '75 dk', price: '€60-90', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Belek Golf Bölgesi', time: '40 dk', price: '€35-50', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Kemer Marina', time: '60 dk', price: '€45-65', icon: <MapPin className="w-5 h-5" /> }
+    { 
+      name: 'Antalya Havalimanı (AYT)', 
+      time: '45 dk', 
+      price: '€20-30', 
+      icon: <Plane className="w-5 h-5" />,
+      description: 'Havalimanından şehir merkezi ve otel bölgelerine güvenli transfer'
+    },
+    { 
+      name: 'Kaleiçi Tarihi Bölge', 
+      time: '25 dk', 
+      price: '€25-35', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Antalya\'nın kalbi olan tarihi bölgeye konforlu ulaşım'
+    },
+    { 
+      name: 'Lara Beach Oteller', 
+      time: '35 dk', 
+      price: '€25-40', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Lara sahilindeki lüks otellere kapıdan kapıya hizmet'
+    },
+    { 
+      name: 'Konyaaltı Sahil', 
+      time: '30 dk', 
+      price: '€25-35', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Konyaaltı sahil şeridindeki otellere hızlı transfer'
+    },
+    { 
+      name: 'Antalya Merkez', 
+      time: '20 dk', 
+      price: '€20-30', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Şehir merkezi, AVM ve iş bölgelerine ekonomik ulaşım'
+    },
+    { 
+      name: 'Side Antik Kenti', 
+      time: '75 dk', 
+      price: '€60-90', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Tarihi Side antik kentine özel araçla konforlu yolculuk'
+    },
+    { 
+      name: 'Belek Golf Bölgesi', 
+      time: '40 dk', 
+      price: '€35-50', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Belek golf resort otellere lüks araçlarla VIP transfer'
+    },
+    { 
+      name: 'Kemer Marina', 
+      time: '60 dk', 
+      price: '€45-65', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Kemer marina ve otel bölgesine doğa manzaralı yolculuk'
+    }
   ];
 
   const services = [
@@ -435,7 +483,8 @@ const AntalyaTransfer = () => {
                     <div className="text-lg font-bold text-green-600">{destination.price}</div>
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">{destination.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{destination.name}</h3>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{destination.description}</p>
                 <Link 
                   to="/rezervasyon"
                   onClick={() => window.scrollTo(0, 0)}

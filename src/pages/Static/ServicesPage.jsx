@@ -14,7 +14,8 @@ import {
   Luggage,
   Wifi,
   Snowflake,
-  Phone
+  Phone,
+  Building
 } from 'lucide-react';
 import StaticPageLayout from './components/StaticPageLayout';
 
@@ -34,7 +35,8 @@ const ServicesPage = () => {
         "Lara", "Kundu", "Belek", "Side", "Manavgat", "Alanya", "Kemer", "Kaleiçi"
       ],
       price: "Uygun fiyat garantisi",
-      color: "from-blue-500 to-blue-600"
+      color: "from-blue-500 to-blue-600",
+      link: "/havaalani-transfer"
     },
     {
       icon: Car,
@@ -49,67 +51,90 @@ const ServicesPage = () => {
       destinations: [
         "Kaleiçi", "Konyaaltı", "Lara", "Kepez", "Muratpaşa", "Döşemealtı"
       ],
-      price: "Şehir içi sabit fiyat",
-      color: "from-green-500 to-green-600"
-    },
-    {
-      icon: Users,
-      title: "Grup Transfer Hizmetleri",
-      description: "Büyük gruplar için özel transfer çözümleri ve minibüs hizmetleri",
-      features: [
-        "8-16 kişilik araçlar",
-        "Grup indirimleri",
-        "Özel güzergah planlaması",
-        "Rehber eşliğinde turlar"
-      ],
-      destinations: [
-        "Tüm otel bölgeleri", "Turistik yerler", "Kongre merkezleri", "Etkinlik alanları"
-      ],
-      price: "Grup indirimleri mevcut",
-      color: "from-purple-500 to-purple-600"
+      price: "Şehir içi uygun tarifeler",
+      color: "from-green-500 to-green-600",
+      link: "/sehir-ici-transfer"
     },
     {
       icon: Crown,
-      title: "VIP Transfer Hizmetleri",
-      description: "Lüks araçlarla özel VIP transfer deneyimi yaşayın",
+      title: "VIP Transfer Hizmeti",
+      description: "Lüks araçlar ve özel hizmetlerle ayrıcalıklı transfer deneyimi",
       features: [
-        "Mercedes Vito/Sprinter araçlar",
-        "Özel şoför hizmeti",
-        "İkram ve su servisi",
-        "Özel karşılama tabelası"
+        "Mercedes S-Class lüks araçlar",
+        "Professional şoför hizmeti",
+        "VIP karşılama hizmeti",
+        "Özel ikram servisi"
       ],
       destinations: [
-        "Tüm premium oteller", "Özel villalar", "Yacht marina", "Golf sahaları"
+        "Tüm premium oteller", "Özel lokasyonlar", "Executive transferler"
       ],
-      price: "Premium hizmet fiyatı",
-      color: "from-yellow-500 to-orange-500"
+      price: "Premium fiyatlandırma",
+      color: "from-purple-500 to-purple-600",
+      link: "/vip-transfer"
+    },
+    {
+      icon: Users,
+      title: "Grup Transfer",
+      description: "Büyük grup transferleri için ekonomik ve konforlu çözümler",
+      features: [
+        "Mercedes Sprinter araçlar",
+        "Grup koordinasyonu",
+        "Ekonomik fiyatlandırma",
+        "Esnek zamanlama"
+      ],
+      destinations: [
+        "Tüm otel bölgeleri", "Etkinlik alanları", "Grup organizasyonları"
+      ],
+      price: "Grup indirimleri",
+      color: "from-orange-500 to-orange-600",
+      link: "/grup-transfer"
+    },
+    {
+      icon: MapPin,
+      title: "Otel Transfer",
+      description: "500+ otele profesyonel door-to-door transfer hizmeti",
+      features: [
+        "Otel kapısına teslim",
+        "Check-in desteği",
+        "Bagaj yardımı",
+        "Otel koordinasyonu"
+      ],
+      destinations: [
+        "Lara Otelleri", "Belek Otelleri", "Kemer Otelleri", "Side Otelleri"
+      ],
+      price: "Otel transfer tarifeleri",
+      color: "from-teal-500 to-teal-600",
+      link: "/otel-transfer"
     }
   ];
 
   const additionalServices = [
     {
-      icon: Baby,
-      title: "Aile Transfer Hizmeti",
-      description: "Çocuk koltuğu ve aile dostu transfer hizmetleri",
-      features: ["Güvenli çocuk koltuğu", "Aile indirimleri", "Oyuncak ve aktivite seti"]
+      icon: Users,
+      title: "Düğün Transfer",
+      description: "Düğün çiftleri ve misafirleri için özel transfer hizmetleri",
+      features: ["Süslü araç", "Gelin paketi", "Çiçek servisi"],
+      link: "/dugun-transfer"
     },
     {
-      icon: Luggage,
-      title: "Bagaj Transfer",
-      description: "Fazla bagajınız için özel alan ayrılması",
-      features: ["Geniş bagaj alanı", "Güvenli taşıma", "Fazla bagaj ücretsiz"]
+      icon: Building,
+      title: "Kurumsal Transfer",
+      description: "Şirketlere özel professional transfer çözümleri",
+      features: ["Executive hizmet", "Faturalı sistem", "Dedicated şoför"],
+      link: "/kurumsal-transfer"
+    },
+    {
+      icon: Crown,
+      title: "Karşılama Hizmeti",
+      description: "Havalimanında özel karşılama ve welcome hizmeti",
+      features: ["İsimli tabela", "VIP karşılama", "Welcome drink"],
+      link: "/karsilama-hizmeti"
     },
     {
       icon: Clock,
       title: "Acil Transfer",
       description: "Son dakika transfer ihtiyaçlarınız için hızlı çözüm",
       features: ["30 dk içinde hazır", "7/24 hizmet", "Hızlı rezervasyon"]
-    },
-    {
-      icon: MapPin,
-      title: "Özel Güzergah",
-      description: "İstediğiniz güzergahta özel transfer planlaması",
-      features: ["Kişiye özel rota", "Ara duraklar", "Turistik yerler"]
     }
   ];
 
@@ -200,12 +225,24 @@ const ServicesPage = () => {
                         <Star className="w-4 h-4 text-yellow-500" />
                         <span className="text-sm font-medium text-gray-700">{service.price}</span>
                       </div>
-                      <Link
-                        to="/rezervasyon"
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:shadow-lg transition-all"
-                      >
-                        Rezervasyon Yap
-                      </Link>
+                      <div className="flex gap-2">
+                        {service.link && (
+                          <Link
+                            to={service.link}
+                            onClick={() => window.scrollTo(0, 0)}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all"
+                          >
+                            Detayları Gör
+                          </Link>
+                        )}
+                        <Link
+                          to="/rezervasyon"
+                          onClick={() => window.scrollTo(0, 0)}
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:shadow-lg transition-all"
+                        >
+                          Rezervasyon Yap
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -241,7 +278,7 @@ const ServicesPage = () => {
                   <p className="text-gray-600 text-sm mb-3">
                     {service.description}
                   </p>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1 mb-4">
                     {service.features.map((feature, idx) => (
                       <li key={idx} className="flex items-center text-xs text-gray-500">
                         <CheckCircle className="w-3 h-3 text-green-500 mr-2" />
@@ -249,6 +286,15 @@ const ServicesPage = () => {
                       </li>
                     ))}
                   </ul>
+                  {service.link && (
+                    <Link
+                      to={service.link}
+                      onClick={() => window.scrollTo(0, 0)}
+                      className="inline-block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all"
+                    >
+                      Detayları Gör
+                    </Link>
+                  )}
                 </div>
               );
             })}

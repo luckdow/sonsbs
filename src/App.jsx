@@ -23,6 +23,16 @@ import BelekTransfer from './pages/City/BelekTransfer'
 import AlanyaTransfer from './pages/City/AlanyaTransfer'
 import SideTransfer from './pages/City/SideTransfer'
 
+// Service Pages
+import HavaalaniTransfer from './pages/Services/HavaalaniTransfer'
+import VipTransfer from './pages/Services/VipTransfer'
+import GrupTransfer from './pages/Services/GrupTransfer'
+import OtelTransfer from './pages/Services/OtelTransfer'
+import SehirIciTransfer from './pages/Services/SehirIciTransfer'
+import DugunTransfer from './pages/Services/DugunTransfer'
+import KurumsalTransfer from './pages/Services/KurumsalTransfer'
+import KarsilamaHizmeti from './pages/Services/KarsilamaHizmeti'
+
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
@@ -70,6 +80,7 @@ import BookingWizard from './components/Booking/BookingWizard'
 
 // Components
 import { ProtectedRoute, PublicRoute, AdminRoute, DriverRoute, CustomerRoute } from './components/Auth/ProtectedRoute'
+import ScrollToTop from './components/ScrollToTop'
 
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
@@ -81,6 +92,7 @@ function App() {
         <AuthProvider>
           <AppProvider>
             <BrowserRouter>
+              <ScrollToTop />
               <div className="App">
                 <Routes>
               {/* Public Routes */}
@@ -116,6 +128,16 @@ function App() {
                 <Route path="belek-transfer" element={<BelekTransfer />} />
                 <Route path="alanya-transfer" element={<AlanyaTransfer />} />
                 <Route path="side-transfer" element={<SideTransfer />} />
+                
+                {/* Service Pages */}
+                <Route path="havaalani-transfer" element={<HavaalaniTransfer />} />
+                <Route path="vip-transfer" element={<VipTransfer />} />
+                <Route path="grup-transfer" element={<GrupTransfer />} />
+                <Route path="otel-transfer" element={<OtelTransfer />} />
+                <Route path="sehir-ici-transfer" element={<SehirIciTransfer />} />
+                <Route path="dugun-transfer" element={<DugunTransfer />} />
+                <Route path="kurumsal-transfer" element={<KurumsalTransfer />} />
+                <Route path="karsilama-hizmeti" element={<KarsilamaHizmeti />} />
               </Route>
 
               {/* Booking Confirmation - Standalone Route */}

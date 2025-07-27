@@ -8,8 +8,9 @@ import Logo from '../UI/Logo';
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(null);
   const location = useLocation();
-  const { user, userProfile, signOut, loading } = useAuth();
+  const { user, userProfile, signOut, isLoading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,7 +31,7 @@ const Header = () => {
   // Render auth section with skeleton on loading
   const renderAuthSection = () => {
     // If loading and no cached user data, show skeleton
-    if (loading && !userProfile) {
+    if (isLoading && !userProfile) {
       return <AuthSkeleton />;
     }
 
@@ -56,14 +57,16 @@ const Header = () => {
             <div className="py-2">
               <Link
                 to="/rezervasyonlarim"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={() => window.scrollTo(0, 0)}
               >
                 <Calendar className="w-4 h-4 mr-2" />
                 Rezervasyonlarım
               </Link>
               <Link
                 to="/profil"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={() => window.scrollTo(0, 0)}
               >
                 <User className="w-4 h-4 mr-2" />
                 Profil Ayarları
@@ -118,25 +121,58 @@ const Header = () => {
             {[
               { path: '/', label: 'Ana Sayfa' },
               { path: '/hakkimizda', label: 'Hakkımızda' },
-              { path: '/hizmetlerimiz', label: 'Hizmetlerimiz' },
+              { 
+                path: '/hizmetlerimiz', 
+                label: 'Hizmetlerimiz',
+                dropdown: [
+                  { path: '/havaalani-transfer', label: 'Havalimanı Transfer' },
+                  { path: '/vip-transfer', label: 'VIP Transfer' },
+                  { path: '/grup-transfer', label: 'Grup Transfer' },
+                  { path: '/otel-transfer', label: 'Otel Transfer' },
+                  { path: '/sehir-ici-transfer', label: 'Şehir İçi Transfer' },
+                  { path: '/dugun-transfer', label: 'Düğün Transfer' },
+                  { path: '/kurumsal-transfer', label: 'Kurumsal Transfer' },
+                  { path: '/karsilama-hizmeti', label: 'Karşılama Hizmeti' }
+                ]
+              },
               { path: '/sss', label: 'SSS' },
               { path: '/iletisim', label: 'İletişim' },
               ...(user ? [{ path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }] : [])
             ].map((item) => (
-              <div key={item.path} className="hover:scale-105 transition-transform duration-200">
+              <div key={item.path} className="relative group hover:scale-105 transition-transform duration-200">
                 <Link
                   to={item.path}
-                  className={`relative font-medium transition-colors duration-300 ${
+                  onClick={() => window.scrollTo(0, 0)}
+                  className={`relative font-medium transition-colors duration-300 flex items-center ${
                     location.pathname === item.path
                       ? 'text-yellow-300'
                       : 'text-white hover:text-yellow-200'
                   }`}
                 >
                   {item.label}
+                  {item.dropdown && <ChevronDown className="ml-1 h-4 w-4" />}
                   {location.pathname === item.path && (
                     <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse" />
                   )}
                 </Link>
+                
+                {/* Dropdown Menu */}
+                {item.dropdown && (
+                  <div className="absolute left-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-2">
+                      {item.dropdown.map((dropdownItem) => (
+                        <Link
+                          key={dropdownItem.path}
+                          to={dropdownItem.path}
+                          onClick={() => window.scrollTo(0, 0)}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        >
+                          {dropdownItem.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             
@@ -152,6 +188,7 @@ const Header = () => {
                 <div className="py-2">
                   <Link
                     to="/antalya-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -159,6 +196,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/lara-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -166,6 +204,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/kemer-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -173,6 +212,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/belek-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -180,6 +220,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/side-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -187,6 +228,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/alanya-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -194,6 +236,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/kas-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -201,6 +244,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/kalkan-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -208,6 +252,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/manavgat-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -215,6 +260,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/serik-transfer"
+                    onClick={() => window.scrollTo(0, 0)}
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                   >
                     <Car className="w-4 h-4 mr-3 text-blue-600" />
@@ -271,23 +317,79 @@ const Header = () => {
             {[
               { path: '/', label: 'Ana Sayfa' },
               { path: '/hakkimizda', label: 'Hakkımızda' },
-              { path: '/hizmetlerimiz', label: 'Hizmetlerimiz' },
+              { 
+                path: '/hizmetlerimiz', 
+                label: 'Hizmetlerimiz',
+                dropdown: [
+                  { path: '/havaalani-transfer', label: 'Havalimanı Transfer' },
+                  { path: '/vip-transfer', label: 'VIP Transfer' },
+                  { path: '/grup-transfer', label: 'Grup Transfer' },
+                  { path: '/otel-transfer', label: 'Otel Transfer' },
+                  { path: '/sehir-ici-transfer', label: 'Şehir İçi Transfer' },
+                  { path: '/dugun-transfer', label: 'Düğün Transfer' },
+                  { path: '/kurumsal-transfer', label: 'Kurumsal Transfer' },
+                  { path: '/karsilama-hizmeti', label: 'Karşılama Hizmeti' }
+                ]
+              },
               { path: '/sss', label: 'SSS' },
               { path: '/iletisim', label: 'İletişim' },
               ...(user ? [{ path: '/rezervasyonlarim', label: 'Rezervasyonlarım' }] : [])
             ].map((item) => (
-              <div key={item.path} className="hover:translate-x-2 transition-transform duration-200">
-                <Link
-                  to={item.path}
-                  className={`block px-4 py-2 font-medium transition-colors ${
-                    location.pathname === item.path
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
+              <div key={item.path}>
+                <div 
+                  className="hover:translate-x-2 transition-transform duration-200"
+                  onClick={() => {
+                    if (item.dropdown) {
+                      setMobileDropdownOpen(mobileDropdownOpen === item.path ? null : item.path);
+                    }
+                  }}
                 >
-                  {item.label}
-                </Link>
+                  <Link
+                    to={item.path}
+                    className={`flex items-center justify-between px-4 py-2 font-medium transition-colors ${
+                      location.pathname === item.path
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    }`}
+                    onClick={(e) => {
+                      if (item.dropdown) {
+                        e.preventDefault();
+                        return;
+                      }
+                      window.scrollTo(0, 0);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    {item.label}
+                    {item.dropdown && (
+                      <ChevronDown 
+                        className={`ml-1 h-4 w-4 transform transition-transform ${
+                          mobileDropdownOpen === item.path ? 'rotate-180' : ''
+                        }`} 
+                      />
+                    )}
+                  </Link>
+                </div>
+                
+                {/* Mobile Dropdown */}
+                {item.dropdown && mobileDropdownOpen === item.path && (
+                  <div className="pl-4 bg-gray-50">
+                    {item.dropdown.map((dropdownItem) => (
+                      <Link
+                        key={dropdownItem.path}
+                        to={dropdownItem.path}
+                        className="block px-4 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        onClick={() => {
+                          window.scrollTo(0, 0);
+                          setIsMobileMenuOpen(false);
+                          setMobileDropdownOpen(null);
+                        }}
+                      >
+                        {dropdownItem.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
 
@@ -313,7 +415,10 @@ const Header = () => {
                     key={item.path}
                     to={item.path}
                     className="block px-2 py-1 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => {
+                      window.scrollTo(0, 0);
+                      setIsMobileMenuOpen(false);
+                    }}
                   >
                     <Car className="w-3 h-3 inline mr-2" />
                     {item.label}
@@ -332,14 +437,20 @@ const Header = () => {
                 <Link
                   to="/rezervasyonlarim"
                   className="block w-full text-left px-2 py-2 text-gray-600 hover:bg-gray-50 rounded-lg text-sm"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    window.scrollTo(0, 0);
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   📅 Rezervasyonlarım
                 </Link>
                 <Link
                   to="/profil"
                   className="block w-full text-left px-2 py-2 text-gray-600 hover:bg-gray-50 rounded-lg text-sm"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    window.scrollTo(0, 0);
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   ⚙️ Profil Ayarları
                 </Link>
@@ -354,8 +465,11 @@ const Header = () => {
               <div className="px-4 py-2 border-t border-gray-200/50">
                 <Link
                   to="/giriş"
-                  className="block w-full text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block w-full text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+                  onClick={() => {
+                    window.scrollTo(0, 0);
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   Giriş Yap
                 </Link>
@@ -365,14 +479,20 @@ const Header = () => {
             {/* Mobile Contact Info */}
             <div className="px-4 py-2 border-t border-gray-200/50">
               <div className="space-y-2">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <a 
+                  href={`tel:${APP_CONFIG.supportPhone}`}
+                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   <Phone className="w-4 h-4" />
                   <span>{APP_CONFIG.supportPhone}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                </a>
+                <a 
+                  href={`mailto:${APP_CONFIG.supportEmail}`}
+                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   <Mail className="w-4 h-4" />
                   <span>{APP_CONFIG.supportEmail}</span>
-                </div>
+                </a>
               </div>
             </div>
           </div>

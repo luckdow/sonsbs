@@ -25,14 +25,54 @@ const BelekTransfer = () => {
   const [openFaq, setOpenFaq] = React.useState(0);
 
   const popularDestinations = [
-    { name: 'Antalya Havalimanı (AYT)', time: '1 saat', icon: <Plane className="w-5 h-5" /> },
-    { name: 'Belek Golf Sahaları', time: '5 dk', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Kadriye', time: '10 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Aspendos Antik Tiyatrosu', time: '15 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Antalya Merkez', time: '45 dk', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Side Antik Kenti', time: '20 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Manavgat Şelalesi', time: '25 dk', icon: <MapPin className="w-5 h-5" /> },
-    { name: 'Serik Merkez', time: '15 dk', icon: <Building2 className="w-5 h-5" /> }
+    { 
+      name: 'Antalya Havalimanı (AYT)', 
+      time: '1 saat', 
+      icon: <Plane className="w-5 h-5" />,
+      description: 'Havalimanından Belek golf bölgesine lüks araçlarla transfer'
+    },
+    { 
+      name: 'Belek Golf Sahaları', 
+      time: '5 dk', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Dünyaca ünlü golf sahalarına ekipman taşıma hizmeti ile ulaşım'
+    },
+    { 
+      name: 'Kadriye', 
+      time: '10 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Kadriye sahil bölgesi resort otellere konforlu transfer'
+    },
+    { 
+      name: 'Aspendos Antik Tiyatrosu', 
+      time: '15 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Antik Aspendos tiyatrosuna kültür turu ile birleştirilebilir'
+    },
+    { 
+      name: 'Antalya Merkez', 
+      time: '45 dk', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Antalya şehir merkezi ve Kaleiçi\'ne hızlı bağlantı'
+    },
+    { 
+      name: 'Side Antik Kenti', 
+      time: '20 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Tarihi Side antik kentine kısa mesafe kültürel yolculuk'
+    },
+    { 
+      name: 'Manavgat Şelalesi', 
+      time: '25 dk', 
+      icon: <MapPin className="w-5 h-5" />,
+      description: 'Manavgat şelalesine doğa harikası manzaralı gezi'
+    },
+    { 
+      name: 'Serik Merkez', 
+      time: '15 dk', 
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Serik ilçe merkezine yerel alışveriş ve işler için transfer'
+    }
   ];
 
   const services = [
@@ -394,7 +434,8 @@ const BelekTransfer = () => {
                     </div>
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">{destination.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{destination.name}</h3>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{destination.description}</p>
                 <Link 
                   to="/rezervasyon"
                   onClick={() => window.scrollTo(0, 0)}
