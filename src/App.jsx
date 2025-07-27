@@ -1,87 +1,102 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-// Static Pages
-import AboutPage from './pages/Static/AboutPage'
-import ContactPage from './pages/Static/ContactPage'
-import ServicesPage from './pages/Static/ServicesPage'
-import FAQPage from './pages/Static/FAQPage'
-import PrivacyPolicyPage from './pages/Static/PrivacyPolicyPage'
-import TermsPage from './pages/Static/TermsPage'
-import KVKKPage from './pages/Static/KVKKPage'
-import CookiePolicyPage from './pages/Static/CookiePolicyPage'
-import RefundCancellationPage from './pages/Static/RefundCancellationPage'
-
-// City Pages
-import AntalyaTransfer from './pages/City/AntalyaTransfer'
-import LaraTransfer from './pages/City/LaraTransfer'
-import KasTransfer from './pages/City/KasTransfer'
-import KalkanTransfer from './pages/City/KalkanTransfer'
-import ManavgatTransfer from './pages/City/ManavgatTransfer'
-import SerikTransfer from './pages/City/SerikTransfer'
-import KemerTransfer from './pages/City/KemerTransfer'
-import BelekTransfer from './pages/City/BelekTransfer'
-import AlanyaTransfer from './pages/City/AlanyaTransfer'
-import SideTransfer from './pages/City/SideTransfer'
-
-// Service Pages
-import HavaalaniTransfer from './pages/Services/HavaalaniTransfer'
-import VipTransfer from './pages/Services/VipTransfer'
-import GrupTransfer from './pages/Services/GrupTransfer'
-import OtelTransfer from './pages/Services/OtelTransfer'
-import SehirIciTransfer from './pages/Services/SehirIciTransfer'
-import DugunTransfer from './pages/Services/DugunTransfer'
-import KurumsalTransfer from './pages/Services/KurumsalTransfer'
-import KarsilamaHizmeti from './pages/Services/KarsilamaHizmeti'
-
-// Blog Pages
-import BlogPage from './pages/Blog/BlogPage'
-import BlogPostPage from './pages/Blog/BlogPostPage'
-import BlogCategoryPage from './pages/Blog/BlogCategoryPage'
-
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
 import { AppProvider } from './context/AppContext'
 
-// Layout Components
+// Layout Components (keep these as direct imports since they're used on all pages)
 import Layout from './components/Layout/Layout'
 import AdminLayout from './components/Layout/AdminLayout'
 import DriverLayout from './components/Layout/DriverLayout'
 
-// Public Pages
+// Loading component
+const PageSkeleton = () => (
+  <div className="min-h-screen bg-gray-50 animate-pulse">
+    <div className="h-16 bg-gray-200 mb-4"></div>
+    <div className="container mx-auto px-4">
+      <div className="h-8 bg-gray-200 rounded mb-4 w-1/3"></div>
+      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded mb-2 w-2/3"></div>
+      <div className="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
+      <div className="h-64 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+);
+
+// Lazy load all pages for code splitting
+// Static Pages
+const AboutPage = lazy(() => import('./pages/Static/AboutPage'))
+const ContactPage = lazy(() => import('./pages/Static/ContactPage'))
+const ServicesPage = lazy(() => import('./pages/Static/ServicesPage'))  
+const FAQPage = lazy(() => import('./pages/Static/FAQPage'))
+const PrivacyPolicyPage = lazy(() => import('./pages/Static/PrivacyPolicyPage'))
+const TermsPage = lazy(() => import('./pages/Static/TermsPage'))
+const KVKKPage = lazy(() => import('./pages/Static/KVKKPage'))
+const CookiePolicyPage = lazy(() => import('./pages/Static/CookiePolicyPage'))
+const RefundCancellationPage = lazy(() => import('./pages/Static/RefundCancellationPage'))
+
+// City Pages
+const AntalyaTransfer = lazy(() => import('./pages/City/AntalyaTransfer'))
+const LaraTransfer = lazy(() => import('./pages/City/LaraTransfer'))
+const KasTransfer = lazy(() => import('./pages/City/KasTransfer'))
+const KalkanTransfer = lazy(() => import('./pages/City/KalkanTransfer'))
+const ManavgatTransfer = lazy(() => import('./pages/City/ManavgatTransfer'))
+const SerikTransfer = lazy(() => import('./pages/City/SerikTransfer'))
+const KemerTransfer = lazy(() => import('./pages/City/KemerTransfer'))
+const BelekTransfer = lazy(() => import('./pages/City/BelekTransfer'))
+const AlanyaTransfer = lazy(() => import('./pages/City/AlanyaTransfer'))
+const SideTransfer = lazy(() => import('./pages/City/SideTransfer'))
+
+// Service Pages
+const HavaalaniTransfer = lazy(() => import('./pages/Services/HavaalaniTransfer'))
+const VipTransfer = lazy(() => import('./pages/Services/VipTransfer'))
+const GrupTransfer = lazy(() => import('./pages/Services/GrupTransfer'))
+const OtelTransfer = lazy(() => import('./pages/Services/OtelTransfer'))
+const SehirIciTransfer = lazy(() => import('./pages/Services/SehirIciTransfer'))
+const DugunTransfer = lazy(() => import('./pages/Services/DugunTransfer'))
+const KurumsalTransfer = lazy(() => import('./pages/Services/KurumsalTransfer'))
+const KarsilamaHizmeti = lazy(() => import('./pages/Services/KarsilamaHizmeti'))
+
+// Blog Pages
+const BlogPage = lazy(() => import('./pages/Blog/BlogPage'))
+const BlogPostPage = lazy(() => import('./pages/Blog/BlogPostPage'))
+const BlogCategoryPage = lazy(() => import('./pages/Blog/BlogCategoryPage'))
+
+// Public Pages (keep HomePage direct since it's landing page)
 import HomePage from './pages/Public/HomePage_OPTIMIZED'
-import VehicleSelectionPage from './pages/Public/VehicleSelectionPage'
-import CustomerInfoPage from './pages/Public/CustomerInfoPage'
-import PaymentPage from './pages/Public/PaymentPage'
-import ConfirmationPage from './pages/Public/ConfirmationPage'
-import BookingConfirmationPage from './pages/Public/BookingConfirmationPage'
-import MyReservations from './pages/Public/MyReservations'
-import CustomerProfile from './pages/Public/CustomerProfile'
-import DriverQRScanner from './pages/Public/DriverQRScanner'
-import ManualDriverQR from './pages/Public/ManualDriverQR'
+const VehicleSelectionPage = lazy(() => import('./pages/Public/VehicleSelectionPage'))
+const CustomerInfoPage = lazy(() => import('./pages/Public/CustomerInfoPage'))
+const PaymentPage = lazy(() => import('./pages/Public/PaymentPage'))
+const ConfirmationPage = lazy(() => import('./pages/Public/ConfirmationPage'))
+const BookingConfirmationPage = lazy(() => import('./pages/Public/BookingConfirmationPage'))
+const MyReservations = lazy(() => import('./pages/Public/MyReservations'))
+const CustomerProfile = lazy(() => import('./pages/Public/CustomerProfile'))
+const DriverQRScanner = lazy(() => import('./pages/Public/DriverQRScanner'))
+const ManualDriverQR = lazy(() => import('./pages/Public/ManualDriverQR'))
 
 // Auth Pages
-import LoginPage from './pages/Auth/LoginPage'
-import RegisterPage from './pages/Auth/RegisterPage'
-import ResetPasswordPage from './pages/Auth/ResetPasswordPage'
+const LoginPage = lazy(() => import('./pages/Auth/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/Auth/RegisterPage'))
+const ResetPasswordPage = lazy(() => import('./pages/Auth/ResetPasswordPage'))
 
 // Admin Pages
-import AdminDashboard from './pages/Admin/AdminDashboard'
-import VehicleManagement from './pages/Admin/VehicleManagement'
-import VehicleIndex from './pages/Admin/Vehicles'
-import DriverIndex from './pages/Admin/Drivers'
-import ExtraServicesManagement from './pages/Admin/ExtraServicesManagement'
-import ReservationManagement from './pages/Admin/Reservations'
-import FinancialManagement from './pages/Admin/Financial'
-import SettingsPage from './pages/Admin/SettingsPage'
+const AdminDashboard = lazy(() => import('./pages/Admin/AdminDashboard'))
+const VehicleManagement = lazy(() => import('./pages/Admin/VehicleManagement'))
+const VehicleIndex = lazy(() => import('./pages/Admin/Vehicles'))
+const DriverIndex = lazy(() => import('./pages/Admin/Drivers'))
+const ExtraServicesManagement = lazy(() => import('./pages/Admin/ExtraServicesManagement'))
+const ReservationManagement = lazy(() => import('./pages/Admin/Reservations'))
+const FinancialManagement = lazy(() => import('./pages/Admin/Financial'))
+const SettingsPage = lazy(() => import('./pages/Admin/SettingsPage'))
 
 // Driver Pages
-import DriverDashboard from './pages/Driver/DriverDashboard'
-import MyTrips from './pages/Driver/MyTrips'
-import DriverProfile from './pages/Driver/DriverProfile'
+const DriverDashboard = lazy(() => import('./pages/Driver/DriverDashboard'))
+const MyTrips = lazy(() => import('./pages/Driver/MyTrips'))
+const DriverProfile = lazy(() => import('./pages/Driver/DriverProfile'))
 
 // Booking Components
-import BookingWizard from './components/Booking/BookingWizard'
+const BookingWizard = lazy(() => import('./components/Booking/BookingWizard'))
 
 // Components
 import { ProtectedRoute, PublicRoute, AdminRoute, DriverRoute, CustomerRoute } from './components/Auth/ProtectedRoute'
@@ -99,40 +114,41 @@ function App() {
             <BrowserRouter>
               <ScrollToTop />
               <div className="App">
-                <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Layout />}>
-                <Route index element={<HomePage />} />
-                <Route path="rezervasyon" element={<BookingWizard />} />
-                <Route path="araç-seçimi" element={<VehicleSelectionPage />} />
-                <Route path="müşteri-bilgileri" element={<CustomerInfoPage />} />
-                <Route path="ödeme" element={<PaymentPage />} />
-                <Route path="onay" element={<ConfirmationPage />} />
-                <Route path="rezervasyonlarim" element={<MyReservations />} />
-                <Route path="profil" element={<CustomerProfile />} />
-                
-                {/* Static Pages */}
-                <Route path="hakkimizda" element={<AboutPage />} />
-                <Route path="iletisim" element={<ContactPage />} />
-                <Route path="hizmetlerimiz" element={<ServicesPage />} />
-                <Route path="sss" element={<FAQPage />} />
-                <Route path="gizlilik-politikasi" element={<PrivacyPolicyPage />} />
-                <Route path="kullanim-sartlari" element={<TermsPage />} />
-                <Route path="kvkk" element={<KVKKPage />} />
-                <Route path="cerez-politikasi" element={<CookiePolicyPage />} />
-                <Route path="iade-iptal" element={<RefundCancellationPage />} />
-                
-                {/* City Pages */}
-                <Route path="antalya-transfer" element={<AntalyaTransfer />} />
-                <Route path="lara-transfer" element={<LaraTransfer />} />
-                <Route path="kas-transfer" element={<KasTransfer />} />
-                <Route path="kalkan-transfer" element={<KalkanTransfer />} />
-                <Route path="manavgat-transfer" element={<ManavgatTransfer />} />
-                <Route path="serik-transfer" element={<SerikTransfer />} />
-                <Route path="kemer-transfer" element={<KemerTransfer />} />
-                <Route path="belek-transfer" element={<BelekTransfer />} />
-                <Route path="alanya-transfer" element={<AlanyaTransfer />} />
-                <Route path="side-transfer" element={<SideTransfer />} />
+                <Suspense fallback={<PageSkeleton />}>
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Layout />}>
+                      <Route index element={<HomePage />} />
+                      <Route path="rezervasyon" element={<BookingWizard />} />
+                      <Route path="araç-seçimi" element={<VehicleSelectionPage />} />
+                      <Route path="müşteri-bilgileri" element={<CustomerInfoPage />} />
+                      <Route path="ödeme" element={<PaymentPage />} />
+                      <Route path="onay" element={<ConfirmationPage />} />
+                      <Route path="rezervasyonlarim" element={<MyReservations />} />
+                      <Route path="profil" element={<CustomerProfile />} />
+                      
+                      {/* Static Pages */}
+                      <Route path="hakkimizda" element={<AboutPage />} />
+                      <Route path="iletisim" element={<ContactPage />} />
+                      <Route path="hizmetlerimiz" element={<ServicesPage />} />
+                      <Route path="sss" element={<FAQPage />} />
+                      <Route path="gizlilik-politikasi" element={<PrivacyPolicyPage />} />
+                      <Route path="kullanim-sartlari" element={<TermsPage />} />
+                      <Route path="kvkk" element={<KVKKPage />} />
+                      <Route path="cerez-politikasi" element={<CookiePolicyPage />} />
+                      <Route path="iade-iptal" element={<RefundCancellationPage />} />
+                      
+                      {/* City Pages */}
+                      <Route path="antalya-transfer" element={<AntalyaTransfer />} />
+                      <Route path="lara-transfer" element={<LaraTransfer />} />
+                      <Route path="kas-transfer" element={<KasTransfer />} />
+                      <Route path="kalkan-transfer" element={<KalkanTransfer />} />
+                      <Route path="manavgat-transfer" element={<ManavgatTransfer />} />
+                      <Route path="serik-transfer" element={<SerikTransfer />} />
+                      <Route path="kemer-transfer" element={<KemerTransfer />} />
+                      <Route path="belek-transfer" element={<BelekTransfer />} />
+                      <Route path="alanya-transfer" element={<AlanyaTransfer />} />
+                      <Route path="side-transfer" element={<SideTransfer />} />
                 
                 {/* Service Pages */}
                 <Route path="hizmetler/havaalani-transfer" element={<HavaalaniTransfer />} />
@@ -231,6 +247,7 @@ function App() {
                 </div>
               } />
             </Routes>
+          </Suspense>
 
             {/* Global Components */}
             <Toaster

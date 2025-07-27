@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import LoadingScreen from '../../components/UI/LoadingScreen';
 import SEOComponent from '../../components/Homepage/sections/SEOComponent';
+import NewsletterSignup from '../../components/Newsletter/NewsletterSignup';
 
 // Import critical above-the-fold component immediately
 import HeroSection from '../../components/Homepage/sections/HeroSection';
@@ -60,6 +61,13 @@ const HomePage = () => {
         <Suspense fallback={<SectionLoader />}>
           <FAQSection />
         </Suspense>
+        
+        {/* Newsletter Signup Section - Hero Variant */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <NewsletterSignup variant="hero" />
+          </div>
+        </section>
       </div>
     </HelmetProvider>
   );

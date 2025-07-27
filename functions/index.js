@@ -8,6 +8,75 @@ exports.keepAlive = functions.https.onRequest((req, res) => {
   res.status(200).send('Functions are alive!');
 });
 
+// Newsletter subscription endpoint
+exports.newsletter = functions.https.onRequest(async (req, res) => {
+  // CORS headers
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).send();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    res.status(405).send('Method Not Allowed');
+    return;
+  }
+
+  try {
+    const { email, source = 'default' } = req.body;
+
+    if (!email) {
+      res.status(400).json({ error: 'Email adresi gerekli' });
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ error: 'Geçerli bir email adresi giriniz' });
+      return;
+    }
+
+    const db = admin.firestore();
+    const newsletterRef = db.collection('newsletter').doc(email);
+
+    // Check if already subscribed
+    const existingDoc = await newsletterRef.get();
+    
+    if (existingDoc.exists) {
+      const data = existingDoc.data();
+      if (data.status === 'active') {
+        res.status(409).json({ error: 'Bu email adresi zaten kayıtlı' });
+        return;
+      }
+    }
+
+    // Subscribe user
+    await newsletterRef.set({
+      email,
+      subscribeDate: admin.firestore.FieldValue.serverTimestamp(),
+      source,
+      status: 'active',
+      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    // Send confirmation email (optional - implement later)
+    // await sendWelcomeEmail(email);
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Başarıyla abone oldunuz!' 
+    });
+
+  } catch (error) {
+    console.error('Newsletter subscription error:', error);
+    res.status(500).json({ error: 'Bir hata oluştu. Lütfen tekrar deneyin.' });
+  }
+});
+
 // Her 5 dakikada bir fonksiyonları uyandırmak için scheduled fonksiyon
 exports.scheduledKeepAlive = functions.pubsub.schedule('every 5 minutes')
   .onRun(async (context) => {

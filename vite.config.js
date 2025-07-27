@@ -15,23 +15,64 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false, // Disable for production performance
     minify: 'terser',
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunk for large libraries
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          // UI library chunk
-          ui: ['framer-motion', 'lucide-react'],
+          // React core
+          'react-vendor': ['react', 'react-dom'],
+          // Router
+          'router': ['react-router-dom'],
+          // UI libraries
+          'ui-libs': ['framer-motion', 'lucide-react', '@heroicons/react'],
           // Firebase chunk
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          // Forms and validation
+          'forms': ['react-hook-form', 'react-select', 'react-datepicker'],
+          // Utils
+          'utils': ['date-fns', 'uuid', 'html2canvas', 'jspdf'],
+        },
+        // Optimize chunk naming
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId
+            ? chunkInfo.facadeModuleId.split('/').pop().replace('.js', '')
+            : 'chunk';
+          return `js/${facadeModuleId}-[hash].js`;
+        },
+        entryFileNames: 'js/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+            return `img/[name]-[hash][extname]`;
+          }
+          if (/css/i.test(ext)) {
+            return `css/[name]-[hash][extname]`;
+          }
+          return `assets/[name]-[hash][extname]`;
         }
       }
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 800,
+    // Enable tree shaking
+    terserOptions: {
+      compress: {
+        dead_code: true,
+        drop_console: true,
+        drop_debugger: true,
+      }
+    }
   },
   // Performance optimizations
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom']
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom',
+      'framer-motion',
+      'lucide-react',
+      'react-helmet-async'
+    ]
   },
   // SPA fallback for client-side routing
   preview: {
