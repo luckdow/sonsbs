@@ -170,6 +170,11 @@ const AdminLayout = () => {
     };
     
     const setupNotificationSystem = async () => {
+      console.log('🔔 Admin bildirim sistemi geçici olarak devre dışı...');
+      // PWA sorunları nedeniyle geçici olarak devre dışı bırakıldı
+      return;
+      
+      /*
       console.log('🔔 Admin bildirim sistemi başlatılıyor...');
 
       // FCM Push Notification kurulumu
@@ -198,18 +203,15 @@ const AdminLayout = () => {
             }
           } else if (isMounted) {
             setPushEnabled(false);
-            console.log('❌ FCM Token alınamadı');
           }
-        } else {
-          console.log('❌ Push Notification desteklenmiyor');
-          setPushEnabled(false);
         }
       } catch (error) {
-        console.error('FCM Push Notification kurulum hatası:', error);
+        console.error('❌ FCM Push Notification hatası:', error);
         if (isMounted) {
           setPushEnabled(false);
         }
       }
+      */
     };
 
     // Gerçek verileri çek ve unsubscribe fonksiyonlarını al

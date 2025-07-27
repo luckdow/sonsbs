@@ -104,18 +104,35 @@ const MobileOptimizer = () => {
 
       // Add mobile-specific event listeners
       const addMobileEventListeners = () => {
-        // Track touch performance
+        // Track touch performance with per-touch tracking
+        const touchTimes = new Map();
+        
         document.addEventListener('touchstart', (e) => {
-          setTouchStartTime(performance.now());
+          // Track each touch separately using touch identifier
+          for (let i = 0; i < e.touches.length; i++) {
+            const touch = e.touches[i];
+            touchTimes.set(touch.identifier, performance.now());
+          }
         }, { passive: true });
 
         document.addEventListener('touchend', (e) => {
           const touchEndTime = performance.now();
-          const touchDuration = touchEndTime - touchStartTime;
           
-          // Log slow touch responses (> 100ms is considered slow)
-          if (touchDuration > 100) {
-            console.log(`Slow touch response: ${touchDuration.toFixed(2)}ms`);
+          // Check completed touches
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            const touch = e.changedTouches[i];
+            const startTime = touchTimes.get(touch.identifier);
+            
+            if (startTime) {
+              const touchDuration = touchEndTime - startTime;
+              touchTimes.delete(touch.identifier); // Cleanup
+              
+              // Log only extremely slow touch responses (> 5000ms is considered critical)
+              // Threshold increased to reduce console noise  
+              if (touchDuration > 5000 && process.env.NODE_ENV !== 'production') {
+                console.warn(`Critical touch response delay: ${touchDuration.toFixed(2)}ms`);
+              }
+            }
           }
         }, { passive: true });
 

@@ -244,8 +244,7 @@ const SEOComponent = ({ language = 'tr', page = 'homepage' }) => {
       <link rel="dns-prefetch" href="//fonts.googleapis.com" />
       <link rel="dns-prefetch" href="//www.google-analytics.com" />
 
-      {/* Preload Critical Resources */}
-      <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+      {/* Critical resources preloaded in index.html */}
     </Helmet>
   );
 };

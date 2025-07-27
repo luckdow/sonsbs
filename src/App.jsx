@@ -114,7 +114,12 @@ function App() {
       <HelmetProvider>
         <AuthProvider>
           <AppProvider>
-            <BrowserRouter>
+            <BrowserRouter
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+              }}
+            >
               <ScrollToTop />
               <div className="App">
                 <Suspense fallback={<PageSkeleton />}>

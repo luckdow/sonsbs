@@ -1,41 +1,9 @@
 {
-  "name": "GATE Transfer - Antalya Transfer Hizmetleri",
-  "short_name": "GATE Transfer",
-  "description": "Antalya havalimanı transfer hizmetleri, VIP transfer, grup transfer ve otel transferi.",
+  "name": "Gate Transfer - Antalya Transfer Hizmetleri",
+  "short_name": "Gate Transfer",
+  "description": "Antalya havalimanı transfer hizmetleri",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#ffffff",
-  "theme_color": "#1e40af",
-  "orientation": "portrait-primary",
-  "scope": "/",
-  "lang": "tr",
-  "icons": [
-    {
-      "src": "/images/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/images/icon-512.png", 
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["travel", "transport", "business"],
-  "screenshots": [
-    {
-      "src": "/images/screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "/images/screenshot-narrow.png", 
-      "sizes": "720x1280",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ]
+  "theme_color": "#1e40af"
 }

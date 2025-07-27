@@ -15,10 +15,6 @@
     <!-- Preload critical CSS -->
     <noscript></noscript>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#1e40af" />
-    
     <!-- SEO Meta Tags -->
     <title>Antalya VIP Transfer | Havalimanı Transfer Hizmeti | GATE Transfer</title>
     <meta name="description" content="Antalya'nın en güvenilir VIP transfer hizmeti. Antalya havalimanı transfer, şehir içi transfer ve otel transferleri. 7/24 profesyonel şoför hizmeti, lüks araçlar ve uygun fiyatlar." />
@@ -43,9 +39,12 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://gatetransfer.com" />
     
-    <!-- Preload critical fonts -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"></noscript>
+    <!-- Manifest - Disabled in development due to CORS issues -->
+    <!-- <link rel="manifest" href="/site.webmanifest"> -->
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="/vite.svg">
     
     <!-- Google Maps styling -->
     <style>
@@ -121,10 +120,6 @@
     }
     </script>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <!-- Google Maps API -->
     <script>
       function initGoogleMaps() {
@@ -135,33 +130,20 @@
     <script async defer 
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDa66vbuMgm_L4wdOgPutliu_PLzI3xqEw&libraries=places,geometry,drawing&language=tr&region=TR&callback=initGoogleMaps&loading=async">
     </script>
-    <script type="module" crossorigin src="/js/index-7qfwLuD9.js"></script>
+    <script type="module" crossorigin src="/js/index-B7_6YKqI.js"></script>
     <link rel="modulepreload" crossorigin href="/js/chunk-Bkkzv6j4.js">
     <link rel="modulepreload" crossorigin href="/js/chunk-rj-8a6OE.js">
-    <link rel="modulepreload" crossorigin href="/js/chunk-FasyTjxO.js">
-    <link rel="modulepreload" crossorigin href="/js/chunk-CyZUTZX5.js">
-    <link rel="modulepreload" crossorigin href="/js/chunk-C3rg1vA9.js">
-    <link rel="modulepreload" crossorigin href="/js/chunk-CfVQzchV.js">
-    <link rel="stylesheet" crossorigin href="/css/index-JrnaTOW-.css">
+    <link rel="modulepreload" crossorigin href="/js/chunk-BcaSFcXu.js">
+    <link rel="modulepreload" crossorigin href="/js/chunk-D-dPr7Hw.js">
+    <link rel="modulepreload" crossorigin href="/js/chunk-CY8KpSnY.js">
+    <link rel="modulepreload" crossorigin href="/js/chunk-BY_DoteD.js">
+    <link rel="stylesheet" crossorigin href="/css/index-DlYLJAd1.css">
   </head>
   <body>
     <div id="root"></div>
     
-    <!-- Service Worker Registration -->
+    <!-- Performance monitoring -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
-
-      // Performance monitoring
       if ('PerformanceObserver' in window) {
         try {
           const observer = new PerformanceObserver((list) => {

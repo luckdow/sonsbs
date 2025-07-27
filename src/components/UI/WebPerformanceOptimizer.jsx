@@ -5,26 +5,31 @@ const WebPerformanceOptimizer = () => {
   useEffect(() => {
     // Preload critical resources
     const preloadCriticalResources = () => {
-      // Preload critical fonts
-      const fontLink = document.createElement('link');
-      fontLink.rel = 'preload';
-      fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
-      fontLink.as = 'style';
-      fontLink.onload = function() { this.rel = 'stylesheet'; };
-      document.head.appendChild(fontLink);
-
       // DNS prefetch for external domains
       const dnsPrefetchDomains = [
-        'https://fonts.googleapis.com',
-        'https://fonts.gstatic.com',
         'https://hizliresim.com',
-        'https://maps.googleapis.com'
+        'https://maps.googleapis.com',
+        'https://firebase.googleapis.com'
       ];
 
       dnsPrefetchDomains.forEach(domain => {
         const link = document.createElement('link');
         link.rel = 'dns-prefetch';
         link.href = domain;
+        document.head.appendChild(link);
+      });
+
+      // Preconnect to critical domains for faster resource loading
+      const preconnectDomains = [
+        'https://fonts.gstatic.com',
+        'https://maps.googleapis.com'
+      ];
+
+      preconnectDomains.forEach(domain => {
+        const link = document.createElement('link');
+        link.rel = 'preconnect';
+        link.href = domain;
+        link.crossOrigin = 'anonymous';
         document.head.appendChild(link);
       });
     };
@@ -41,9 +46,24 @@ const WebPerformanceOptimizer = () => {
             imageObserver.unobserve(img);
           }
         });
+      }, {
+        // Load images slightly before they become visible
+        rootMargin: '50px 0px',
+        threshold: 0.01
       });
 
       images.forEach(img => imageObserver.observe(img));
+
+      // Immediately load above-the-fold images (LCP optimization)
+      const aboveFoldImages = document.querySelectorAll('img[data-src]');
+      aboveFoldImages.forEach((img, index) => {
+        // Load first 3 images immediately for better LCP
+        if (index < 3) {
+          img.src = img.dataset.src;
+          img.classList.remove('lazy');
+          imageObserver.unobserve(img);
+        }
+      });
     };
 
     // Smart CSS loading optimization
@@ -66,10 +86,10 @@ const WebPerformanceOptimizer = () => {
       });
     };
 
-    // Web Vitals monitoring
+    // Web Vitals monitoring (only in development)
     const measureWebVitals = () => {
-      // Largest Contentful Paint
-      if ('PerformanceObserver' in window) {
+      // Only monitor in development environment
+      if (process.env.NODE_ENV !== 'production' && 'PerformanceObserver' in window) {
         try {
           const observer = new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
@@ -95,6 +115,30 @@ const WebPerformanceOptimizer = () => {
     
     // Critical CSS optimization
     setTimeout(optimizeCSS, 100);
+
+    // LCP optimization - prioritize above-the-fold content
+    const optimizeLCP = () => {
+      // Force immediate render of hero content
+      const heroElements = document.querySelectorAll('.hero, .banner, h1, .main-title');
+      heroElements.forEach(element => {
+        element.style.contentVisibility = 'visible';
+        element.style.containIntrinsicSize = 'none';
+      });
+
+      // Preload hero images if they exist
+      const heroImages = document.querySelectorAll('.hero img, .banner img');
+      heroImages.forEach(img => {
+        if (img.dataset.src) {
+          img.src = img.dataset.src;
+          img.classList.remove('lazy');
+        }
+      });
+    };
+
+    // Run LCP optimization immediately
+    optimizeLCP();
+    // Also run after a short delay to catch dynamically loaded content
+    setTimeout(optimizeLCP, 200);
 
     // Cleanup function
     return () => {
