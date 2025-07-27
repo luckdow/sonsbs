@@ -5,6 +5,9 @@ import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
 import { AppProvider } from './context/AppContext'
 
+// Performance Components
+import MobileOptimizer from './components/UI/MobileOptimizer'
+
 // Layout Components (keep these as direct imports since they're used on all pages)
 import Layout from './components/Layout/Layout'
 import AdminLayout from './components/Layout/AdminLayout'
@@ -250,6 +253,7 @@ function App() {
           </Suspense>
 
             {/* Global Components */}
+            <MobileOptimizer />
             <Toaster
               position="top-right"
               toastOptions={{
