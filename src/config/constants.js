@@ -11,6 +11,7 @@ export const GOOGLE_MAPS_CONFIG = {
 export const APP_CONFIG = {
   name: "GATE Transfer",
   version: "1.0.0",
+  baseURL: "https://gatetransfer.com",
   companyName: "SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi",
   supportEmail: "info@sbstravel.net",
   supportPhone: "+90 532 574 26 82",

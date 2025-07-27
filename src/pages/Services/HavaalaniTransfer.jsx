@@ -1,11 +1,20 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import ServicePageLayout from './components/ServicePageLayout';
 import { servicesData } from '../../data/servicesData.jsx';
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Euro, Star, ArrowRight, Car, Users, Shield } from 'lucide-react';
+import { generateServiceSchema } from '../../utils/seoUtils';
 
 const HavaalaniTransfer = () => {
   const serviceData = servicesData['havaalani-transfer'];
+  
+  // Generate Service schema for this specific service
+  const serviceSchema = generateServiceSchema(
+    'Antalya Havalimanı Transfer',
+    'Antalya havalimanından otellere güvenli, konforlu ve ekonomik transfer hizmeti. 7/24 hizmet, profesyonel şoförler.',
+    'https://gatetransfer.com/hizmetler/havaalani-transfer'
+  );
 
   // Popular destinations with pricing
   const destinations = [
@@ -262,6 +271,13 @@ const HavaalaniTransfer = () => {
           </div>
         </div>
       </section>
+      
+      {/* Service Schema JSON-LD */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(serviceSchema)}
+        </script>
+      </Helmet>
     </ServicePageLayout>
   );
 };

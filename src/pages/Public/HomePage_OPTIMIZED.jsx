@@ -1,8 +1,9 @@
 import React, { lazy, Suspense } from 'react';
-import { HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import LoadingScreen from '../../components/UI/LoadingScreen';
 import SEOComponent from '../../components/Homepage/sections/SEOComponent';
 import NewsletterSignup from '../../components/Newsletter/NewsletterSignup';
+import { generateLocalBusinessSchema } from '../../utils/seoUtils';
 
 // Import critical above-the-fold component immediately
 import HeroSection from '../../components/Homepage/sections/HeroSection';
@@ -38,11 +39,20 @@ const SectionLoader = () => (
 );
 
 const HomePage = () => {
+  const localBusinessSchema = generateLocalBusinessSchema();
+
   return (
     <HelmetProvider>
       <div className="min-h-screen">
         {/* SEO Meta Tags - Critical */}
         <SEOComponent language="tr" page="homepage" />
+        
+        {/* Schema.org JSON-LD for LocalBusiness */}
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify(localBusinessSchema)}
+          </script>
+        </Helmet>
         
         {/* Hero Section - Critical, no lazy loading */}
         <HeroSection />

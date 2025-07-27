@@ -142,6 +142,25 @@ const SEOComponent = ({ language = 'tr', page = 'homepage' }) => {
       <meta name="twitter:title" content={pageData.title} />
       <meta name="twitter:description" content={pageData.description} />
       <meta name="twitter:image" content={`${data.siteUrl}/images/antalya-transfer-hero.jpg`} />
+      <meta name="twitter:creator" content="@gatetransfer" />
+      <meta name="twitter:site" content="@gatetransfer" />
+
+      {/* Enhanced Open Graph */}
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content="Antalya Havalimanı Transfer Hizmetleri" />
+      <meta property="og:site_name" content={data.siteName} />
+      <meta property="og:locale" content="tr_TR" />
+      <meta property="og:locale:alternate" content="en_US" />
+
+      {/* Additional Business Meta */}
+      <meta name="author" content="Gate Transfer" />
+      <meta name="publisher" content="Gate Transfer" />
+      <meta name="language" content="Turkish" />
+      <meta name="geo.region" content="TR-07" />
+      <meta name="geo.placename" content="Antalya" />
+      <meta name="geo.position" content="36.8983;30.7856" />
+      <meta name="ICBM" content="36.8983, 30.7856" />
 
       {/* Diğer Meta Tags */}
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />

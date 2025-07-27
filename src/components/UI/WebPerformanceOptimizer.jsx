@@ -46,14 +46,22 @@ const WebPerformanceOptimizer = () => {
       images.forEach(img => imageObserver.observe(img));
     };
 
-    // Remove unused CSS (critical path optimization)
-    const removeUnusedCSS = () => {
-      // This will be handled by build process, but we can add runtime optimizations
+    // Smart CSS loading optimization
+    const optimizeCSS = () => {
+      // Only optimize non-critical external stylesheets
       const stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
       stylesheets.forEach(sheet => {
-        if (sheet.href && !sheet.href.includes('critical')) {
+        // Don't touch critical CSS or inline styles or same-origin styles
+        if (sheet.href && 
+            !sheet.href.includes('critical') && 
+            !sheet.href.includes('/src/') && // Don't touch Vite dev server CSS
+            sheet.href.includes('googleapis')) { // Only optimize external fonts
+          const media = sheet.media || 'all';
           sheet.media = 'print';
-          sheet.onload = function() { this.media = 'all'; };
+          sheet.onload = function() { 
+            this.media = media; 
+            this.onload = null;
+          };
         }
       });
     };
