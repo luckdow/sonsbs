@@ -41,10 +41,16 @@ self.addEventListener('install', (event) => {
         console.log('Service Worker installing...');
         return cache.addAll(STATIC_ASSETS);
       })
-      .then(() => {
-        return self.skipWaiting();
-      })
   );
+  // Don't skip waiting automatically, let PWAManager control it
+});
+
+// Message listener for skip waiting
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('Received SKIP_WAITING message');
+    self.skipWaiting();
+  }
 });
 
 // Activate event
@@ -158,3 +164,31 @@ async function staleWhileRevalidate(cache, request) {
 
   return cachedResponse || networkPromise;
 }
+
+// Message listener for skip waiting
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Listen for activation
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    Promise.all([
+      // Take control of all clients immediately
+      self.clients.claim(),
+      
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+    ])
+  );
+});

@@ -7,6 +7,7 @@ import { AppProvider } from './context/AppContext'
 
 // Performance Components
 import MobileOptimizer from './components/UI/MobileOptimizer'
+import PWAManager from './components/PWA/PWAManager'
 
 // Layout Components (keep these as direct imports since they're used on all pages)
 import Layout from './components/Layout/Layout'
@@ -254,6 +255,7 @@ function App() {
 
             {/* Global Components */}
             <MobileOptimizer />
+            <PWAManager />
             <Toaster
               position="top-right"
               toastOptions={{
