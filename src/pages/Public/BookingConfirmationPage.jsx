@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -28,6 +28,7 @@ import { db, auth } from '../../config/firebase';
 import toast from 'react-hot-toast';
 import QRCode from 'qrcode';
 import emailService from '../../services/emailService';
+import { sendBookingConfirmationEmail } from '../../services/emailService';
 import smsService from '../../services/smsService';
 
 const BookingConfirmationPage = () => {
@@ -42,6 +43,9 @@ const BookingConfirmationPage = () => {
   
   // Component seviyesinde global işlem kontrolü
   const [isGlobalProcessing, setIsGlobalProcessing] = useState(false);
+  
+  // React Strict Mode için ref kontrolü
+  const hasRun = useRef(false);
 
   // Geçici şifre oluştur
   const generateTempPassword = () => {
@@ -172,7 +176,7 @@ const BookingConfirmationPage = () => {
       setUserCreated(true);
       toast.success('Müşteri hesabınız başarıyla oluşturuldu ve rezervasyon sistemine kaydedildi!');
       
-      return user;
+      return { user, isNewUser: true };
     } catch (error) {
       console.error('Otomatik kullanıcı kaydı hatası:', error);
       
@@ -187,10 +191,11 @@ const BookingConfirmationPage = () => {
             border: '1px solid #81d4fa'
           },
         });
+        return { user: null, isNewUser: false };
       } else {
         toast.error('Hesap oluşturulurken bir hata oluştu.');
+        return { user: null, isNewUser: false };
       }
-      return null;
     }
   };
 
@@ -198,8 +203,15 @@ const BookingConfirmationPage = () => {
     console.log('📍 BookingConfirmation useEffect çalıştı - State kontrol:', { 
       isProcessed, 
       isGlobalProcessing,
-      hasLocationState: !!location.state?.bookingData 
+      hasLocationState: !!location.state?.bookingData,
+      hasRun: hasRun.current
     });
+    
+    // React Strict Mode için ref kontrolü - EN ÖNCELİKLİ KONTROL
+    if (hasRun.current) {
+      console.log('🚫 React Strict Mode: Zaten çalıştı, atlanıyor');
+      return;
+    }
     
     // ÇOKLU ÇALIŞMAYI ÖNLE - 3 seviyeli kontrol
     if (isProcessed || isGlobalProcessing || !location.state?.bookingData) {
@@ -211,6 +223,9 @@ const BookingConfirmationPage = () => {
       return;
     }
 
+    // Ref'i hemen set et
+    hasRun.current = true;
+    
     // Process flag'ini hemen set et
     setIsProcessed(true);
     setIsGlobalProcessing(true);
@@ -258,15 +273,17 @@ const BookingConfirmationPage = () => {
           setReservationId(reservationCode);
           
           // Otomatik kullanıcı hesabı oluştur
+          let isNewUser = false;
           if (data.customerInfo?.email) {
             console.log('👤 Otomatik kullanıcı hesabı oluşturuluyor...');
             const password = generateTempPassword();
             setTempPassword(password);
-            await createUserAccount(
+            const userResult = await createUserAccount(
               data.customerInfo.email,
               password,
               data.customerInfo
             );
+            isNewUser = userResult?.isNewUser || false;
           }
           
           // Rezervasyonu doğru formatta Firebase'e kaydet
@@ -287,29 +304,61 @@ const BookingConfirmationPage = () => {
             console.warn('⚠️ QR kod için telefon numarası yok:', data.customerInfo);
           }
 
-          // E-posta gönder
+          // E-posta gönder - EmailJS ile
           if (data.customerInfo?.email) {
-            console.log('📧 Rezervasyon onay e-postası gönderiliyor...');
+            console.log('📧 EmailJS ile rezervasyon onay e-postası gönderiliyor...');
             const emailData = {
               ...data,
               reservationId: reservationCode,
-              tempPassword: tempPassword || generateTempPassword()
+              tempPassword: tempPassword // State'ten al
             };
             
             // E-posta gönderme işlemini async olarak yap (sayfayı bloklamasın)
             setTimeout(async () => {
               try {
-                const emailResult = await emailService.sendReservationConfirmation(emailData);
-                if (emailResult.success) {
-                  console.log('✅ E-posta başarıyla gönderildi:', emailResult.email);
-                  toast.success('Rezervasyon onay e-postası gönderildi!');
-                } else {
-                  console.error('❌ E-posta gönderme hatası:', emailResult.error);
-                  toast.error('E-posta gönderilirken hata oluştu');
-                }
+                // QR kod oluştur
+                const qrData = JSON.stringify({
+                  reservationId: reservationCode,
+                  customerName: `${data.customerInfo.firstName} ${data.customerInfo.lastName}`,
+                  from: data.pickupLocation?.address || data.pickupLocation?.description || data.pickupLocation,
+                  to: data.dropoffLocation?.address || data.dropoffLocation?.description || data.dropoffLocation,
+                  date: data.date,
+                  time: data.time
+                });
+                
+                const qrCodeUrl = await QRCode.toDataURL(qrData, {
+                  width: 200,
+                  margin: 2,
+                  color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                  }
+                });
+                
+                // EmailJS ile gönder
+                const result = await sendBookingConfirmationEmail({
+                  customerName: `${data.customerInfo.firstName} ${data.customerInfo.lastName}`,
+                  customerEmail: data.customerInfo.email,
+                  customerPhone: data.customerInfo.phone,
+                  reservationId: reservationCode,
+                  pickupLocation: data.pickupLocation?.address || data.pickupLocation?.description || data.pickupLocation,
+                  dropoffLocation: data.dropoffLocation?.address || data.dropoffLocation?.description || data.dropoffLocation,
+                  tripDate: data.date,
+                  tripTime: data.time,
+                  passengerCount: data.passengerCount,
+                  totalPrice: data.totalPrice,
+                  paymentMethod: data.paymentMethod === 'credit_card' ? 'Kredi Kartı' : 'Nakit',
+                  tripType: data.tripType === 'round-trip' ? 'Gidiş-Dönüş' : 'Tek Yön',
+                  tempPassword: tempPassword,
+                  isNewUser: isNewUser
+                }, qrCodeUrl);
+                
+                console.log('✅ EmailJS ile e-posta başarıyla gönderildi');
+                // Toast kaldırıldı - fazladan bildirim engellendi
+                
               } catch (error) {
-                console.error('❌ E-posta servisi hatası:', error);
-                toast.error('E-posta servisi hatası');
+                console.error('❌ EmailJS gönderme hatası:', error);
+                console.log('⚠️ E-posta gönderilemedi');
               }
             }, 1000); // 1 saniye sonra gönder
           } else {
@@ -393,22 +442,51 @@ const BookingConfirmationPage = () => {
       const docRef = await addDoc(collection(db, 'reservations'), reservationData);
       toast.success(`Rezervasyonunuz başarıyla kaydedildi! Rezervasyon kodunuz: ${reservationCode}`);
       
-      // E-posta gönder
+      // E-posta gönder - EmailJS ile
       try {
-        console.log('📧 E-posta gönderimi başlatılıyor...');
-        const emailData = {
-          ...reservationData,
+        console.log('📧 EmailJS ile e-posta gönderimi başlatılıyor...');
+        
+        // QR kod oluştur
+        const qrData = JSON.stringify({
           reservationId: reservationCode,
-          tempPassword: tempPassword
-        };
+          customerName: `${data.customerInfo.firstName} ${data.customerInfo.lastName}`,
+          from: data.pickupLocation?.address || data.pickupLocation?.description || data.pickupLocation,
+          to: data.dropoffLocation?.address || data.dropoffLocation?.description || data.dropoffLocation,
+          date: data.date,
+          time: data.time
+        });
         
-        const emailResult = await emailService.sendReservationConfirmation(emailData);
+        const qrCodeUrl = await QRCode.toDataURL(qrData, {
+          width: 200,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        });
         
-        if (emailResult.success) {
-          console.log('✅ E-posta başarıyla gönderildi:', emailResult);
-          toast.success('Rezervasyon onay e-postası başarıyla gönderildi!');
+        // EmailJS için doğru formatta parametreler
+        const emailResult = await sendBookingConfirmationEmail({
+          customerName: `${data.customerInfo.firstName} ${data.customerInfo.lastName}`,
+          customerEmail: data.customerInfo.email,
+          customerPhone: data.customerInfo.phone,
+          reservationId: reservationCode,
+          pickupLocation: data.pickupLocation?.address || data.pickupLocation?.description || data.pickupLocation,
+          dropoffLocation: data.dropoffLocation?.address || data.dropoffLocation?.description || data.dropoffLocation,
+          tripDate: data.date,
+          tripTime: data.time,
+          passengerCount: data.passengerCount,
+          totalPrice: data.totalPrice,
+          paymentMethod: data.paymentMethod === 'credit_card' ? 'Kredi Kartı' : 'Nakit',
+          tripType: data.tripType === 'round-trip' ? 'Gidiş-Dönüş' : 'Tek Yön',
+          tempPassword: tempPassword,
+          isNewUser: isNewUser
+        }, qrCodeUrl);
+        
+        if (emailResult) {
+          console.log('✅ EmailJS ile e-posta başarıyla gönderildi');
         } else {
-          console.log('⚠️ E-posta gönderilemedi:', emailResult.error);
+          console.log('⚠️ EmailJS ile e-posta gönderilemedi');
           toast('Rezervasyon kaydedildi ancak e-posta gönderilemedi', {
             icon: '⚠️',
             style: {
@@ -420,7 +498,7 @@ const BookingConfirmationPage = () => {
           });
         }
       } catch (emailError) {
-        console.error('❌ E-posta gönderme hatası:', emailError);
+        console.error('❌ EmailJS gönderme hatası:', emailError);
         toast('Rezervasyon kaydedildi ancak e-posta gönderilemedi', {
           icon: '⚠️',
           style: {

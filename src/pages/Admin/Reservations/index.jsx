@@ -12,6 +12,8 @@ import DriverAssignModal from './DriverAssignModal';
 import QRModal from './QRModal';
 import { sendWhatsAppMessage, generateManualDriverWhatsAppMessage } from '../../../utils/whatsappService';
 import { generateManualDriverPDF } from '../../../utils/pdfGenerator';
+import { sendBookingConfirmationEmail } from '../../../services/emailService';
+import { sendDriverAssignmentEmail } from '../../../services/emailService';
 import toast from 'react-hot-toast';
 
 const ReservationIndex = () => {
@@ -242,23 +244,104 @@ const ReservationIndex = () => {
     };
   }, []);
 
-  // Hızlı rezervasyon ekleme - GEÇİCİ OLARAK KAPALI
+  // Hızlı rezervasyon ekleme - EmailJS entegrasyonu ile
   const handleQuickReservation = async (reservationData) => {
     try {
+      const reservationId = `SBS-${Date.now()}`;
+      
+      // Otomatik şifre oluştur
+      const tempPassword = Math.random().toString(36).slice(-8);
+      
       const newReservation = {
         ...reservationData,
-        reservationId: `SBS-${Date.now()}`,
+        reservationId: reservationId,
         status: 'pending',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        tempPassword: tempPassword // Geçici şifreyi rezervasyona ekle
       };
-      // Firebase'a ekle (id alanı olmadan)
+      
+      // Otomatik kullanıcı hesabı oluştur
+      try {
+        const { createUserWithEmailAndPassword } = await import('firebase/auth');
+        const { auth } = await import('../../../config/firebase');
+        
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          reservationData.customerInfo.email,
+          tempPassword
+        );
+        
+        // Kullanıcı profilini güncelle
+        const { updateProfile } = await import('firebase/auth');
+        await updateProfile(userCredential.user, {
+          displayName: `${reservationData.customerInfo.firstName} ${reservationData.customerInfo.lastName}`
+        });
+        
+        // Kullanıcı dokümanı oluştur
+        const { setDoc } = await import('firebase/firestore');
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          email: reservationData.customerInfo.email,
+          firstName: reservationData.customerInfo.firstName,
+          lastName: reservationData.customerInfo.lastName,
+          phone: reservationData.customerInfo.phone,
+          createdAt: new Date().toISOString(),
+          role: 'customer',
+          tempPassword: tempPassword,
+          createdBy: 'admin_quick_reservation'
+        });
+        
+        console.log('✅ Otomatik kullanıcı hesabı oluşturuldu:', userCredential.user.uid);
+        
+      } catch (authError) {
+        console.log('ℹ️ Kullanıcı zaten mevcut veya hesap oluşturulamadı:', authError.message);
+        // Hata olsa bile devam et
+      }
+      
+      // Firebase'a ekle
       const docRef = await addDoc(collection(db, 'reservations'), newReservation);
+      
+      // QR kod oluştur
+      const QRCode = await import('qrcode');
+      const qrText = `Gate Transfer - Rezervasyon: ${reservationId} - Tel: ${reservationData.customerInfo.phone}`;
+      const qrCodeUrl = await QRCode.toDataURL(qrText, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      
+      // Email gönder
+      try {
+        await sendBookingConfirmationEmail({
+          customerName: `${reservationData.customerInfo.firstName} ${reservationData.customerInfo.lastName}`,
+          customerEmail: reservationData.customerInfo.email,
+          customerPhone: reservationData.customerInfo.phone,
+          reservationId: reservationId,
+          pickupLocation: reservationData.tripDetails.pickupLocation,
+          dropoffLocation: reservationData.tripDetails.dropoffLocation,
+          tripDate: reservationData.tripDetails.date,
+          tripTime: reservationData.tripDetails.time,
+          passengerCount: reservationData.tripDetails.passengerCount,
+          totalPrice: reservationData.totalPrice,
+          paymentMethod: reservationData.paymentMethod,
+          qrCodeUrl: qrCodeUrl,
+          tripType: reservationData.tripDetails.tripType === 'round-trip' ? 'Gidiş-Dönüş' : 'Tek Yön',
+          tempPassword: tempPassword, // Geçici şifreyi email'e ekle
+          isNewUser: true // Admin panelinden eklenenler hep yeni kullanıcı
+        });
+        toast.success('Rezervasyon eklendi ve onay e-postası gönderildi!');
+      } catch (emailError) {
+        console.error('Email gönderimi hatası:', emailError);
+        toast.success('Rezervasyon eklendi ancak e-posta gönderilemedi.');
+      }
+      
       setShowQuickModal(false);
-      toast.success('Rezervasyon başarıyla eklendi!');
       
     } catch (error) {
-      // Debug log removed
+      console.error('Rezervasyon ekleme hatası:', error);
       toast.error('Rezervasyon eklenirken bir hata oluştu: ' + error.message);
     }
   };
@@ -298,6 +381,26 @@ const ReservationIndex = () => {
 
         // Firebase'de güncelle
         await updateDoc(doc(db, 'reservations', reservationId), updateData);
+        
+        // E-posta gönder
+        try {
+          await sendDriverAssignmentEmail({
+            customerName: `${reservationToUpdate.customerInfo?.firstName || ''} ${reservationToUpdate.customerInfo?.lastName || ''}`.trim(),
+            customerEmail: reservationToUpdate.customerInfo?.email,
+            reservationId: reservationToUpdate.reservationId || reservationToUpdate.reservationCode,
+            driverName: manualDriverInfo.name,
+            driverPhone: manualDriverInfo.phone,
+            vehiclePlate: manualDriverInfo.plateNumber || '',
+            pickupLocation: reservationToUpdate.tripDetails?.pickupLocation || '',
+            dropoffLocation: reservationToUpdate.tripDetails?.dropoffLocation || '',
+            tripDate: reservationToUpdate.tripDetails?.date || '',
+            tripTime: reservationToUpdate.tripDetails?.time || ''
+          });
+          console.log('✅ Şoför atama e-postası gönderildi');
+        } catch (emailError) {
+          console.error('❌ Şoför atama e-postası hatası:', emailError);
+          // E-posta hatası rezervasyon atamayı engellemez
+        }
         
         // WhatsApp mesajı gönder
         try {
@@ -353,6 +456,31 @@ const ReservationIndex = () => {
 
         
         await updateDoc(doc(db, 'reservations', reservationId), cleanUpdateData);
+        
+        // Sistem şoförü için e-posta gönder
+        try {
+          const assignedDriver = drivers.find(d => d.id === driverId);
+          const assignedVehicle = vehicles.find(v => v.id === vehicleId);
+          
+          if (assignedDriver && reservationToUpdate.customerInfo?.email) {
+            await sendDriverAssignmentEmail({
+              customerName: `${reservationToUpdate.customerInfo?.firstName || ''} ${reservationToUpdate.customerInfo?.lastName || ''}`.trim(),
+              customerEmail: reservationToUpdate.customerInfo?.email,
+              reservationId: reservationToUpdate.reservationId || reservationToUpdate.reservationCode,
+              driverName: `${assignedDriver.firstName || ''} ${assignedDriver.lastName || ''}`.trim(),
+              driverPhone: assignedDriver.phone || '',
+              vehiclePlate: assignedVehicle?.plateNumber || '',
+              pickupLocation: reservationToUpdate.tripDetails?.pickupLocation || '',
+              dropoffLocation: reservationToUpdate.tripDetails?.dropoffLocation || '',
+              tripDate: reservationToUpdate.tripDetails?.date || '',
+              tripTime: reservationToUpdate.tripDetails?.time || ''
+            });
+            console.log('✅ Sistem şoför atama e-postası gönderildi');
+          }
+        } catch (emailError) {
+          console.error('❌ Sistem şoför atama e-postası hatası:', emailError);
+          // E-posta hatası rezervasyon atamayı engellemez
+        }
         
         toast.success('Şoför başarıyla atandı!');
       }

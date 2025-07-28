@@ -8,7 +8,8 @@ import {
   Building2,
   Banknote,
   Info,
-  MessageSquare
+  MessageSquare,
+  AlertCircle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
@@ -1212,7 +1213,7 @@ const EmailSettings = ({ settings, onChange }) => (
           </label>
           <input
             type="text"
-            value={settings.emailjsServiceId}
+            value={settings?.emailjsServiceId || ''}
             onChange={(e) => onChange('emailjsServiceId', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="service_xxxxxxx"
@@ -1225,7 +1226,7 @@ const EmailSettings = ({ settings, onChange }) => (
           </label>
           <input
             type="text"
-            value={settings.emailjsPublicKey}
+            value={settings?.emailjsPublicKey || ''}
             onChange={(e) => onChange('emailjsPublicKey', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="user_xxxxxxxxxxxxxxxxx"
@@ -1238,10 +1239,10 @@ const EmailSettings = ({ settings, onChange }) => (
           </label>
           <input
             type="text"
-            value={settings.emailjsTemplateId}
+            value={settings?.emailjsTemplateId || ''}
             onChange={(e) => onChange('emailjsTemplateId', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="template_xxxxxxx"
+            placeholder="template_z90meih"
           />
         </div>
 
@@ -1251,7 +1252,7 @@ const EmailSettings = ({ settings, onChange }) => (
           </label>
           <input
             type="text"
-            value={settings.emailjsPaymentTemplateId}
+            value={settings?.emailjsPaymentTemplateId || ''}
             onChange={(e) => onChange('emailjsPaymentTemplateId', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="template_payment_xxxx"
@@ -1264,7 +1265,7 @@ const EmailSettings = ({ settings, onChange }) => (
           </label>
           <input
             type="text"
-            value={settings.senderName}
+            value={settings?.senderName || ''}
             onChange={(e) => onChange('senderName', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="SBS Transfer"
@@ -1275,7 +1276,7 @@ const EmailSettings = ({ settings, onChange }) => (
           <label className="flex items-center space-x-3 p-4 border border-green-200 rounded-lg bg-green-50 w-full">
             <input
               type="checkbox"
-              checked={settings.enableEmails}
+              checked={settings?.enableEmails || false}
               onChange={(e) => onChange('enableEmails', e.target.checked)}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
             />

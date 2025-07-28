@@ -277,6 +277,167 @@ class EmailService {
   }
 }
 
+// EmailJS ile rezervasyon onay maili gönderme fonksiyonu (export edilecek)
+export const sendBookingConfirmationEmail = async (bookingData) => {
+  try {
+    // Firebase'den EmailJS ayarlarını yükle
+    const settingsDoc = await getDoc(doc(db, 'settings', 'main'));
+    if (!settingsDoc.exists()) {
+      throw new Error('EmailJS ayarları bulunamadı');
+    }
+    
+    const settings = settingsDoc.data();
+    const emailSettings = settings.emailSettings;
+    
+    if (!emailSettings?.emailjsServiceId || !emailSettings?.emailjsTemplateId || !emailSettings?.emailjsPublicKey) {
+      throw new Error('EmailJS ayarları eksik');
+    }
+
+    // EmailJS'i başlat
+    emailjs.init(emailSettings.emailjsPublicKey);
+
+    // Email template parametreleri - EmailJS formatında
+    const templateParams = {
+      // Alıcı bilgileri (EmailJS'in beklediği format)
+      to_name: bookingData.customerName,
+      to_email: bookingData.customerEmail,
+      from_name: 'Gate Transfer',
+      
+      // Rezervasyon bilgileri
+      reservationId: bookingData.reservationId,
+      customer_name: bookingData.customerName,
+      customerPhone: bookingData.customerPhone || '',
+      pickupLocation: bookingData.pickupLocation,
+      dropoffLocation: bookingData.dropoffLocation,
+      tripDate: bookingData.tripDate,
+      tripTime: bookingData.tripTime,
+      passengerCount: bookingData.passengerCount,
+      totalPrice: bookingData.totalPrice,
+      paymentMethod: bookingData.paymentMethod === 'cash' ? 'Nakit' : 
+                     bookingData.paymentMethod === 'credit_card' ? 'Kredi Kartı' : 
+                     bookingData.paymentMethod === 'bank_transfer' ? 'Havale' : bookingData.paymentMethod,
+      tripType: bookingData.tripType,
+      qrCodeUrl: bookingData.qrCodeUrl,
+      tempPassword: bookingData.tempPassword || '',
+      
+      // Şirket bilgileri
+      companyName: 'Gate Transfer',
+      companyPhone: '+90 532 574 26 82',
+      companyEmail: 'sbstravel@gmail.com',
+      companyWebsite: 'www.gatetransfer.com'
+    };
+
+    console.log('🔍 EmailJS Template Parameters:', templateParams);
+    console.log('📧 Customer Email:', bookingData.customerEmail);
+    console.log('⚙️ EmailJS Settings:', { 
+      serviceId: emailSettings.emailjsServiceId, 
+      templateId: emailSettings.emailjsTemplateId,
+      hasPublicKey: !!emailSettings.emailjsPublicKey 
+    });
+
+    // EmailJS ile email gönder - Orijinal ayarlarla
+    const response = await emailjs.send(
+      emailSettings.emailjsServiceId,
+      emailSettings.emailjsTemplateId,
+      {
+        to_email: bookingData.customerEmail,
+        to_name: bookingData.customerName,
+        from_name: 'Gate Transfer',
+        reply_to: 'sbstravel@gmail.com',
+        subject: `Rezervasyon Onayı - ${bookingData.reservationId}`,
+        message: `Rezervasyon Onayı
+
+Sayın ${bookingData.customerName},
+
+Rezervasyon Numaranız: ${bookingData.reservationId}
+Kalkış: ${bookingData.pickupLocation}
+Varış: ${bookingData.dropoffLocation}
+Tarih: ${bookingData.tripDate} ${bookingData.tripTime}
+Yolcu: ${bookingData.passengerCount} kişi
+Fiyat: €${bookingData.totalPrice}
+
+${bookingData.tempPassword ? `🔐 Geçici Şifreniz: ${bookingData.tempPassword}` : ''}
+
+Teşekkürler,
+Gate Transfer Ekibi`,
+        // Template değişkenleri
+        reservationId: bookingData.reservationId,
+        customerName: bookingData.customerName,
+        pickupLocation: bookingData.pickupLocation,
+        dropoffLocation: bookingData.dropoffLocation,
+        tripDate: bookingData.tripDate,
+        tripTime: bookingData.tripTime,
+        passengerCount: bookingData.passengerCount,
+        totalPrice: bookingData.totalPrice,
+        customerPhone: bookingData.customerPhone || '',
+        tempPassword: bookingData.tempPassword || '', // Geçici şifre
+        paymentMethod: bookingData.paymentMethod,
+        tripType: bookingData.tripType,
+        qrCodeUrl: bookingData.qrCodeUrl || ''
+      },
+      {
+        publicKey: emailSettings.emailjsPublicKey
+      }
+    );
+
+    console.log('✅ EmailJS ile rezervasyon e-postası gönderildi:', response);
+    return {
+      success: true,
+      response: response
+    };
+
+  } catch (error) {
+    console.error('❌ EmailJS rezervasyon e-postası hatası:', error);
+    throw error;
+  }
+};
+
+// Şoför atama e-postası gönderme fonksiyonu
+export const sendDriverAssignmentEmail = async (emailData) => {
+  try {
+    console.log('📧 Şoför atama e-postası gönderiliyor...');
+    console.log('🔍 EmailJS Template Parameters:', emailData);
+    
+    // EmailJS template parametreleri
+    const templateParams = {
+      to_name: emailData.customerName,
+      to_email: emailData.customerEmail,
+      from_name: 'Gate Transfer',
+      reservationId: emailData.reservationId,
+      customerName: emailData.customerName,
+      driverName: emailData.driverName,
+      driverPhone: emailData.driverPhone,
+      vehiclePlate: emailData.vehiclePlate || '',
+      pickupLocation: emailData.pickupLocation,
+      dropoffLocation: emailData.dropoffLocation,
+      tripDate: emailData.tripDate,
+      tripTime: emailData.tripTime
+    };
+
+    console.log('📧 Customer Email:', emailData.customerEmail);
+    console.log('⚙️ EmailJS Settings:', {
+      serviceId: SERVICE_ID,
+      templateId: 'template_driver_assign', // Yeni template ID
+      hasPublicKey: !!PUBLIC_KEY
+    });
+
+    // EmailJS ile gönder
+    const result = await emailjs.send(
+      SERVICE_ID,
+      'template_driver_assign', // Şoför atama template'i
+      templateParams,
+      PUBLIC_KEY
+    );
+
+    console.log('✅ Şoför atama e-postası gönderildi:', result);
+    return result;
+
+  } catch (error) {
+    console.error('❌ Şoför atama e-postası hatası:', error);
+    throw error;
+  }
+};
+
 // Singleton instance
 const emailService = new EmailService();
 export default emailService;

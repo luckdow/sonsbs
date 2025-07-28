@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>SBS Transfer - Rezervasyon Onayı</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .reservation-number {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .reservation-number h2 {
+            margin: 0;
+            color: #2e7d32;
+            font-size: 20px;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .info-section h3 {
+            margin-top: 0;
+            color: #667eea;
+            font-size: 16px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            min-height: 24px;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .info-value {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        /* Tarih ve saat için özel stil */
+        .date-time-value {
+            color: #2e7d32;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .route-section {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .route-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .route-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        .pickup {
+            background-color: #4caf50;
+        }
+        .dropoff {
+            background-color: #f44336;
+        }
+        .price-section {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .price-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .login-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .login-info h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .password-box {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+        .steps {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .step-number {
+            background: #2196f3;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .contact-info {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .contact-item {
+            margin: 10px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .qr-section {
+            text-align: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        /* Tablet uyumu */
+        @media (max-width: 768px) and (min-width: 601px) {
+            .container {
+                padding: 25px;
+            }
+            .info-row {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .info-value {
+                text-align: right;
+                max-width: 60%;
+            }
+            .route-item {
+                flex-direction: row;
+                text-align: left;
+            }
+            .password-box {
+                display: inline-block;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                background-color: #f4f4f4;
+            }
+            .container {
+                padding: 20px;
+                margin: 0;
+                border-radius: 8px;
+            }
+            .header {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .success-icon {
+                font-size: 36px;
+            }
+            .reservation-number h2 {
+                font-size: 18px;
+            }
+            .info-row {
+                flex-direction: column;
+                padding: 12px 0;
+                text-align: left;
+            }
+            .info-label {
+                margin-bottom: 5px;
+                font-size: 14px;
+            }
+            .info-value {
+                font-size: 16px;
+                font-weight: 600;
+            }
+            .date-time-value {
+                font-size: 18px;
+                color: #2e7d32;
+                font-weight: bold;
+            }
+            .route-item {
+                flex-direction: column;
+                text-align: center;
+                padding: 10px 0;
+            }
+            .route-icon {
+                margin-bottom: 8px;
+                margin-right: 0;
+            }
+            .price {
+                font-size: 28px;
+            }
+            .password-box {
+                font-size: 16px;
+                padding: 8px 16px;
+                display: block;
+                text-align: center;
+                margin: 15px 0;
+            }
+            .step-item {
+                flex-direction: row;
+                align-items: flex-start;
+                margin: 15px 0;
+            }
+            .step-number {
+                margin-right: 10px;
+                margin-top: 2px;
+                flex-shrink: 0;
+            }
+            .qr-section img {
+                max-width: 200px !important;
+            }
+            .contact-item {
+                margin: 15px 0;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto;">
+        <!-- Header -->
+        <div class="header" style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+            <div class="success-icon">🎉</div>
+            <h1>Rezervasyonunuz Onaylandı!</h1>
+            <p>Gate Transfer olarak size hizmet vermekten mutluluk duyuyoruz</p>
+        </div>
+
+        <!-- Reservation Number -->
+        <div class="reservation-number">
+            <h2>Rezervasyon No: {{reservationId}}</h2>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="info-section">
+            <h3>👤 Müşteri Bilgileri</h3>
+            <div class="info-row">
+                <span class="info-label">Ad Soyad:</span>
+                <span class="info-value">{{to_name}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">E-posta:</span>
+                <span class="info-value">{{to_email}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Telefon:</span>
+                <span class="info-value">{{customerPhone}}</span>
+            </div>
+        </div>
+
+        <!-- Route Info -->
+        <div class="route-section">
+            <h3>🗺️ Güzergah Bilgileri</h3>
+            <div class="route-item">
+                <div class="route-icon pickup"></div>
+                <div>
+                    <strong>Kalkış:</strong><br>
+                    {{pickupLocation}}
+                </div>
+            </div>
+            <div style="text-align: center; margin: 15px 0;">
+                <span style="font-size: 20px;">⬇️</span>
+            </div>
+            <div class="route-item">
+                <div class="route-icon dropoff"></div>
+                <div>
+                    <strong>Varış:</strong><br>
+                    {{dropoffLocation}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Trip Details -->
+        <div class="info-section">
+            <h3>📅 Seyahat Detayları</h3>
+            <div class="info-row">
+                <span class="info-label">Tarih:</span>
+                <span class="info-value date-time-value">{{tripDate}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Saat:</span>
+                <span class="info-value date-time-value">{{tripTime}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Yolcu Sayısı:</span>
+                <span class="info-value">{{passengerCount}} kişi</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Transfer Tipi:</span>
+                <span class="info-value">{{tripType}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ödeme Yöntemi:</span>
+                <span class="info-value">{{paymentMethod}}</span>
+            </div>
+        </div>
+
+        <!-- Price -->
+        <div class="price-section">
+            <h3>💰 Toplam Tutar</h3>
+            <p class="price">€{{totalPrice}}</p>
+        </div>
+
+        <!-- Login Info - Sadece yeni kullanıcılar için -->
+        {{#isNewUser}}
+        <div class="login-info">
+            <h3>🔐 Müşteri Paneli Giriş Bilgileri</h3>
+            <p>Size özel müşteri hesabınız oluşturulmuştur. Aşağıdaki bilgilerle <strong>www.gatetransfer.com</strong> adresinden giriş yapabilirsiniz:</p>
+            <div class="info-row">
+                <span class="info-label">E-posta:</span>
+                <span class="info-value">{{to_email}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Geçici Şifre:</span>
+                <div class="password-box">{{tempPassword}}</div>
+            </div>
+            <p><small>⚠️ İlk girişten sonra şifrenizi değiştirebilirsiniz. Bu şifreyi güvenli tutunuz.</small></p>
+        </div>
+        {{/isNewUser}}
+        
+        <!-- Mevcut kullanıcılar için -->
+        {{^isNewUser}}
+        <div class="login-info">
+            <h3>🔐 Müşteri Paneli</h3>
+            <p>Mevcut hesabınızla <strong>www.gatetransfer.com</strong> adresinden rezervasyonlarınızı takip edebilirsiniz.</p>
+            <div class="info-row">
+                <span class="info-label">E-posta:</span>
+                <span class="info-value">{{to_email}}</span>
+            </div>
+            <p><small>💡 Şifrenizi unuttuysanız "Şifremi Unuttum" linkini kullanabilirsiniz.</small></p>
+        </div>
+        {{/isNewUser}}
+
+        <!-- QR Code Section -->
+        <div class="qr-section" style="text-align: center; background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #667eea; font-size: 16px;">📱 QR Kod</h3>
+            <div style="text-align: center; margin: 20px 0; background: white; padding: 15px; border-radius: 10px; border: 3px solid #667eea;">
+                <img src="{{qrCodeUrl}}" alt="Rezervasyon QR Kodu" style="max-width: 250px; width: 100%; height: auto; border: 2px solid #ddd; border-radius: 8px; display: block; margin: 0 auto;">
+            </div>
+            <p style="font-size: 16px; font-weight: bold; color: #2e7d32; margin: 10px 0;">Transfer günü şoföre gösterebileceğiniz QR kodunuz yukarıda bulunmaktadır.</p>
+            <p style="font-size: 18px; margin: 10px 0;"><strong>Rezervasyon No:</strong> <span style="color: #667eea; font-weight: bold;">{{reservationId}}</span></p>
+            <p style="margin: 10px 0;"><small>QR kodu telefonunuza kaydedin veya yazdırın.</small></p>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="steps">
+            <h3>📋 Sonraki Adımlar</h3>
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <span>Transfer öncesi size SMS ile şoför bilgileri gönderilecek</span>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <span>Şoförümüz belirlenen saatte kalkış noktasında sizleri bekleyecek</span>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <span>QR kodunuzu şoföre göstererek rezervasyonunuzu doğrulayın</span>
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="contact-info">
+            <h3>📞 İletişim Bilgileri</h3>
+            <div class="contact-item">
+                <strong>Telefon:</strong> +90 532 574 26 82
+            </div>
+            <div class="contact-item">
+                <strong>E-posta:</strong> sbstravel@gmail.com
+            </div>
+            <div class="contact-item">
+                <strong>Website:</strong> www.gatetransfer.com
+            </div>
+            <div class="contact-item">
+                <strong>WhatsApp:</strong> 7/24 Müşteri Desteği
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Bu e-posta {{from_name}} tarafından gönderilmiştir.</p>
+            <p>Güvenli ve konforlu yolculuklar dileriz! 🚗✨</p>
+            <p><small>Bu e-posta otomatik olarak oluşturulmuştur. Bu adrese cevap vermeyiniz.</small></p>
+        </div>
+    </div>
+</body>
+</html>
