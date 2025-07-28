@@ -4,348 +4,309 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <!-- Homepage - Highest Priority -->
   <url>
-    <loc>https://gatetransfer.com/</loc>
+    <loc>https://www.gatetransfer.com/</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/" />
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/" />
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/" />
-    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/" />
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://www.gatetransfer.com/" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://www.gatetransfer.com/en/" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://www.gatetransfer.com/de/" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://www.gatetransfer.com/ru/" />
   </url>
   
   <!-- Booking Page - Very High Priority -->
   <url>
-    <loc>https://gatetransfer.com/rezervasyon</loc>
+    <loc>https://www.gatetransfer.com/rezervasyon</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/rezervasyon" />
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/booking" />
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/buchung" />
-    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/booking" />
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://www.gatetransfer.com/rezervasyon" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://www.gatetransfer.com/en/booking" />
+    <xhtml:link rel="alternate" hreflang="de-DE" href="https://www.gatetransfer.com/de/buchung" />
+    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://www.gatetransfer.com/ru/booking" />
   </url>
 
   <!-- City Pages - High Priority for SEO -->
-  <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
-
-  <!-- Ana Sayfa - Çoklu Dil -->
   <url>
-    <loc>https://gatetransfer.com/</loc>
-    <lastmod>2025-01-27</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/" />
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/" />
-    <xhtml:link rel="alternate" hreflang="de-DE" href="https://gatetransfer.com/de/" />
-    <xhtml:link rel="alternate" hreflang="ru-RU" href="https://gatetransfer.com/ru/" />
-    <xhtml:link rel="alternate" hreflang="ar-SA" href="https://gatetransfer.com/ar/" />
-    <image:image>
-      <image:loc>https://gatetransfer.com/images/hero-antalya-transfer.jpg</image:loc>
-      <image:title>Antalya Transfer Hizmetleri</image:title>
-    </image:image>
-  </url>
-  
-  <url>
-    <loc>https://gatetransfer.com/kemer-transfer</loc>
+    <loc>https://www.gatetransfer.com/kemer-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/kemer-transfer" />
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/kemer-transfer" />
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://www.gatetransfer.com/kemer-transfer" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://www.gatetransfer.com/en/kemer-transfer" />
     <image:image>
-      <image:loc>https://gatetransfer.com/images/kemer_transfer.jpg</image:loc>
-      <image:title>Kemer Transfer - GATE Transfer</image:title>
+      <image:loc>https://www.gatetransfer.com/images/kemer_transfer.jpg</image:loc>
+      <image:title>Kemer Transfer - SBS Turkey Transfer</image:title>
       <image:caption>Profesyonel Kemer transfer hizmeti</image:caption>
     </image:image>
   </url>
   
   <url>
-    <loc>https://gatetransfer.com/side-transfer</loc>
+    <loc>https://www.gatetransfer.com/side-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/side-transfer" />
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/side-transfer" />
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://www.gatetransfer.com/side-transfer" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://www.gatetransfer.com/en/side-transfer" />
     <image:image>
-      <image:loc>https://gatetransfer.com/images/side_transfer.jpg</image:loc>
-      <image:title>Side Transfer - GATE Transfer</image:title>
+      <image:loc>https://www.gatetransfer.com/images/side_transfer.jpg</image:loc>
+      <image:title>Side Transfer - SBS Turkey Transfer</image:title>
       <image:caption>Profesyonel Side transfer hizmeti</image:caption>
     </image:image>
   </url>
   
   <url>
-    <loc>https://gatetransfer.com/belek-transfer</loc>
+    <loc>https://www.gatetransfer.com/belek-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/belek-transfer" />
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/belek-transfer" />
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://www.gatetransfer.com/belek-transfer" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://www.gatetransfer.com/en/belek-transfer" />
     <image:image>
-      <image:loc>https://gatetransfer.com/images/belek_transfer.jpg</image:loc>
-      <image:title>Belek Transfer - GATE Transfer</image:title>
+      <image:loc>https://www.gatetransfer.com/images/belek_transfer.jpg</image:loc>
+      <image:title>Belek Transfer - SBS Turkey Transfer</image:title>
       <image:caption>Profesyonel Belek transfer hizmeti</image:caption>
     </image:image>
   </url>
   
   <url>
-    <loc>https://gatetransfer.com/alanya-transfer</loc>
+    <loc>https://www.gatetransfer.com/alanya-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://gatetransfer.com/alanya-transfer" />
-    <xhtml:link rel="alternate" hreflang="en-US" href="https://gatetransfer.com/en/alanya-transfer" />
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://www.gatetransfer.com/alanya-transfer" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://www.gatetransfer.com/en/alanya-transfer" />
     <image:image>
-      <image:loc>https://gatetransfer.com/images/alanya_transfer.jpg</image:loc>
-      <image:title>Alanya Transfer - GATE Transfer</image:title>
+      <image:loc>https://www.gatetransfer.com/images/alanya_transfer.jpg</image:loc>
+      <image:title>Alanya Transfer - SBS Turkey Transfer</image:title>
       <image:caption>Profesyonel Alanya transfer hizmeti</image:caption>
     </image:image>
   </url>
   <url>
-    <loc>https://gatetransfer.com/kullanim-kosullari</loc>
+    <loc>https://www.gatetransfer.com/kullanim-kosullari</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/cerez-politikasi</loc>
+    <loc>https://www.gatetransfer.com/cerez-politikasi</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/iptal-iade</loc>
+    <loc>https://www.gatetransfer.com/iptal-iade</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/sikca-sorulan-sorular</loc>
+    <loc>https://www.gatetransfer.com/sikca-sorulan-sorular</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/alanya-transfer</loc>
+    <loc>https://www.gatetransfer.com/antalya-transfer</loc>
+    <lastmod>2025-07-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr-TR" href="https://www.gatetransfer.com/antalya-transfer" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://www.gatetransfer.com/en/antalya-transfer" />
+    <image:image>
+      <image:loc>https://www.gatetransfer.com/images/antalya_transfer.jpg</image:loc>
+      <image:title>Antalya Transfer - SBS Turkey Transfer</image:title>
+      <image:caption>Profesyonel Antalya transfer hizmeti</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.gatetransfer.com/kas-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/antalya-transfer</loc>
+    <loc>https://www.gatetransfer.com/kalkan-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/belek-transfer</loc>
+    <loc>https://www.gatetransfer.com/olympos-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/kemer-transfer</loc>
+    <loc>https://www.gatetransfer.com/cirali-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/side-transfer</loc>
+    <loc>https://www.gatetransfer.com/konyaalti-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/kas-transfer</loc>
+    <loc>https://www.gatetransfer.com/lara-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/kalkan-transfer</loc>
+    <loc>https://www.gatetransfer.com/kundu-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/olympos-transfer</loc>
+    <loc>https://www.gatetransfer.com/bogazkent-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/cirali-transfer</loc>
+    <loc>https://www.gatetransfer.com/serik-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/konyaalti-transfer</loc>
+    <loc>https://www.gatetransfer.com/manavgat-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/lara-transfer</loc>
+    <loc>https://www.gatetransfer.com/aspendos-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/kundu-transfer</loc>
+    <loc>https://www.gatetransfer.com/perge-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/bogazkent-transfer</loc>
+    <loc>https://www.gatetransfer.com/termessos-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/serik-transfer</loc>
+    <loc>https://www.gatetransfer.com/demre-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/manavgat-transfer</loc>
+    <loc>https://www.gatetransfer.com/finike-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/aspendos-transfer</loc>
-    <lastmod>2025-07-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gatetransfer.com/perge-transfer</loc>
-    <lastmod>2025-07-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gatetransfer.com/termessos-transfer</loc>
-    <lastmod>2025-07-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gatetransfer.com/demre-transfer</loc>
-    <lastmod>2025-07-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gatetransfer.com/finike-transfer</loc>
-    <lastmod>2025-07-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gatetransfer.com/hizmetler/havaalani-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/havaalani-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/otel-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/otel-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/sehir-ici-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/sehir-ici-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/vip-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/vip-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/grup-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/grup-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/ozel-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/ozel-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/ekonomik-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/ekonomik-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/luks-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/luks-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/gunluk-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/gunluk-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/gece-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/gece-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/erken-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/erken-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/hizmetler/geec-transfer</loc>
+    <loc>https://www.gatetransfer.com/hizmetler/geec-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/blog/antalya-transfer-rehberi</loc>
+    <loc>https://www.gatetransfer.com/blog/antalya-transfer-rehberi</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/blog/alanya-transfer-ekonomik</loc>
+    <loc>https://www.gatetransfer.com/blog/alanya-transfer-ekonomik</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/blog/belek-golf-transfer</loc>
+    <loc>https://www.gatetransfer.com/blog/belek-golf-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/blog/kemer-transfer-otel-rehberi</loc>
+    <loc>https://www.gatetransfer.com/blog/kemer-transfer-otel-rehberi</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://gatetransfer.com/blog/side-antik-kenti-transfer</loc>
+    <loc>https://www.gatetransfer.com/blog/side-antik-kenti-transfer</loc>
     <lastmod>2025-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

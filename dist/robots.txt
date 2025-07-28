@@ -19,6 +19,7 @@ Allow: /images/
 Allow: /favicon.ico
 Allow: /robots.txt
 Allow: /sitemap.xml
+Allow: /sitemap-multilingual.xml
 Allow: /manifest.json
 Allow: /firebase-messaging-sw.js
 Allow: /sw-enhanced.js
@@ -27,6 +28,31 @@ Allow: /sw-enhanced.js
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 1
+
+# Bing specific directives  
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Yandex specific directives
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# Social Media Crawlers
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+# SEO optimized directives
+# Sitemap locations
+Sitemap: https://gatetransfer.com/sitemap.xml
+Sitemap: https://gatetransfer.com/sitemap-multilingual.xml
+
+# Host directive for canonical domain
+Host: gatetransfer.com
 
 # Bing specific directives  
 User-agent: Bingbot
@@ -50,8 +76,8 @@ Allow: /blog/
 Crawl-delay: 1
 
 # Sitemap location
-Sitemap: https://gatetransfer.com/sitemap.xml
-Sitemap: https://gatetransfer.com/sitemap-images.xml
+Sitemap: https://www.gatetransfer.com/sitemap.xml
+Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
 
 # Popular search engines
 User-agent: Googlebot
