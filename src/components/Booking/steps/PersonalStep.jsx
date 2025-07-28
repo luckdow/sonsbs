@@ -285,7 +285,8 @@ const PersonalStep = ({ bookingData, updateBookingData, onNext, onBack }) => {
             id="acceptTerms"
             checked={formData.acceptTerms}
             onChange={(e) => handleInputChange('acceptTerms', e.target.checked)}
-            className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-1"
+            style={{ width: '1rem', height: '1rem' }}
           />
           <label htmlFor="acceptTerms" className="text-sm text-gray-700 leading-relaxed">
             <a 

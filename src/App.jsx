@@ -168,11 +168,6 @@ function App() {
                 <Route path="hizmetler/kurumsal-transfer" element={<KurumsalTransfer />} />
                 <Route path="hizmetler/karsilama-hizmeti" element={<KarsilamaHizmeti />} />
                 
-                {/* Blog Pages */}
-                <Route path="blog" element={<BlogPage />} />
-                <Route path="blog/kategori/:categorySlug" element={<BlogCategoryPage />} />
-                <Route path="blog/:slug" element={<BlogPostPage />} />
-                
                 {/* Legacy Service Routes - Redirect to new paths */}
                 <Route path="havaalani-transfer" element={<HavaalaniTransfer />} />
                 <Route path="vip-transfer" element={<VipTransfer />} />
@@ -183,6 +178,11 @@ function App() {
                 <Route path="kurumsal-transfer" element={<KurumsalTransfer />} />
                 <Route path="karsilama-hizmeti" element={<KarsilamaHizmeti />} />
               </Route>
+
+              {/* Blog Pages - Standalone Routes */}
+              <Route path="blog" element={<BlogPage />} />
+              <Route path="blog/kategori/:categorySlug" element={<BlogCategoryPage />} />
+              <Route path="blog/:slug" element={<BlogPostPage />} />
 
               {/* Booking Confirmation - Standalone Route */}
               <Route path="/booking-confirmation" element={<BookingConfirmationPage />} />

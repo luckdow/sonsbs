@@ -163,7 +163,7 @@ Saklama süreleri sona erince verileriniz güvenli şekilde silinir veya anonim 
 • Verilerinizi yapılandırılmış formatta alma
 • Başka bir veri sorumlusuna aktarılmasını isteme
 
-Bu haklarınızı kullanmak için info@sbstravel.net adresine yazılı başvuru yapabilirsiniz.`
+Bu haklarınızı kullanmak için sbstravelinfo@gmail.com adresine yazılı başvuru yapabilirsiniz.`
     },
     {
       id: 'cookies',
@@ -200,7 +200,7 @@ Güzelyurt Mahallesi Serik Caddesi No: 138/2
 Aksu / Antalya
 
 **İletişim:**
-• E-posta: info@sbstravel.net
+• E-posta: sbstravelinfo@gmail.com
 • Telefon: +90 532 574 26 82
 • Web sitesi: www.gatetransfer.com
 
@@ -312,7 +312,7 @@ KVKK kapsamındaki haklarınızı kullanmak için yukarıdaki iletişim bilgiler
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:info@sbstravel.net"
+                href="mailto:sbstravelinfo@gmail.com"
                 className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2"
               >
                 <Mail className="w-4 h-4" />

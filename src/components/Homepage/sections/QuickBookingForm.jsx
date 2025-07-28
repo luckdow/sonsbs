@@ -25,7 +25,7 @@ const QuickBookingForm = () => {
   
   // Hızlı rezervasyon form state
   const [quickBookingData, setQuickBookingData] = useState({
-    tripType: '', // Başlangıçta boş - kullanıcı seçecek
+    tripType: 'one-way', // Varsayılan olarak tek yön seçili
     pickupLocation: null,
     dropoffLocation: null,
     passengerCount: 1,
@@ -39,92 +39,27 @@ const QuickBookingForm = () => {
   // Google Places state
   const [pickupInput, setPickupInput] = useState('');
   const [dropoffInput, setDropoffInput] = useState('');
+  const [pickupSuggestions, setPickupSuggestions] = useState([]);
+  const [dropoffSuggestions, setDropoffSuggestions] = useState([]);
+  const [showPickupDropdown, setShowPickupDropdown] = useState(false);
+  const [showDropoffDropdown, setShowDropoffDropdown] = useState(false);
   const autocompletePickup = useRef(null);
   const autocompleteDropoff = useRef(null);
+  const pickupService = useRef(null);
+  const dropoffService = useRef(null);
+  const pickupDropdownRef = useRef(null);
+  const dropoffDropdownRef = useRef(null);
 
-  // Google Places Autocomplete başlat (Yeni API kullanımı)
+  // Google Places Autocomplete başlat (Custom Dropdown kullanımı)
   useEffect(() => {
-    const initAutocomplete = () => {
+    const initPlacesService = () => {
       if (window.google && window.google.maps && window.google.maps.places) {
         try {
-          // Yeni PlaceAutocompleteElement kullanımını dene, fallback olarak eski API'yi kullan
-          if (window.google.maps.places.PlaceAutocompleteElement) {
-            // Yeni API (PlaceAutocompleteElement) - henüz tam desteklenmediği için commented out
-            console.log('Yeni PlaceAutocompleteElement mevcut ama henüz implement edilmedi');
-          }
-          
-          // Eski API'yi güvenli şekilde kullan (deprecation warning'i suppress et)
-          const originalConsoleWarn = console.warn;
-          console.warn = (...args) => {
-            if (args[0] && args[0].includes('google.maps.places.Autocomplete')) {
-              return; // Deprecation warning'ini gizle
-            }
-            originalConsoleWarn.apply(console, args);
-          };
-
-          // Pickup autocomplete
-          if (autocompletePickup.current) {
-            const pickupAutocomplete = new window.google.maps.places.Autocomplete(
-              autocompletePickup.current,
-              {
-                types: ['establishment', 'geocode'],
-                componentRestrictions: { country: 'tr' },
-                fields: ['place_id', 'formatted_address', 'name', 'geometry']
-              }
-            );
-
-            pickupAutocomplete.addListener('place_changed', () => {
-              const place = pickupAutocomplete.getPlace();
-              if (place && place.formatted_address) {
-                setPickupInput(place.formatted_address);
-                setQuickBookingData(prev => ({
-                  ...prev,
-                  pickupLocation: {
-                    address: place.formatted_address,
-                    name: place.name,
-                    placeId: place.place_id,
-                    lat: place.geometry?.location?.lat(),
-                    lng: place.geometry?.location?.lng()
-                  }
-                }));
-              }
-            });
-          }
-
-          // Dropoff autocomplete
-          if (autocompleteDropoff.current) {
-            const dropoffAutocomplete = new window.google.maps.places.Autocomplete(
-              autocompleteDropoff.current,
-              {
-                types: ['establishment', 'geocode'],
-                componentRestrictions: { country: 'tr' },
-                fields: ['place_id', 'formatted_address', 'name', 'geometry']
-              }
-            );
-
-            dropoffAutocomplete.addListener('place_changed', () => {
-              const place = dropoffAutocomplete.getPlace();
-              if (place && place.formatted_address) {
-                setDropoffInput(place.formatted_address);
-                setQuickBookingData(prev => ({
-                  ...prev,
-                  dropoffLocation: {
-                    address: place.formatted_address,
-                    name: place.name,
-                    placeId: place.place_id,
-                    lat: place.geometry?.location?.lat(),
-                    lng: place.geometry?.location?.lng()
-                  }
-                }));
-              }
-            });
-          }
-
-          // Console.warn'i eski haline döndür
-          console.warn = originalConsoleWarn;
-          
+          // AutocompleteService kullanarak özel dropdown oluştur
+          pickupService.current = new window.google.maps.places.AutocompleteService();
+          dropoffService.current = new window.google.maps.places.AutocompleteService();
         } catch (error) {
-          console.error('Google Places Autocomplete initialization error:', error);
+          console.error('Google Places Service initialization error:', error);
         }
       }
     };
@@ -132,7 +67,7 @@ const QuickBookingForm = () => {
     // Google Maps API yüklenene kadar bekle
     const checkGoogleMaps = setInterval(() => {
       if (window.google && window.google.maps && window.google.maps.places) {
-        initAutocomplete();
+        initPlacesService();
         clearInterval(checkGoogleMaps);
       }
     }, 500);
@@ -144,6 +79,129 @@ const QuickBookingForm = () => {
 
     return () => clearInterval(checkGoogleMaps);
   }, []);
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (pickupDropdownRef.current && !pickupDropdownRef.current.contains(event.target)) {
+        setShowPickupDropdown(false);
+      }
+      if (dropoffDropdownRef.current && !dropoffDropdownRef.current.contains(event.target)) {
+        setShowDropoffDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Pickup input değişikliği
+  const handlePickupInputChange = (value) => {
+    setPickupInput(value);
+    
+    if (value.length > 2 && pickupService.current) {
+      pickupService.current.getPlacePredictions(
+        {
+          input: value,
+          componentRestrictions: { country: 'tr' },
+          types: ['establishment', 'geocode']
+        },
+        (predictions, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setPickupSuggestions(predictions.slice(0, 5)); // İlk 5 öneriyi al
+            setShowPickupDropdown(true);
+          } else {
+            setPickupSuggestions([]);
+            setShowPickupDropdown(false);
+          }
+        }
+      );
+    } else {
+      setPickupSuggestions([]);
+      setShowPickupDropdown(false);
+    }
+  };
+
+  // Dropoff input değişikliği
+  const handleDropoffInputChange = (value) => {
+    setDropoffInput(value);
+    
+    if (value.length > 2 && dropoffService.current) {
+      dropoffService.current.getPlacePredictions(
+        {
+          input: value,
+          componentRestrictions: { country: 'tr' },
+          types: ['establishment', 'geocode']
+        },
+        (predictions, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setDropoffSuggestions(predictions.slice(0, 5)); // İlk 5 öneriyi al
+            setShowDropoffDropdown(true);
+          } else {
+            setDropoffSuggestions([]);
+            setShowDropoffDropdown(false);
+          }
+        }
+      );
+    } else {
+      setDropoffSuggestions([]);
+      setShowDropoffDropdown(false);
+    }
+  };
+
+  // Pickup seçimi
+  const handlePickupSelect = (prediction) => {
+    setPickupInput(prediction.description);
+    setShowPickupDropdown(false);
+    setPickupSuggestions([]);
+    
+    // Place details al
+    const placesService = new window.google.maps.places.PlacesService(document.createElement('div'));
+    placesService.getDetails(
+      { placeId: prediction.place_id, fields: ['place_id', 'formatted_address', 'name', 'geometry'] },
+      (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+          setQuickBookingData(prev => ({
+            ...prev,
+            pickupLocation: {
+              address: place.formatted_address,
+              name: place.name,
+              placeId: place.place_id,
+              lat: place.geometry?.location?.lat(),
+              lng: place.geometry?.location?.lng()
+            }
+          }));
+        }
+      }
+    );
+  };
+
+  // Dropoff seçimi
+  const handleDropoffSelect = (prediction) => {
+    setDropoffInput(prediction.description);
+    setShowDropoffDropdown(false);
+    setDropoffSuggestions([]);
+    
+    // Place details al
+    const placesService = new window.google.maps.places.PlacesService(document.createElement('div'));
+    placesService.getDetails(
+      { placeId: prediction.place_id, fields: ['place_id', 'formatted_address', 'name', 'geometry'] },
+      (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+          setQuickBookingData(prev => ({
+            ...prev,
+            dropoffLocation: {
+              address: place.formatted_address,
+              name: place.name,
+              placeId: place.place_id,
+              lat: place.geometry?.location?.lat(),
+              lng: place.geometry?.location?.lng()
+            }
+          }));
+        }
+      }
+    );
+  };
 
   // Hızlı rezervasyon işleme
   const handleQuickBooking = () => {
@@ -194,7 +252,7 @@ const QuickBookingForm = () => {
   ];
 
   return (
-    <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-3 sm:p-4 lg:p-6 shadow-2xl relative overflow-hidden">
+    <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-3 sm:p-4 lg:p-6 shadow-2xl relative">
       {/* Neon glow effect */}
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-xl"></div>
       <div className="absolute inset-0 rounded-2xl border border-blue-400/30 shadow-[0_0_20px_rgba(59,130,246,0.3)]"></div>
@@ -206,8 +264,7 @@ const QuickBookingForm = () => {
             Hızlı Rezervasyon
           </h3>
           <p className="text-gray-300 text-xs sm:text-sm lg:text-sm">
-            {!quickBookingData.tripType ? 'Seyahat türünü seçin' :
-             !quickBookingData.pickupLocation || !quickBookingData.dropoffLocation ? 'Lokasyonları girin' :
+            {!quickBookingData.pickupLocation || !quickBookingData.dropoffLocation ? 'Lokasyonları girin' :
              !quickBookingData.date || !quickBookingData.time ? 'Tarih ve saat seçin' :
              (quickBookingData.tripType === 'round-trip' && (!quickBookingData.returnDate || !quickBookingData.returnTime)) ? 'Dönüş tarih-saat seçin' :
              'Kişi sayısını belirtin ve devam edin'}
@@ -247,40 +304,87 @@ const QuickBookingForm = () => {
             </div>
           </div>
 
-          {/* Adım 2: Nereden - Nereye (Her zaman görünür) */}
+          {/* Adım 2: Nereden - Nereye (Custom Dropdown) */}
           <div className="grid grid-cols-1 gap-3">
-            <div>
+            <div className="relative" ref={pickupDropdownRef}>
               <label className="block text-white text-xs font-medium mb-1">
                 <MapPin className="w-3 h-3 inline mr-1" />
                 Nereden
               </label>
               <input
-                ref={autocompletePickup}
                 type="text"
                 value={pickupInput}
-                onChange={(e) => setPickupInput(e.target.value)}
+                onChange={(e) => handlePickupInputChange(e.target.value)}
+                onFocus={() => pickupSuggestions.length > 0 && setShowPickupDropdown(true)}
                 placeholder="Antalya Havalimanı..."
                 className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-sm focus:shadow-[0_0_15px_rgba(59,130,246,0.4)]"
               />
+              
+              {/* Custom Dropdown */}
+              {showPickupDropdown && pickupSuggestions.length > 0 && (
+                <div className="absolute z-[9999] w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-2xl max-h-60 overflow-y-auto">
+                  {pickupSuggestions.map((suggestion, index) => (
+                    <div
+                      key={suggestion.place_id}
+                      onClick={() => handlePickupSelect(suggestion)}
+                      className="px-3 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 flex items-start gap-3 transition-colors duration-150"
+                    >
+                      <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-gray-900 text-sm font-semibold leading-tight mb-1">
+                          {suggestion.structured_formatting?.main_text || suggestion.description.split(',')[0]}
+                        </div>
+                        <div className="text-gray-600 text-xs leading-tight overflow-hidden">
+                          {suggestion.structured_formatting?.secondary_text || suggestion.description.split(',').slice(1).join(', ')}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div>
+            
+            <div className="relative" ref={dropoffDropdownRef}>
               <label className="block text-white text-xs font-medium mb-1">
                 <MapPin className="w-3 h-3 inline mr-1" />
                 Nereye
               </label>
               <input
-                ref={autocompleteDropoff}
                 type="text"
                 value={dropoffInput}
-                onChange={(e) => setDropoffInput(e.target.value)}
+                onChange={(e) => handleDropoffInputChange(e.target.value)}
+                onFocus={() => dropoffSuggestions.length > 0 && setShowDropoffDropdown(true)}
                 placeholder="Otel adı..."
                 className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-sm focus:shadow-[0_0_15px_rgba(59,130,246,0.4)]"
               />
+              
+              {/* Custom Dropdown */}
+              {showDropoffDropdown && dropoffSuggestions.length > 0 && (
+                <div className="absolute z-[9999] w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-2xl max-h-60 overflow-y-auto">
+                  {dropoffSuggestions.map((suggestion, index) => (
+                    <div
+                      key={suggestion.place_id}
+                      onClick={() => handleDropoffSelect(suggestion)}
+                      className="px-3 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 flex items-start gap-3 transition-colors duration-150"
+                    >
+                      <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-gray-900 text-sm font-semibold leading-tight mb-1">
+                          {suggestion.structured_formatting?.main_text || suggestion.description.split(',')[0]}
+                        </div>
+                        <div className="text-gray-600 text-xs leading-tight overflow-hidden">
+                          {suggestion.structured_formatting?.secondary_text || suggestion.description.split(',').slice(1).join(', ')}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Adım 3: Gidiş Tarih ve Saat (Lokasyonlar girilmişse göster) */}
-          {quickBookingData.tripType && quickBookingData.pickupLocation && quickBookingData.dropoffLocation && (
+          {quickBookingData.pickupLocation && quickBookingData.dropoffLocation && (
             <div className="space-y-3 animate-fade-in">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -356,8 +460,7 @@ const QuickBookingForm = () => {
           )}
 
           {/* Adım 4: Kişi ve Bagaj Sayısı (Tarih-saat girilmişse göster) */}
-          {quickBookingData.tripType && 
-           quickBookingData.pickupLocation && 
+          {quickBookingData.pickupLocation && 
            quickBookingData.dropoffLocation && 
            quickBookingData.date && 
            quickBookingData.time &&
@@ -403,8 +506,7 @@ const QuickBookingForm = () => {
           )}
 
           {/* Adım 5: Rezervasyon Butonu (Tüm bilgiler girilmişse aktif) */}
-          {quickBookingData.tripType && 
-           quickBookingData.pickupLocation && 
+          {quickBookingData.pickupLocation && 
            quickBookingData.dropoffLocation && 
            quickBookingData.date && 
            quickBookingData.time &&

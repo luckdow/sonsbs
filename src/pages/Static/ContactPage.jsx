@@ -70,9 +70,9 @@ const ContactPage = () => {
     {
       icon: Mail,
       title: "E-posta Adreslerimiz",
-      content: "info@sbstravel.net",
-      content2: "sbstravel@gmail.com",
-      link: "mailto:info@sbstravel.net",
+      content: "sbstravelinfo@gmail.com",
+      content2: "sbstravelinfo@gmail.com",
+      link: "mailto:sbstravelinfo@gmail.com",
       linkText: "E-posta Gönder"
     },
     {
@@ -102,7 +102,7 @@ const ContactPage = () => {
   return (
     <StaticPageLayout
       title="İletişim | GATE Transfer - Antalya Havalimanı Transfer İletişim Bilgileri"
-      description="GATE Transfer ile iletişime geçin. Antalya havalimanı transfer rezervasyonu ve bilgi almak için +90 532 574 26 82 numaramızı arayın veya info@sbstravel.net adresine e-posta gönderin."
+      description="GATE Transfer ile iletişime geçin. Antalya havalimanı transfer rezervasyonu ve bilgi almak için +90 532 574 26 82 numaramızı arayın veya sbstravelinfo@gmail.com adresine e-posta gönderin."
       keywords="GATE Transfer iletişim, Antalya transfer iletişim, havalimanı transfer telefon, transfer rezervasyon iletişim, Antalya transfer telefon numarası, transfer hizmeti iletişim, GATE Transfer adres, Antalya airport transfer contact"
       canonicalUrl="/iletisim"
       heroTitle="İletişim"

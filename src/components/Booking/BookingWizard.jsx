@@ -145,9 +145,9 @@ const BookingWizard = () => {
           <div className="flex items-center justify-center space-x-1 sm:space-x-4 md:space-x-8">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                {/* Step Circle - Smaller */}
+                {/* Step Circle - Smaller sizing */}
                 <div className={`
-                  flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full transition-all duration-300
+                  flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full transition-all duration-300
                   ${currentStep > step.id 
                     ? 'bg-green-500 text-white shadow-lg scale-105' 
                     : currentStep === step.id 
@@ -173,16 +173,20 @@ const BookingWizard = () => {
             ))}
           </div>
           
-          {/* Step Names - Mobile Friendly */}
-          <div className="flex items-center justify-center space-x-8 sm:space-x-16 md:space-x-24">
-            {steps.map((step) => (
-              <span key={step.id} className={`
-                text-xs sm:text-sm font-medium transition-colors text-center
-                ${currentStep >= step.id ? 'text-gray-900' : 'text-gray-500'}
-              `}>
-                {step.name}
-              </span>
-            ))}
+          {/* Step Names - Properly Aligned */}
+          <div className="flex items-center justify-center">
+            <div className="grid grid-cols-3 gap-8 sm:gap-16 md:gap-24 w-full max-w-sm sm:max-w-md md:max-w-lg">
+              {steps.map((step) => (
+                <div key={step.id} className="flex justify-center">
+                  <span className={`
+                    text-xs sm:text-sm font-medium transition-colors text-center whitespace-nowrap
+                    ${currentStep >= step.id ? 'text-gray-900' : 'text-gray-500'}
+                  `}>
+                    {step.name}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

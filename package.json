@@ -17,6 +17,7 @@
     "@googlemaps/js-api-loader": "^1.16.6",
     "@heroicons/react": "^2.2.0",
     "@react-google-maps/api": "^2.20.7",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "autoprefixer": "^10.4.19",
     "date-fns": "^3.6.0",
     "firebase": "^10.14.1",

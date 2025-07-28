@@ -13,7 +13,7 @@ export const APP_CONFIG = {
   version: "1.0.0",
   baseURL: "https://sbstransfer.com",
   companyName: "SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi",
-  supportEmail: "sbstravel@gmail.com",
+  supportEmail: "sbstravelinfo@gmail.com",
   supportPhone: "+90 532 574 26 82",
   companyAddress: "Güzelyurt Mahallesi Serik Caddesi No: 138/2, Aksu / Antalya",
   website: "www.sbstransfer.com",

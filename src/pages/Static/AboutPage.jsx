@@ -144,16 +144,16 @@ const AboutPage = () => {
                     <p className="font-semibold text-gray-900 mb-1">E-posta Adreslerimiz</p>
                     <div className="space-y-1">
                       <a 
-                        href="mailto:info@sbstravel.net" 
+                        href="mailto:sbstravelinfo@gmail.com" 
                         className="block text-blue-600 hover:text-blue-800 transition-colors text-sm md:text-base"
                       >
-                        info@sbstravel.net
+                        sbstravelinfo@gmail.com
                       </a>
                       <a 
-                        href="mailto:sbstravel@gmail.com" 
+                        href="mailto:sbstravelinfo@gmail.com" 
                         className="block text-blue-600 hover:text-blue-800 transition-colors text-sm md:text-base"
                       >
-                        sbstravel@gmail.com
+                        sbstravelinfo@gmail.com
                       </a>
                     </div>
                   </div>

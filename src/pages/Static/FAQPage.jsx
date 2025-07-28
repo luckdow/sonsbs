@@ -60,7 +60,7 @@ const FAQPage = () => {
         {
           id: 'how-to-book',
           question: 'Nasıl rezervasyon yapabilirim?',
-          answer: 'Rezervasyon yapmak için web sitemizden online rezervasyon formunu doldurabilir, +90 532 574 26 82 numaralı telefonumuzu arayabilir veya info@sbstravel.net adresine e-posta gönderebilirsiniz. Rezervasyonunuz anında onaylanacaktır.'
+          answer: 'Rezervasyon yapmak için web sitemizden online rezervasyon formunu doldurabilir, +90 532 574 26 82 numaralı telefonumuzu arayabilir veya sbstravelinfo@gmail.com adresine e-posta gönderebilirsiniz. Rezervasyonunuz anında onaylanacaktır.'
         },
         {
           id: 'advance-booking',
@@ -306,7 +306,7 @@ const FAQPage = () => {
               <h3 className="font-semibold text-gray-900 mb-2">E-posta</h3>
               <p className="text-gray-600 text-sm mb-3">24 saat içinde yanıt</p>
               <a 
-                href="mailto:info@sbstravel.net"
+                href="mailto:sbstravelinfo@gmail.com"
                 className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
               >
                 E-posta Gönder

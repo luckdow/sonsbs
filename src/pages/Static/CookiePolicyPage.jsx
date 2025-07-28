@@ -399,7 +399,7 @@ const CookiePolicyPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:info@sbstravel.net"
+                href="mailto:sbstravelinfo@gmail.com"
                 className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
                 E-posta Gönderin

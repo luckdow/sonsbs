@@ -232,8 +232,8 @@ const TermsPage = () => {
               </p>
               <p className="text-sm text-gray-600 mt-6">
                 <strong>İletişim:</strong> Anlaşmazlık durumunda 
-                <a href="mailto:info@sbstravel.net" className="text-blue-600 hover:text-blue-800 ml-1">
-                  info@sbstravel.net
+                <a href="mailto:sbstravelinfo@gmail.com" className="text-blue-600 hover:text-blue-800 ml-1">
+                  sbstravelinfo@gmail.com
                 </a> 
                 adresinden bizimle iletişime geçebilirsiniz.
               </p>
@@ -258,7 +258,7 @@ const TermsPage = () => {
               <p className="text-sm text-gray-600">
                 <strong>SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi</strong><br />
                 Güzelyurt Mahallesi, Serik Caddesi No: 138/2, Aksu/Antalya<br />
-                Telefon: +90 532 574 26 82 | E-posta: info@sbstravel.net
+                Telefon: +90 532 574 26 82 | E-posta: sbstravelinfo@gmail.com
               </p>
             </div>
           </div>

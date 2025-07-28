@@ -295,12 +295,34 @@ html {
 
 /* Checkbox */
 .checkbox {
-  height: 16px;
-  width: 16px;
-  border-radius: 4px;
+  height: 14px;
+  width: 14px;
+  border-radius: 3px;
   border: 1px solid #d1d5db;
   accent-color: #3b82f6;
   transition: all 0.2s ease;
+}
+
+/* Input type checkbox reset to allow Tailwind sizing */
+input[type="checkbox"] {
+  height: unset !important;
+  width: unset !important;
+  min-height: unset !important;
+  min-width: unset !important;
+  max-height: unset !important;
+  max-width: unset !important;
+}
+
+/* Force checkbox sizing to respect Tailwind classes */
+input[type="checkbox"].w-4 {
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+/* Fallback for all checkboxes */
+input[type="checkbox"]:not(.w-5):not(.w-6):not(.w-7):not(.w-8) {
+  width: 1rem !important;
+  height: 1rem !important;
 }
 
 /* Tables */

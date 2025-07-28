@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
   Car, 
   UserPlus, 
@@ -12,9 +11,9 @@ import {
   EyeOff,
   ArrowRight,
   Chrome,
-  Shield,
   CheckCircle,
-  Sparkles
+  Sparkles,
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../config/constants';
@@ -25,72 +24,55 @@ const RegisterPage = () => {
   const { register, signInWithGoogle } = useAuth();
   
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     phone: '',
     password: '',
-    confirmPassword: '',
-    role: USER_ROLES.CUSTOMER
+    passwordConfirm: '',
+    agreeToTerms: false
   });
   
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
-    }
-  };
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'Ad alanı zorunludur';
-    } else if (formData.firstName.trim().length < 2) {
-      newErrors.firstName = 'Ad en az 2 karakter olmalıdır';
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'Ad soyad gereklidir';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Ad soyad en az 2 karakter olmalıdır';
     }
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Soyad alanı zorunludur';
-    } else if (formData.lastName.trim().length < 2) {
-      newErrors.lastName = 'Soyad en az 2 karakter olmalıdır';
-    }
-
+    // Email validation
     if (!formData.email) {
-      newErrors.email = 'E-posta adresi gerekli';
+      newErrors.email = 'E-posta adresi gereklidir';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Geçerli bir e-posta adresi girin';
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Telefon numarası gerekli';
-    } else if (!/^(\+90|0)?[0-9]{10}$/.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Geçerli bir telefon numarası girin';
-    }
-
+    // Password validation
     if (!formData.password) {
-      newErrors.password = 'Şifre gerekli';
+      newErrors.password = 'Şifre gereklidir';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Şifre en az 6 karakter olmalıdır';
     }
 
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Şifre tekrarı gerekli';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Şifreler eşleşmiyor';
+    // Password confirm validation
+    if (!formData.passwordConfirm) {
+      newErrors.passwordConfirm = 'Şifre tekrarı gereklidir';
+    } else if (formData.password !== formData.passwordConfirm) {
+      newErrors.passwordConfirm = 'Şifreler eşleşmiyor';
+    }
+
+    // Terms validation
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = 'Kullanım şartlarını kabul etmelisiniz';
     }
 
     setErrors(newErrors);
@@ -100,37 +82,46 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     setIsLoading(true);
+    setErrors({});
 
     try {
-      await register(formData.email, formData.password, {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+      const result = await register({
+        name: formData.name.trim(),
+        email: formData.email.toLowerCase().trim(),
         phone: formData.phone.trim(),
-        role: formData.role
+        password: formData.password,
+        role: USER_ROLES.CUSTOMER
       });
-      
-      toast.success('Hesabınız başarıyla oluşturuldu! 🎉', {
-        duration: 4000,
-      });
-      
-      navigate('/giriş');
-    } catch (error) {
-      
-      let errorMessage = 'Kayıt olurken bir hata oluştu';
-      
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Bu e-posta adresi zaten kullanımda';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'Şifre çok zayıf. Daha güçlü bir şifre seçin';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Geçersiz e-posta adresi';
+
+      if (result.success) {
+        setShowVerificationMessage(true);
+        toast.success('Kayıt başarılı! E-posta doğrulama linki gönderildi.');
+        
+        // Clear form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          password: '',
+          passwordConfirm: '',
+          agreeToTerms: false
+        });
+        
+        // Redirect after a delay
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } else {
+        setErrors({ general: result.error || 'Kayıt sırasında bir hata oluştu' });
       }
-      
-      toast.error(errorMessage);
-      setErrors({ general: errorMessage });
+    } catch (error) {
+      console.error('Registration error:', error);
+      setErrors({ general: 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.' });
     } finally {
       setIsLoading(false);
     }
@@ -138,408 +129,357 @@ const RegisterPage = () => {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
+    setErrors({});
+
     try {
-      await signInWithGoogle();
-      toast.success('Google ile başarıyla kayıt oldunuz! 🎉', {
-        duration: 3000,
-      });
-      navigate('/');
-    } catch (error) {
+      const result = await signInWithGoogle();
       
-      let errorMessage = 'Google ile kayıt olurken bir hata oluştu';
-      
-      if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Kayıt penceresi kapatıldı. Lütfen tekrar deneyin.';
-      } else if (error.code === 'auth/popup-blocked') {
-        errorMessage = 'Pop-up engellendi. Lütfen pop-up engelleyiciyi devre dışı bırakın.';
-      } else if (error.code === 'auth/account-exists-with-different-credential') {
-        errorMessage = 'Bu e-posta adresi zaten farklı bir yöntemle kayıtlı.';
+      if (result.success) {
+        toast.success('Google ile giriş başarılı!');
+        navigate('/dashboard');
+      } else {
+        setErrors({ general: result.error || 'Google ile giriş yapılamadı' });
       }
-      
-      toast.error(errorMessage);
-      setErrors({ general: errorMessage });
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      setErrors({ general: 'Google ile giriş sırasında bir hata oluştu' });
     } finally {
       setIsGoogleLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-8"
-        >
-          <Link to="/" className="inline-flex items-center space-x-3 mb-8 group">
-            <div className="w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-              <Car className="w-8 h-8 text-white" />
-            </div>
-            <span className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              SBS Transfer
-            </span>
-          </Link>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center relative overflow-hidden py-4 px-4">
+      {/* Background Effects - Login ile tutarlı */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-purple-600/30"></div>
+      </div>
+      
+      {/* Particles - sadece desktop */}
+      <div className="absolute inset-0 hidden lg:block">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full opacity-20 animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="w-full max-w-sm sm:max-w-md relative z-10">
+        {/* Header - Login ile tutarlı */}
+        <div className="text-center mb-6 sm:mb-8 animate-fade-in">
+          <div className="mb-6 sm:mb-8 flex justify-center">
+            <Link to="/" className="inline-flex items-center space-x-3 group">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <Car className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+              </div>
+              <span className="text-2xl sm:text-3xl font-bold text-white">
+                SBS Transfer
+              </span>
+            </Link>
+          </div>
           
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-gray-900">
+          <div className="space-y-1 sm:space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
               Hesap Oluşturun 🚀
             </h1>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-300 text-sm sm:text-base lg:text-lg">
               Hemen kayıt olun ve avantajları keşfedin
             </p>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Auth Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8"
-        >
+        {/* Auth Card - Login ile tutarlı */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8">
           {/* Google Sign Up Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             onClick={handleGoogleSignIn}
             disabled={isGoogleLoading || isLoading}
-            className="w-full mb-6 flex items-center justify-center space-x-3 py-4 px-6 border-2 border-gray-200 rounded-2xl text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group"
+            className="w-full mb-6 sm:mb-8 flex items-center justify-center space-x-3 py-3 sm:py-4 px-4 sm:px-6 border-2 border-white/30 rounded-xl sm:rounded-2xl text-white font-medium hover:bg-white/10 hover:border-white/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
           >
             {isGoogleLoading ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <Chrome className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
+              <Chrome className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             )}
-            <span>
+            <span className="text-sm sm:text-base">
               {isGoogleLoading ? 'Google ile bağlanılıyor...' : 'Google ile Kayıt Ol'}
             </span>
-            <Sparkles className="w-4 h-4 text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </motion.button>
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
+          </button>
 
           {/* Divider */}
-          <div className="relative my-6">
+          <div className="relative my-6 sm:my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-white/20"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">
+            <div className="relative flex justify-center text-xs sm:text-sm">
+              <span className="px-3 sm:px-4 bg-white/10 backdrop-blur-sm rounded-full text-gray-200 font-medium">
                 veya e-posta ile
               </span>
             </div>
           </div>
 
           {/* Register Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             {/* General Error */}
             {errors.general && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="bg-red-50 border border-red-200 rounded-xl p-4"
-              >
+              <div className="p-4 text-sm text-red-200 bg-red-500/20 backdrop-blur-sm border border-red-500/30 rounded-xl animate-shake">
                 <div className="flex items-center space-x-2">
-                  <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  </div>
-                  <p className="text-red-700 text-sm font-medium">{errors.general}</p>
+                  <AlertCircle className="w-4 h-4 text-red-300 flex-shrink-0" />
+                  <span>{errors.general}</span>
                 </div>
-              </motion.div>
+              </div>
             )}
 
-            {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Ad
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    placeholder="Adınız"
-                    disabled={isLoading || isGoogleLoading}
-                    className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 ${
-                      errors.firstName 
-                        ? 'border-red-300 bg-red-50' 
-                        : 'border-gray-200 hover:border-gray-300 focus:border-blue-300'
-                    }`}
-                  />
-                  <User className={`absolute left-3 top-3 w-4 h-4 transition-colors ${
-                    errors.firstName ? 'text-red-400' : 'text-gray-400'
-                  }`} />
+            {/* Success Message */}
+            {showVerificationMessage && (
+              <div className="p-4 text-sm text-green-200 bg-green-500/20 backdrop-blur-sm border border-green-500/30 rounded-xl">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-300 flex-shrink-0" />
+                  <span>
+                    E-posta adresinize doğrulama linki gönderildi. Lütfen e-postanızı kontrol edin.
+                  </span>
                 </div>
-                {errors.firstName && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-red-600 text-xs"
-                  >
-                    {errors.firstName}
-                  </motion.p>
-                )}
               </div>
+            )}
 
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Soyad
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    placeholder="Soyadınız"
-                    disabled={isLoading || isGoogleLoading}
-                    className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 ${
-                      errors.lastName 
-                        ? 'border-red-300 bg-red-50' 
-                        : 'border-gray-200 hover:border-gray-300 focus:border-blue-300'
-                    }`}
-                  />
-                  <User className={`absolute left-3 top-3 w-4 h-4 transition-colors ${
-                    errors.lastName ? 'text-red-400' : 'text-gray-400'
-                  }`} />
-                </div>
-                {errors.lastName && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-red-600 text-xs"
-                  >
-                    {errors.lastName}
-                  </motion.p>
-                )}
-              </div>
-            </div>
-
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
-                E-posta Adresi
+            {/* Name Input */}
+            <div className="space-y-1 sm:space-y-2">
+              <label className="block text-sm font-medium text-gray-200">
+                Ad Soyad *
               </label>
               <div className="relative">
+                <User className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className={`w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border rounded-xl sm:rounded-2xl text-white placeholder-gray-300 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base ${
+                    errors.name ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/20 hover:border-white/30'
+                  }`}
+                  placeholder="Adınızı ve soyadınızı girin"
+                  required
+                />
+              </div>
+              {errors.name && (
+                <p className="text-xs sm:text-sm text-red-400 flex items-center space-x-1">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.name}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Email Input */}
+            <div className="space-y-1 sm:space-y-2">
+              <label className="block text-sm font-medium text-gray-200">
+                E-posta Adresi *
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="ornek@email.com"
-                  disabled={isLoading || isGoogleLoading}
-                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 ${
-                    errors.email 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-gray-200 hover:border-gray-300 focus:border-blue-300'
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className={`w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border rounded-xl sm:rounded-2xl text-white placeholder-gray-300 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base ${
+                    errors.email ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/20 hover:border-white/30'
                   }`}
+                  placeholder="ornek@email.com"
+                  required
                 />
-                <Mail className={`absolute left-4 top-4 w-5 h-5 transition-colors ${
-                  errors.email ? 'text-red-400' : 'text-gray-400'
-                }`} />
               </div>
               {errors.email && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-red-600 text-sm"
-                >
-                  {errors.email}
-                </motion.p>
+                <p className="text-xs sm:text-sm text-red-400 flex items-center space-x-1">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.email}</span>
+                </p>
               )}
             </div>
 
-            {/* Phone Field */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
+            {/* Phone Input */}
+            <div className="space-y-1 sm:space-y-2">
+              <label className="block text-sm font-medium text-gray-200">
                 Telefon Numarası
               </label>
               <div className="relative">
+                <Phone className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="555 123 4567"
-                  disabled={isLoading || isGoogleLoading}
-                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 ${
-                    errors.phone 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-gray-200 hover:border-gray-300 focus:border-blue-300'
-                  }`}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl text-white placeholder-gray-300 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:border-white/30 text-sm sm:text-base"
+                  placeholder="+90 555 123 45 67"
                 />
-                <Phone className={`absolute left-4 top-4 w-5 h-5 transition-colors ${
-                  errors.phone ? 'text-red-400' : 'text-gray-400'
-                }`} />
               </div>
-              {errors.phone && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-red-600 text-sm"
+            </div>
+
+            {/* Password Input */}
+            <div className="space-y-1 sm:space-y-2">
+              <label className="block text-sm font-medium text-gray-200">
+                Şifre *
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className={`w-full pl-10 sm:pl-12 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border rounded-xl sm:rounded-2xl text-white placeholder-gray-300 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base ${
+                    errors.password ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/20 hover:border-white/30'
+                  }`}
+                  placeholder="En az 6 karakter"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
-                  {errors.phone}
-                </motion.p>
+                  {showPassword ? 
+                    <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : 
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                  }
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-xs sm:text-sm text-red-400 flex items-center space-x-1">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.password}</span>
+                </p>
               )}
             </div>
 
-            {/* Password Fields */}
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Şifre
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    placeholder="••••••••"
-                    disabled={isLoading || isGoogleLoading}
-                    className={`w-full pl-12 pr-12 py-4 border-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 ${
-                      errors.password 
-                        ? 'border-red-300 bg-red-50' 
-                        : 'border-gray-200 hover:border-gray-300 focus:border-blue-300'
-                    }`}
-                  />
-                  <Lock className={`absolute left-4 top-4 w-5 h-5 transition-colors ${
-                    errors.password ? 'text-red-400' : 'text-gray-400'
-                  }`} />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-red-600 text-sm"
-                  >
-                    {errors.password}
-                  </motion.p>
-                )}
+            {/* Password Confirm Input */}
+            <div className="space-y-1 sm:space-y-2">
+              <label className="block text-sm font-medium text-gray-200">
+                Şifre Tekrarı *
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                <input
+                  type={showPasswordConfirm ? 'text' : 'password'}
+                  value={formData.passwordConfirm}
+                  onChange={(e) => setFormData({ ...formData, passwordConfirm: e.target.value })}
+                  className={`w-full pl-10 sm:pl-12 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border rounded-xl sm:rounded-2xl text-white placeholder-gray-300 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm sm:text-base ${
+                    errors.passwordConfirm ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/20 hover:border-white/30'
+                  }`}
+                  placeholder="Şifrenizi tekrar girin"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                >
+                  {showPasswordConfirm ? 
+                    <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : 
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                  }
+                </button>
               </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Şifre Tekrar
-                </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    placeholder="••••••••"
-                    disabled={isLoading || isGoogleLoading}
-                    className={`w-full pl-12 pr-12 py-4 border-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-gray-900 placeholder-gray-400 ${
-                      errors.confirmPassword 
-                        ? 'border-red-300 bg-red-50' 
-                        : 'border-gray-200 hover:border-gray-300 focus:border-blue-300'
-                    }`}
-                  />
-                  <Lock className={`absolute left-4 top-4 w-5 h-5 transition-colors ${
-                    errors.confirmPassword ? 'text-red-400' : 'text-gray-400'
-                  }`} />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-                {errors.confirmPassword && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-red-600 text-sm"
-                  >
-                    {errors.confirmPassword}
-                  </motion.p>
-                )}
-              </div>
+              {errors.passwordConfirm && (
+                <p className="text-xs sm:text-sm text-red-400 flex items-center space-x-1">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.passwordConfirm}</span>
+                </p>
+              )}
             </div>
+
+            {/* Terms Checkbox */}
+            <div className="flex items-start space-x-3 pt-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={formData.agreeToTerms}
+                onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
+                className="mt-1 w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500/50 focus:ring-2 transition-all duration-300"
+                required
+              />
+              <label htmlFor="terms" className="text-xs sm:text-sm text-gray-300 leading-5">
+                <Link to="/terms" className="text-blue-400 hover:text-blue-300 underline">
+                  Kullanım Şartları
+                </Link>{' '}
+                ve{' '}
+                <Link to="/privacy" className="text-blue-400 hover:text-blue-300 underline">
+                  Gizlilik Politikası
+                </Link>{'nı '}
+                kabul ediyorum.
+              </label>
+            </div>
+            {errors.agreeToTerms && (
+              <p className="text-xs sm:text-sm text-red-400 flex items-center space-x-1">
+                <AlertCircle className="w-3 h-3" />
+                <span>{errors.agreeToTerms}</span>
+              </p>
+            )}
 
             {/* Submit Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               type="submit"
               disabled={isLoading || isGoogleLoading}
-              className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-2xl font-semibold hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+              className="w-full mt-6 sm:mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl text-sm sm:text-base"
             >
               {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Hesap oluşturuluyor...</span>
-                </>
+                </div>
               ) : (
-                <>
-                  <UserPlus className="w-5 h-5" />
+                <div className="flex items-center justify-center space-x-2">
+                  <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Hesap Oluştur</span>
-                </>
+                </div>
               )}
-            </motion.button>
+            </button>
           </form>
 
-          {/* Sign In Link */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-600">
+          {/* Login Link */}
+          <div className="mt-6 sm:mt-8 text-center">
+            <p className="text-gray-300 text-sm sm:text-base">
               Zaten hesabınız var mı?{' '}
-              <Link
-                to="/giriş"
-                className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
+              <Link 
+                to="/login" 
+                className="text-blue-400 hover:text-blue-300 font-medium underline transition-colors"
               >
-                Giriş yapın
+                Giriş Yapın
               </Link>
             </p>
           </div>
+        </div>
 
-          {/* Info Box */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4"
-          >
-            <div className="flex items-center space-x-2 mb-3">
-              <Shield className="w-5 h-5 text-green-600" />
-              <h4 className="text-sm font-semibold text-green-800">Otomatik Üyelik</h4>
+        {/* Features - Login ile tutarlı */}
+        <div className="mt-6 sm:mt-8 text-center animate-fade-in-up">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto">
+            <div className="flex items-center justify-center sm:justify-start space-x-2 text-gray-300 text-xs sm:text-sm">
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span>7/24 Müşteri Desteği</span>
             </div>
-            <div className="space-y-2 text-xs text-green-700">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
-                <span>Rezervasyon sonrası otomatik hesap oluşturulur</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
-                <span>Google ile hızlı kayıt imkanı</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-3 h-3 text-green-600" />
-                <span>Güvenli ve kolay profil yönetimi</span>
-              </div>
+            <div className="flex items-center justify-center sm:justify-start space-x-2 text-gray-300 text-xs sm:text-sm">
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span>Google ile hızlı kayıt</span>
             </div>
-          </motion.div>
-        </motion.div>
+            <div className="flex items-center justify-center sm:justify-start space-x-2 text-gray-300 text-xs sm:text-sm">
+              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+              <span>Güvenli profil yönetimi</span>
+            </div>
+          </div>
+        </div>
 
         {/* Back to Home */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-center mt-8"
-        >
+        <div className="text-center mt-6 sm:mt-8 animate-fade-in-up">
           <Link
             to="/"
-            className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors group"
+            className="inline-flex items-center space-x-2 text-gray-300 hover:text-white transition-colors text-sm group"
           >
             <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
             <span>Ana sayfaya dön</span>
           </Link>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
