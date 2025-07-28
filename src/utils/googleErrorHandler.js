@@ -22,25 +22,42 @@ class GoogleAPIErrorHandler {
         // Google Maps spesifik hatalarını filtrele
         if (message.includes('RefererNotAllowedMapError')) {
           this.handleRefererError();
+          event.preventDefault(); // Hatayı console'a yazdırma
         } else if (message.includes('places.Autocomplete')) {
           // Places Autocomplete deprecation warning'ini gizle
-          return;
+          event.preventDefault();
         }
       }
     });
 
-    // Console error yakalama
+    // Google Maps API hatalarını yakala
     const originalError = console.error;
+    console.error = (...args) => {
+      const message = args.join(' ');
+      
+      // Google Maps API hatalarını filtrele
+      if (message.includes('RefererNotAllowedMapError') ||
+          message.includes('This IP, site or mobile application is not authorized') ||
+          message.includes('Places API error')) {
+        return; // Bu hataları gizle
+      }
+      
+      originalError.apply(console, args);
+    };
+
+    // Console error yakalama
+    const originalError2 = console.error;
     console.error = (...args) => {
       const message = args.join(' ');
       
       // Gereksiz hataları filtrele
       if (message.includes('places.Autocomplete') || 
-          message.includes('march 1st, 2025')) {
+          message.includes('march 1st, 2025') ||
+          message.includes('RefererNotAllowedMapError')) {
         return;
       }
       
-      originalError.apply(console, args);
+      originalError2.apply(console, args);
     };
   }
 

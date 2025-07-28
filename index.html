@@ -22,6 +22,8 @@
     
     <!-- Resource hints for better LCP -->
     <!-- Hero image conditionally preloaded -->
+    <!-- Hero Image Preload - Commented out as not currently used in HeroSection -->
+    <!--
     <script>
       // Only preload hero image on homepage
       if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
@@ -33,6 +35,7 @@
         document.head.appendChild(link);
       }
     </script>
+    -->
     <link rel="preload" href="/src/critical.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
     <!-- Web Vitals iyileştirmeleri -->
