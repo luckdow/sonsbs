@@ -76,8 +76,8 @@ Allow: /blog/
 Crawl-delay: 1
 
 # Sitemap location
-Sitemap: https://gatetransfer.com/sitemap.xml
-Sitemap: https://gatetransfer.com/sitemap-images.xml
+Sitemap: https://www.gatetransfer.com/sitemap.xml
+Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
 
 # Popular search engines
 User-agent: Googlebot
