@@ -3,21 +3,21 @@ export const generateLocalBusinessSchema = () => ({
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "@id": "https://gatetransfer.com/#organization",
-  "name": "GATE Transfer",
-  "alternateName": "Gate Transfer Antalya",
+  "name": "SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi",
+  "alternateName": ["SBS Turkey Transfer", "SBS Transfer", "Gate Transfer"],
   "description": "Antalya havalimanı transfer hizmetleri ve özel ulaşım çözümleri sunan güvenilir transfer şirketi.",
   "url": "https://gatetransfer.com",
-  "telephone": "+90-242-123-4567",
-  "email": "info@gatetransfer.com",
+  "telephone": "+905325742682",
+  "email": "sbstravel@gmail.com",
   "priceRange": "₺₺",
   "currenciesAccepted": "TRY, EUR, USD",
   "paymentAccepted": ["Cash", "Credit Card", "Online Payment"],
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Lara Caddesi No: 123",
-    "addressLocality": "Muratpaşa",
+    "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",
+    "addressLocality": "Aksu",
     "addressRegion": "Antalya",
-    "postalCode": "07230",
+    "postalCode": "07112",
     "addressCountry": "TR"
   },
   "geo": {
@@ -102,9 +102,9 @@ export const generateLocalBusinessSchema = () => ({
     }
   ],
   "sameAs": [
-    "https://www.facebook.com/gatetransfer",
-    "https://www.instagram.com/gatetransfer",
-    "https://twitter.com/gatetransfer"
+    "https://www.facebook.com/sbsturkeytransfer",
+    "https://www.instagram.com/sbsturkeytransfer",
+    "https://twitter.com/sbsturkeytransfer"
   ]
 });
 
@@ -214,7 +214,7 @@ export const generateWebsiteSchema = () => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
   "@id": "https://gatetransfer.com/#website",
-  "name": "GATE Transfer",
+  "name": "SBS Turkey Transfer",
   "description": "Antalya havalimanı transfer hizmetleri ve özel ulaşım çözümleri",
   "url": "https://gatetransfer.com",
   "publisher": {
@@ -229,9 +229,9 @@ export const generateWebsiteSchema = () => ({
     "query-input": "required name=search_term_string"
   },
   "sameAs": [
-    "https://www.facebook.com/gatetransfer",
-    "https://www.instagram.com/gatetransfer",
-    "https://twitter.com/gatetransfer"
+    "https://www.facebook.com/sbsturkeytransfer",
+    "https://www.instagram.com/sbsturkeytransfer",
+    "https://twitter.com/sbsturkeytransfer"
   ]
 });
 
@@ -339,25 +339,25 @@ export const generateOrganizationSchema = () => ({
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": "https://gatetransfer.com/#organization",
-  "name": "GATE Transfer",
-  "alternateName": ["Gate Transfer", "Gate Transfer Antalya"],
+  "name": "SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi",
+  "alternateName": ["SBS Turkey Transfer", "SBS Transfer", "Gate Transfer"],
   "url": "https://gatetransfer.com",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://gatetransfer.com/images/gate-transfer-logo.png",
+    "url": "https://gatetransfer.com/images/sbs-turkey-transfer-logo.png",
     "width": 300,
     "height": 100
   },
-  "image": "https://gatetransfer.com/images/gate-transfer-og.jpg",
+  "image": "https://gatetransfer.com/images/sbs-turkey-transfer-og.jpg",
   "description": "Antalya havalimanı transfer hizmetleri ve özel ulaşım çözümleri sunan güvenilir transfer şirketi.",
-  "telephone": "+90-242-123-4567",
-  "email": "info@gatetransfer.com",
+  "telephone": "+905325742682",
+  "email": "sbstravel@gmail.com",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Lara Caddesi No: 123",
-    "addressLocality": "Muratpaşa",
+    "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",
+    "addressLocality": "Aksu",
     "addressRegion": "Antalya",
-    "postalCode": "07230",
+    "postalCode": "07112",
     "addressCountry": "TR"
   },
   "geo": {
@@ -368,15 +368,15 @@ export const generateOrganizationSchema = () => ({
   "foundingDate": "2020-01-01",
   "numberOfEmployees": "10-50",
   "sameAs": [
-    "https://www.facebook.com/gatetransfer",
-    "https://www.instagram.com/gatetransfer",
-    "https://www.twitter.com/gatetransfer",
-    "https://www.linkedin.com/company/gatetransfer"
+    "https://www.facebook.com/sbsturkeytransfer",
+    "https://www.instagram.com/sbsturkeytransfer",
+    "https://www.twitter.com/sbsturkeytransfer",
+    "https://www.linkedin.com/company/sbsturkeytransfer"
   ],
   "contactPoint": [
     {
       "@type": "ContactPoint",
-      "telephone": "+90-242-123-4567",
+      "telephone": "+905325742682",
       "contactType": "customer service",
       "availableLanguage": ["Turkish", "English", "German", "Russian"],
       "hoursAvailable": {

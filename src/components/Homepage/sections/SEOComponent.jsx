@@ -20,7 +20,7 @@ const SEOComponent = ({ language = 'tr', page = 'homepage' }) => {
       <meta name="keywords" content={pageData.keywords} />
       
       {/* Enhanced SEO Tags */}
-      <meta name="author" content="GATE Transfer" />
+      <meta name="author" content="SBS Turkey Transfer" />
       <meta name="language" content={language} />
       <meta name="geo.region" content="TR-07" />
       <meta name="geo.placename" content="Antalya" />
@@ -32,7 +32,7 @@ const SEOComponent = ({ language = 'tr', page = 'homepage' }) => {
       <meta property="og:url" content={`${data.siteUrl}${page === 'homepage' ? '' : `/${page}`}`} />
       <meta property="og:title" content={pageData.title} />
       <meta property="og:description" content={pageData.description} />
-      <meta property="og:image" content={`${data.siteUrl}/images/gate-transfer-og.jpg`} />
+      <meta property="og:image" content={`${data.siteUrl}/images/sbs-turkey-transfer-og.jpg`} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:site_name" content={data.siteName} />
@@ -43,8 +43,8 @@ const SEOComponent = ({ language = 'tr', page = 'homepage' }) => {
       <meta property="twitter:url" content={`${data.siteUrl}${page === 'homepage' ? '' : `/${page}`}`} />
       <meta property="twitter:title" content={pageData.title} />
       <meta property="twitter:description" content={pageData.description} />
-      <meta property="twitter:image" content={`${data.siteUrl}/images/gate-transfer-og.jpg`} />
-      <meta property="twitter:creator" content="@gatetransfer" />
+      <meta property="twitter:image" content={`${data.siteUrl}/images/sbs-turkey-transfer-og.jpg`} />
+      <meta property="twitter:creator" content="@sbsturkeytransfer" />
       
       {/* Additional Performance Tags */}
       <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />

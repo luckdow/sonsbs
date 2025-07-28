@@ -49,18 +49,18 @@ const HeroSection = () => {
 
           {/* Mobile'de sonra - Ana içerik */}
           <div className="order-2 lg:order-1 text-center lg:text-left">
-            {/* Ana başlık */}
+            {/* Ana başlık - SEO optimize edilmiş */}
             <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-4 lg:mb-6 leading-tight">
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Antalya
+                Antalya Havalimanı
               </span>
               <br />
-              <span className="text-white">Transfer Hizmeti</span>
+              <span className="text-white">VIP Transfer Hizmeti</span>
             </h1>
 
-            {/* Alt başlık */}
+            {/* Alt başlık - SEO friendly */}
             <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 mb-8 lg:mb-10 max-w-2xl mx-auto lg:mx-0">
-              Profesyonel, güvenli ve konforlu havalimanı transfer hizmeti ile Antalya'nın her yerine ulaşın
+              7/24 güvenli, konforlu ve ekonomik Antalya transfer hizmeti. Profesyonel şoförler, VIP araçlar ve zamanında teslim garantisi ile havalimanı transferiniz artık çok kolay!
             </p>
 
             {/* Özellikler - Icon + Text style, kartlar kaldırıldı */}
@@ -94,11 +94,11 @@ const HeroSection = () => {
               </Link>
               
               <a
-                href="tel:+905551234567"
+                href="tel:+905325742682"
                 className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 backdrop-blur-sm border border-white/20 flex items-center justify-center gap-2 transform hover:scale-105"
               >
                 <Phone className="w-5 h-5" />
-                +90 555 123 4567
+                +90 532 574 26 82
               </a>
             </div>
 

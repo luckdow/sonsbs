@@ -157,10 +157,10 @@ const ServicesSection = () => {
                 Online Rezervasyon
               </a>
               <a
-                href="tel:+905551234567"
+                href="tel:+905325742682"
                 className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors duration-300"
               >
-                +90 555 123 4567
+                +90 532 574 26 82
               </a>
             </div>
           </div>

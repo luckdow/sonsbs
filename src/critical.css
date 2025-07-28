@@ -16,16 +16,25 @@ body {
   line-height: 1.6;
   color: #1f2937;
   font-display: swap;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  text-rendering: optimizeLegibility;
 }
 
 /* Performance optimizations */
 img {
   content-visibility: auto;
   contain-intrinsic-size: 300px 200px;
+  max-width: 100%;
+  height: auto;
+  font-style: italic;
+  background-repeat: no-repeat;
+  background-size: cover;
+  shape-margin: 0.75rem;
 }
 
 .lazy-load {
   content-visibility: auto;
+  contain-intrinsic-size: 200px 150px;
 }
 
 /* Header critical styles */
@@ -37,6 +46,7 @@ img {
   z-index: 50;
   transition: all 0.3s ease;
   will-change: transform;
+  contain: layout style paint;
 }
 
 .header-scrolled {

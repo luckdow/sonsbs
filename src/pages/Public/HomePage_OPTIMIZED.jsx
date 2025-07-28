@@ -2,15 +2,27 @@ import React, { lazy, Suspense } from 'react';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import LoadingScreen from '../../components/UI/LoadingScreen';
 import SEOComponent from '../../components/Homepage/sections/SEOComponent';
-import NewsletterSignup from '../../components/Newsletter/NewsletterSignup';
+import NewsletterSignup from '../../components/Newsletter/NewsletterSignup_NEW';
 import { generateLocalBusinessSchema, generateBreadcrumbSchema } from '../../utils/seoUtils';
 
 // Import critical above-the-fold component immediately
 import HeroSection from '../../components/Homepage/sections/HeroSection';
 
 // Lazy load below-the-fold components
+const LocalSEOSection = lazy(() => 
+  import('../../components/Homepage/sections/LocalSEOSection').then(module => ({
+    default: module.default
+  }))
+);
+
 const ServicesSection = lazy(() => 
   import('../../components/Homepage/sections/ServicesSection').then(module => ({
+    default: module.default
+  }))
+);
+
+const CitySection = lazy(() => 
+  import('../../components/Homepage/sections/CitySection').then(module => ({
     default: module.default
   }))
 );
@@ -63,11 +75,11 @@ const HomePage = () => {
           <link rel="canonical" href="https://gatetransfer.com" />
           <meta property="og:type" content="website" />
           <meta property="og:url" content="https://gatetransfer.com" />
-          <meta property="og:image" content="https://gatetransfer.com/images/gate-transfer-og.jpg" />
+          <meta property="og:image" content="https://gatetransfer.com/images/sbs-transfer-og.jpg" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="geo.region" content="TR-07" />
           <meta name="geo.placename" content="Antalya" />
-          <meta name="ICBM" content="36.8969, 30.7133" />
+          <meta name="ICBM" content="36.8841, 30.7056" />
           
           {/* Hreflang for multilingual SEO */}
           <link rel="alternate" hrefLang="tr" href="https://gatetransfer.com" />
@@ -78,21 +90,34 @@ const HomePage = () => {
         {/* Hero Section - Above the fold */}
         <HeroSection />
 
-        {/* Main Content Sections */}
+        {/* Local SEO Section - Hero'nun hemen altında */}
+        <Suspense fallback={<SectionLoader />}>
+          <LocalSEOSection />
+        </Suspense>
+
+        {/* Main Content Sections - Mantıklı sıralama */}
+        {/* 1. Hizmetlerimiz - İlk olarak ne sunduğumuzu göster */}
         <Suspense fallback={<SectionLoader />}>
           <ServicesSection />
         </Suspense>
 
+        {/* 2. Popüler Şehirler - Hangi destinasyonlara gittigimizi göster */}
+        <Suspense fallback={<SectionLoader />}>
+          <CitySection />
+        </Suspense>
+
+        {/* 3. Müşteri Yorumları - Sosyal kanıt */}
         <Suspense fallback={<SectionLoader />}>
           <TestimonialsSection />
         </Suspense>
 
+        {/* 4. Sık Sorulan Sorular - Son aşamadaki şüpheleri gider */}
         <Suspense fallback={<SectionLoader />}>
           <FAQSection />
         </Suspense>
 
-        {/* Newsletter Signup */}
-        <div className="bg-gray-50 py-12">
+        {/* Newsletter Signup - Yeni tasarım */}
+        <div className="py-12">
           <div className="container mx-auto px-4">
             <NewsletterSignup />
           </div>

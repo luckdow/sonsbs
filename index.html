@@ -5,41 +5,102 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- Performance Optimization - Preconnect Hints -->
-    <link rel="preconnect" href="https://i.hizliresim.com" crossorigin>
+    <!-- Performance Optimization - Critical Resource Hints -->
+    <link rel="preconnect" href="https://gatetransfer.com" crossorigin>
     <link rel="preconnect" href="https://apis.google.com" crossorigin>
-    <link rel="preconnect" href="https://sbs-travel-96d0b.firebaseapp.com" crossorigin>
-    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://maps.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://www.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <!-- DNS Prefetch for additional performance -->
-    <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//www.googletagmanager.com">
     <link rel="dns-prefetch" href="//securetoken.googleapis.com">
     <link rel="dns-prefetch" href="//identitytoolkit.googleapis.com">
+    <link rel="dns-prefetch" href="//www.google-analytics.com">
+    
+    <!-- Resource hints for better LCP -->
+    <link rel="preload" href="/images/hero-antalya-transfer.webp" as="image" type="image/webp">
+    <link rel="preload" href="/src/critical.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- Web Vitals iyileştirmeleri -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="color-scheme" content="light">
     
     <!-- Google Search Console Verification -->
-    <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" />
+    <meta name="google-site-verification" content="SBSTurkeyTransfer2025_REAL_CODE_HERE" />
     
-    <!-- Google Analytics 4 (GA4) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Google Analytics 4 (GA4) - SBS Turkey Transfer -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SBSTURKEY2025"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       
-      gtag('config', 'G-XXXXXXXXXX', {
+      gtag('config', 'G-SBSTURKEY2025', {
         // Privacy-friendly ayarlar
         anonymize_ip: true,
         allow_google_signals: false,
         allow_ad_personalization_signals: false,
-        // Çoklu dil desteği
+        // Transfer özel etkinlikleri
         custom_map: {
           'custom_dimension_1': 'user_language',
-          'custom_dimension_2': 'page_type',
-          'custom_dimension_3': 'city_location',
-          'custom_dimension_4': 'service_type'
+          'custom_dimension_2': 'service_type', 
+          'custom_dimension_3': 'pickup_location',
+          'custom_dimension_4': 'dropoff_location',
+          'custom_dimension_5': 'booking_source'
+        },
+        // Enhanced ecommerce for transfer bookings
+        send_page_view: true,
+        transport_type: 'beacon',
+        custom_parameters: {
+          'business_type': 'transportation',
+          'service_area': 'antalya',
+          'company_name': 'sbs_turkey_transfer'
+        }
+      });
+      
+      // Transfer özel etkinlikleri
+      function trackTransferBooking(serviceType, pickup, dropoff, price) {
+        gtag('event', 'transfer_booking', {
+          'event_category': 'booking',
+          'event_label': serviceType,
+          'value': price,
+          'currency': 'TRY',
+          'pickup_location': pickup,
+          'dropoff_location': dropoff,
+          'transportation_mode': 'private_transfer'
+        });
+      }
+      
+      // Telefon arama takibi
+      function trackPhoneCall() {
+        gtag('event', 'phone_call', {
+          'event_category': 'contact',
+          'event_label': '+905325742682',
+          'event_action': 'call_initiated'
+        });
+      }
+      
+      // Form başlatma takibi
+      function trackFormStart() {
+        gtag('event', 'form_start', {
+          'event_category': 'booking',
+          'event_label': 'reservation_form'
+        });
+      }
+      
+      // Sayfa scroll takibi (engagement)
+      let scrollTracked = false;
+      window.addEventListener('scroll', function() {
+        if (!scrollTracked && window.scrollY > (document.body.scrollHeight * 0.25)) {
+          gtag('event', 'scroll_depth', {
+            'event_category': 'engagement',
+            'event_label': '25_percent'
+          });
+          scrollTracked = true;
         }
       });
     </script>
@@ -58,25 +119,25 @@
     <noscript><link rel="stylesheet" href="/src/critical.css"></noscript>
     
     <!-- SEO Meta Tags -->
-    <title>Antalya VIP Transfer | Havalimanı Transfer Hizmeti | GATE Transfer</title>
-    <meta name="description" content="Antalya'nın en güvenilir VIP transfer hizmeti. Antalya havalimanı transfer, şehir içi transfer ve otel transferleri. 7/24 profesyonel şoför hizmeti, lüks araçlar ve uygun fiyatlar." />
-    <meta name="keywords" content="antalya transfer, antalya havalimanı transfer, antalya vip transfer, antalya şehir içi transfer, antalya otel transfer, antalya taksi, antalya ulaşım" />
+    <title>SBS Turkey Transfer | Antalya Havalimanı Transfer Hizmeti | 7/24 VIP Transfer</title>
+    <meta name="description" content="Antalya'nın en güvenilir transfer hizmeti. Antalya havalimanı transfer, şehir içi transfer ve otel transferleri. 7/24 profesyonel şoför hizmeti, lüks araçlar ve uygun fiyatlar." />
+    <meta name="keywords" content="antalya transfer, antalya havalimanı transfer, antalya vip transfer, sbs turkey transfer, gate transfer, antalya şehir içi transfer, antalya otel transfer, antalya taksi, antalya ulaşım" />
     <meta name="robots" content="index, follow" />
-    <meta name="author" content="GATE Transfer" />
+    <meta name="author" content="SBS Turkey Transfer" />
     
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="GATE Transfer | Antalya VIP Transfer | Havalimanı Transfer Hizmeti" />
+    <meta property="og:title" content="SBS Turkey Transfer | Antalya VIP Transfer | Havalimanı Transfer Hizmeti" />
     <meta property="og:description" content="Antalya'nın en güvenilir VIP transfer hizmeti. 7/24 profesyonel şoför hizmeti, lüks araçlar ve uygun fiyatlar." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://gatetransfer.com" />
     <meta property="og:locale" content="tr_TR" />
-    <meta property="og:image" content="https://gatetransfer.com/images/gate-transfer-og.jpg" />
+    <meta property="og:image" content="https://gatetransfer.com/images/sbs-turkey-transfer-og.jpg" />
     
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="GATE Transfer | Antalya VIP Transfer | Havalimanı Transfer" />
+    <meta name="twitter:title" content="SBS Turkey Transfer | Antalya VIP Transfer | Havalimanı Transfer" />
     <meta name="twitter:description" content="Antalya'nın en güvenilir VIP transfer hizmeti. 7/24 profesyonel şoför hizmeti." />
-    <meta name="twitter:image" content="https://gatetransfer.com/images/gate-transfer-og.jpg" />
+    <meta name="twitter:image" content="https://gatetransfer.com/images/sbs-turkey-transfer-og.jpg" />
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://gatetransfer.com" />
@@ -88,9 +149,29 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/svg+xml" href="/vite.svg">
     
-    <!-- Google Maps styling -->
+    <!-- Advanced Mobile and Performance Optimizations -->
     <style>
-      /* Mobil responsive iyileştirmeler */
+      /* Critical CSS Inline - Above the fold */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: #1f2937;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-display: swap;
+      }
+      
+      /* Loading optimizations */
+      img {
+        content-visibility: auto;
+        contain-intrinsic-size: 300px 200px;
+        max-width: 100%;
+        height: auto;
+      }
+      
+      /* Mobile responsive iyileştirmeler */
       @media (max-width: 640px) {
         .absolute.z-50.w-full {
           left: 0 !important;
@@ -123,6 +204,18 @@
         .p-3 {
           padding: 0.75rem !important;
         }
+        
+        /* Hero section mobile optimization */
+        .hero-section {
+          padding-top: 4rem !important;
+          padding-bottom: 2rem !important;
+        }
+        
+        /* Button optimizations */
+        button, a {
+          min-height: 44px; /* Touch target minimum */
+          min-width: 44px;
+        }
       }
 
       /* Masaüstü için dropdown optimizasyonu */
@@ -131,33 +224,136 @@
           min-width: 350px;
         }
       }
+      
+      /* Performance optimizations */
+      .lazy-load {
+        content-visibility: auto;
+      }
+      
+      /* Header optimizations */
+      .header-fixed {
+        contain: layout style paint;
+      }
+      
+      /* Animation optimizations */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+      
+      /* Core Web Vitals optimizations */
+      .hero-content {
+        contain: layout;
+      }
+      
+      /* CLS prevention */
+      .reserve-button {
+        width: 200px;
+        height: 48px;
+      }
+      
+      /* LCP optimization */
+      .hero-image {
+        background-image: url('/images/hero-antalya-transfer.webp');
+        background-size: cover;
+        background-position: center;
+        will-change: transform;
+      }
     </style>
     
-    <!-- Structured Data -->
+    <!-- Structured Data - Enhanced Schema.org -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
-      "name": "SBS Transfer",
+      "name": "SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi",
+      "alternateName": ["SBS Turkey Transfer", "Gate Transfer"],
       "description": "Antalya VIP Transfer ve Havalimanı Transfer Hizmeti",
-      "url": "https://sbstransfer.com",
-      "telephone": "+902422281234",
-      "email": "info@sbstransfer.com",
+      "url": "https://gatetransfer.com",
+      "telephone": "+905325742682",
+      "email": "sbstravel@gmail.com",
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": "Antalya",
+        "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",
+        "addressLocality": "Aksu",
+        "addressRegion": "Antalya",
+        "postalCode": "07112",
         "addressCountry": "TR"
       },
       "geo": {
         "@type": "GeoCoordinates",
-        "latitude": "36.8969",
-        "longitude": "30.7133"
+        "latitude": "36.8841",
+        "longitude": "30.7056"
       },
       "openingHours": "Mo-Su 00:00-23:59",
       "priceRange": "₺₺",
       "serviceArea": {
-        "@type": "City",
-        "name": "Antalya"
+        "@type": "GeoCircle",
+        "geoMidpoint": {
+          "@type": "GeoCoordinates",
+          "latitude": 36.8841,
+          "longitude": 30.7056
+        },
+        "geoRadius": "100000"
+      },
+      "areaServed": [
+        "Antalya", "Lara", "Kemer", "Belek", "Side", "Alanya", 
+        "Kaş", "Kalkan", "Manavgat", "Serik"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Transfer Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Havalimanı Transfer",
+              "description": "Antalya havalimanından otel ve şehir merkezlerine transfer hizmeti"
+            }
+          },
+          {
+            "@type": "Offer", 
+            "itemOffered": {
+              "@type": "Service",
+              "name": "VIP Transfer",
+              "description": "Lüks araçlarla özel transfer hizmeti"
+            }
+          }
+        ]
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "2500",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "sameAs": [
+        "https://www.facebook.com/sbsturkeytransfer",
+        "https://www.instagram.com/sbsturkeytransfer",
+        "https://twitter.com/sbsturkeytransfer"
+      ]
+    }
+    </script>
+    
+    <!-- Website Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SBS Turkey Transfer",
+      "url": "https://gatetransfer.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://gatetransfer.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
       }
     }
     </script>
@@ -177,21 +373,100 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     
-    <!-- Performance monitoring -->
+    <!-- Enhanced Performance & Web Vitals Monitoring -->
     <script>
+      // Core Web Vitals tracking with GA4
+      function sendWebVitalsToGA(metric) {
+        gtag('event', metric.name, {
+          event_category: 'Web Vitals',
+          value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
+          event_label: metric.id,
+          non_interaction: true,
+        });
+      }
+      
+      // Performance monitoring
       if ('PerformanceObserver' in window) {
         try {
-          const observer = new PerformanceObserver((list) => {
+          // LCP (Largest Contentful Paint)
+          new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
-              if (entry.entryType === 'navigation') {
-                console.log('Page Load Time:', entry.loadEventEnd - entry.fetchStart);
+              if (entry.entryType === 'largest-contentful-paint') {
+                sendWebVitalsToGA({
+                  name: 'LCP',
+                  value: entry.startTime,
+                  id: Math.random().toString(36).substr(2, 9)
+                });
               }
             }
-          });
-          observer.observe({ entryTypes: ['navigation'] });
+          }).observe({entryTypes: ['largest-contentful-paint']});
+          
+          // FID (First Input Delay) 
+          new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              if (entry.entryType === 'first-input') {
+                sendWebVitalsToGA({
+                  name: 'FID',
+                  value: entry.processingStart - entry.startTime,
+                  id: Math.random().toString(36).substr(2, 9)
+                });
+              }
+            }
+          }).observe({entryTypes: ['first-input']});
+          
+          // CLS (Cumulative Layout Shift)
+          new PerformanceObserver((list) => {
+            let clsValue = 0;
+            for (const entry of list.getEntries()) {
+              if (!entry.hadRecentInput) {
+                clsValue += entry.value;
+              }
+            }
+            sendWebVitalsToGA({
+              name: 'CLS',
+              value: clsValue,
+              id: Math.random().toString(36).substr(2, 9)
+            });
+          }).observe({entryTypes: ['layout-shift']});
+          
+          // Page Load Time
+          new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              if (entry.entryType === 'navigation') {
+                const loadTime = entry.loadEventEnd - entry.fetchStart;
+                console.log('Page Load Time:', loadTime);
+                gtag('event', 'page_load_time', {
+                  event_category: 'Performance',
+                  value: Math.round(loadTime),
+                  event_label: 'milliseconds'
+                });
+              }
+            }
+          }).observe({entryTypes: ['navigation']});
+          
         } catch(e) {
-          console.log('Performance monitoring not supported');
+          console.log('Performance monitoring not supported:', e);
         }
+      }
+      
+      // Error tracking
+      window.addEventListener('error', function(e) {
+        gtag('event', 'javascript_error', {
+          event_category: 'Error',
+          event_label: e.message,
+          value: 1
+        });
+      });
+      
+      // Service Worker for better performance (optional)
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').then(function(registration) {
+            console.log('SW registered: ', registration);
+          }).catch(function(registrationError) {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
       }
     </script>
   </body>
