@@ -1,16 +1,17 @@
 // SEO Data - Multi-language Keywords and Meta Information
 export const seoData = {
   tr: {
-    siteName: "Antalya VIP Transfer | Havalimanı Transfer Hizmeti",
-    siteUrl: "https://antalyatransfer.com",
+    siteName: "GATE Transfer | Antalya Havalimanı Transfer Hizmeti",
+    siteUrl: "https://gatetransfer.com",
     pages: {
       homepage: {
-        title: "Antalya VIP Transfer | Havalimanı Transfer Hizmeti | 7/24 Güvenli Transfer",
+        title: "GATE Transfer | Antalya Havalimanı Transfer | 7/24 Güvenli VIP Transfer",
         description: "Antalya havalimanı transfer hizmeti. VIP araçlar, profesyonel şoförler, 7/24 hizmet. Antalya şehir içi transfer, otel transfer, güvenli yolculuk garantisi.",
         keywords: [
           "antalya transfer",
           "antalya havalimanı transfer", 
           "antalya vip transfer",
+          "gate transfer",
           "antalya taksi",
           "antalya şehir içi transfer",
           "antalya otel transfer",
@@ -28,15 +29,16 @@ export const seoData = {
     }
   },
   en: {
-    siteName: "Antalya VIP Transfer | Airport Transfer Service",
-    siteUrl: "https://antalyatransfer.com/en", 
+    siteName: "GATE Transfer | Antalya Airport Transfer Service",
+    siteUrl: "https://gatetransfer.com/en", 
     pages: {
       homepage: {
-        title: "Antalya Airport Transfer | VIP Transfer Service | 24/7 Safe Transportation",
+        title: "GATE Transfer | Antalya Airport Transfer | 24/7 Safe VIP Transportation",
         description: "VIP transfer service from Antalya Airport to hotels and city center. 24/7 safe, comfortable and affordable airport transfer solutions. Book now!",
         keywords: [
           "antalya airport transfer",
           "antalya vip transfer",
+          "gate transfer",
           "antalya private transfer",
           "antalya shuttle service",
           "antalya transportation",
@@ -50,14 +52,15 @@ export const seoData = {
     }
   },
   ru: {
-    siteName: "Анталья VIP Трансфер | Трансфер из аэропорта",
-    siteUrl: "https://antalyatransfer.com/ru",
+    siteName: "GATE Transfer | Трансфер из аэропорта Антальи",
+    siteUrl: "https://gatetransfer.com/ru",
     pages: {
       homepage: {
-        title: "Трансфер из аэропорта Антальи | VIP Трансфер | 24/7 Безопасная транспортировка",
+        title: "GATE Transfer | Трансфер из аэропорта Антальи | 24/7 VIP Трансфер",
         description: "VIP трансфер из аэропорта Антальи в отели и центр города. 24/7 безопасные, комфортные и доступные решения трансфера из аэропорта. Забронируйте сейчас!",
         keywords: [
           "трансфер аэропорт анталья",
+          "gate transfer",
           "анталья вип трансфер",
           "анталья частный трансфер",
           "анталья автобус аэропорт",
@@ -72,14 +75,15 @@ export const seoData = {
     }
   },
   de: {
-    siteName: "Antalya VIP Transfer | Flughafentransfer Service",
-    siteUrl: "https://antalyatransfer.com/de",
+    siteName: "GATE Transfer | Antalya Flughafentransfer Service",
+    siteUrl: "https://gatetransfer.com/de",
     pages: {
       homepage: {
-        title: "Antalya Flughafentransfer | VIP Transfer Service | 24/7 Sicherer Transport",
+        title: "GATE Transfer | Antalya Flughafentransfer | 24/7 VIP Transport",
         description: "VIP Transfer Service vom Flughafen Antalya zu Hotels und Stadtzentrum. 24/7 sichere, komfortable und erschwingliche Flughafentransfer-Lösungen. Jetzt buchen!",
         keywords: [
           "antalya flughafentransfer",
+          "gate transfer",
           "antalya vip transfer",
           "antalya privattransfer",
           "antalya shuttle service",
@@ -94,14 +98,15 @@ export const seoData = {
     }
   },
   ar: {
-    siteName: "انطاليا في آي بي ترانسفر | خدمة النقل من المطار",
-    siteUrl: "https://antalyatransfer.com/ar",
+    siteName: "GATE Transfer | خدمة النقل من مطار انطاليا",
+    siteUrl: "https://gatetransfer.com/ar",
     pages: {
       homepage: {
-        title: "نقل مطار انطاليا | خدمة النقل VIP | النقل الآمن 24/7",
+        title: "GATE Transfer | نقل مطار انطاليا | خدمة النقل VIP 24/7",
         description: "خدمة النقل VIP من مطار انطاليا إلى الفنادق ووسط المدينة. حلول نقل آمنة ومريحة وبأسعار معقولة من المطار على مدار 24/7. احجز الآن!",
         keywords: [
           "نقل مطار انطاليا",
+          "gate transfer",
           "انطاليا في آي بي ترانسفر",
           "انطاليا نقل خاص",
           "انطاليا خدمة النقل",
@@ -167,10 +172,10 @@ export const generateStructuredData = (language = 'tr') => {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "SBS Transfer",
-    "url": data?.siteUrl || "https://antalyatransfer.com",
+    "name": "GATE Transfer",
+    "url": data?.siteUrl || "https://gatetransfer.com",
     "description": data?.pages?.homepage?.description,
-    "telephone": "+902422281234",
+    "telephone": "+905325742682",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Antalya",

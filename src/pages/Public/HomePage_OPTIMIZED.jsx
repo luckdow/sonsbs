@@ -3,7 +3,7 @@ import { HelmetProvider, Helmet } from 'react-helmet-async';
 import LoadingScreen from '../../components/UI/LoadingScreen';
 import SEOComponent from '../../components/Homepage/sections/SEOComponent';
 import NewsletterSignup from '../../components/Newsletter/NewsletterSignup';
-import { generateLocalBusinessSchema } from '../../utils/seoUtils';
+import { generateLocalBusinessSchema, generateBreadcrumbSchema } from '../../utils/seoUtils';
 
 // Import critical above-the-fold component immediately
 import HeroSection from '../../components/Homepage/sections/HeroSection';
@@ -40,6 +40,9 @@ const SectionLoader = () => (
 
 const HomePage = () => {
   const localBusinessSchema = generateLocalBusinessSchema();
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Ana Sayfa', url: 'https://gatetransfer.com' }
+  ]);
 
   return (
     <HelmetProvider>
@@ -47,37 +50,54 @@ const HomePage = () => {
         {/* SEO Meta Tags - Critical */}
         <SEOComponent language="tr" page="homepage" />
         
-        {/* Schema.org JSON-LD for LocalBusiness */}
+        {/* Enhanced Schema.org JSON-LD */}
         <Helmet>
           <script type="application/ld+json">
             {JSON.stringify(localBusinessSchema)}
           </script>
+          <script type="application/ld+json">
+            {JSON.stringify(breadcrumbSchema)}
+          </script>
+          
+          {/* Additional SEO enhancements */}
+          <link rel="canonical" href="https://gatetransfer.com" />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://gatetransfer.com" />
+          <meta property="og:image" content="https://gatetransfer.com/images/gate-transfer-og.jpg" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="geo.region" content="TR-07" />
+          <meta name="geo.placename" content="Antalya" />
+          <meta name="ICBM" content="36.8969, 30.7133" />
+          
+          {/* Hreflang for multilingual SEO */}
+          <link rel="alternate" hrefLang="tr" href="https://gatetransfer.com" />
+          <link rel="alternate" hrefLang="en" href="https://gatetransfer.com/en" />
+          <link rel="alternate" hrefLang="x-default" href="https://gatetransfer.com" />
         </Helmet>
-        
-        {/* Hero Section - Critical, no lazy loading */}
+
+        {/* Hero Section - Above the fold */}
         <HeroSection />
-        
-        {/* Services Section - Lazy load with intersection observer */}
+
+        {/* Main Content Sections */}
         <Suspense fallback={<SectionLoader />}>
           <ServicesSection />
         </Suspense>
-        
-        {/* Testimonials Section - Lazy load */}
+
         <Suspense fallback={<SectionLoader />}>
           <TestimonialsSection />
         </Suspense>
-        
-        {/* FAQ Section - Lazy load */}
+
         <Suspense fallback={<SectionLoader />}>
           <FAQSection />
         </Suspense>
-        
-        {/* Newsletter Signup Section - Hero Variant */}
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <NewsletterSignup variant="hero" />
+
+        {/* Newsletter Signup */}
+        <div className="bg-gray-50 py-12">
+          <div className="container mx-auto px-4">
+            <NewsletterSignup />
           </div>
-        </section>
+        </div>
+
       </div>
     </HelmetProvider>
   );

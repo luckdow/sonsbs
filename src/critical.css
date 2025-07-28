@@ -15,6 +15,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
   color: #1f2937;
+  font-display: swap;
+}
+
+/* Performance optimizations */
+img {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 200px;
+}
+
+.lazy-load {
+  content-visibility: auto;
 }
 
 /* Header critical styles */
@@ -25,6 +36,7 @@ body {
   right: 0;
   z-index: 50;
   transition: all 0.3s ease;
+  will-change: transform;
 }
 
 .header-scrolled {

@@ -1,15 +1,22 @@
 import { db } from '../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
-// SMS servisi - Twilio kullanıyor
+// SMS servisi - Twilio kullanıyor (Server-side only)
 class SMSService {
   constructor() {
+    this.isServer = typeof window === 'undefined';
     this.twilio = null;
     this.settings = null;
   }
 
   // Ayarları Firebase'den yükle
   async loadSettings() {
+    // Browser'da çalışma
+    if (!this.isServer) {
+      console.log('SMS servisi sadece server-side çalışır');
+      return;
+    }
+    
     try {
       const settingsDoc = await getDoc(doc(db, 'settings', 'general'));
       if (settingsDoc.exists()) {
@@ -22,10 +29,14 @@ class SMSService {
           senderName: data.senderName || 'SBS Transfer'
         };
         
-        // Twilio'yu başlat (sadece ayarlar varsa)
+        // Server-side'da Twilio'yu başlat
         if (this.settings.twilioAccountSid && this.settings.twilioAuthToken) {
-          const Twilio = (await import('twilio')).default;
-          this.twilio = new Twilio(this.settings.twilioAccountSid, this.settings.twilioAuthToken);
+          try {
+            const Twilio = (await import('twilio')).default;
+            this.twilio = new Twilio(this.settings.twilioAccountSid, this.settings.twilioAuthToken);
+          } catch (error) {
+            console.error('Twilio import hatası:', error);
+          }
         }
       }
     } catch (error) {
@@ -35,6 +46,11 @@ class SMSService {
 
   // Rezervasyon onay SMS'i gönder
   async sendReservationConfirmation(reservationData) {
+    if (!this.isServer) {
+      console.log('SMS gönderimi sadece server-side desteklenir');
+      return { success: false, message: 'SMS gönderimi sadece server-side desteklenir' };
+    }
+    
     if (!this.settings) {
       await this.loadSettings();
     }
@@ -50,6 +66,11 @@ class SMSService {
 
   // Ödeme onay SMS'i gönder
   async sendPaymentConfirmation(reservationData) {
+    if (!this.isServer) {
+      console.log('SMS gönderimi sadece server-side desteklenir');
+      return { success: false, message: 'SMS gönderimi sadece server-side desteklenir' };
+    }
+    
     if (!this.settings) {
       await this.loadSettings();
     }
@@ -65,6 +86,11 @@ class SMSService {
 
   // Şoför bilgileri SMS'i gönder
   async sendDriverInfo(reservationData, driverData) {
+    if (!this.isServer) {
+      console.log('SMS gönderimi sadece server-side desteklenir');
+      return { success: false, message: 'SMS gönderimi sadece server-side desteklenir' };
+    }
+    
     if (!this.settings) {
       await this.loadSettings();
     }
@@ -80,6 +106,11 @@ class SMSService {
 
   // SMS gönder (ana fonksiyon)
   async sendSMS(phoneNumber, message) {
+    if (!this.isServer) {
+      console.log('SMS gönderimi sadece server-side desteklenir');
+      return { success: false, message: 'SMS gönderimi browser\'da desteklenmiyor' };
+    }
+    
     try {
       if (!this.twilio) {
         throw new Error('Twilio ayarları eksik');
@@ -195,6 +226,11 @@ Transfer detaylarınız e-posta adresinize gönderildi.
 
   // Test SMS gönder
   async sendTestSMS(phoneNumber) {
+    if (!this.isServer) {
+      console.log('SMS gönderimi sadece server-side desteklenir');
+      return { success: false, message: 'Test SMS browser\'da desteklenmiyor' };
+    }
+    
     if (!this.settings) {
       await this.loadSettings();
     }

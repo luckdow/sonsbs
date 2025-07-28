@@ -164,28 +164,17 @@ const AlanyaTransfer = () => {
         
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Breadcrumb */}
-          <nav className="flex mb-6" aria-label="Breadcrumb">
+          {/* Breadcrumb */}
+          <nav className="flex mb-8" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
               <li className="inline-flex items-center">
                 <Link 
                   to="/" 
+                  onClick={() => window.scrollTo(0, 0)}
                   className="inline-flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors"
                 >
                   Ana Sayfa
                 </Link>
-              </li>
-              <li>
-                <div className="flex items-center">
-                  <svg className="w-3 h-3 text-gray-400 mx-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"></path>
-                  </svg>
-                  <Link 
-                    to="/hizmetlerimiz" 
-                    className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
-                  >
-                    Hizmetlerimiz
-                  </Link>
-                </div>
               </li>
               <li aria-current="page">
                 <div className="flex items-center">
@@ -196,9 +185,7 @@ const AlanyaTransfer = () => {
                 </div>
               </li>
             </ol>
-          </nav>
-          
-          <div className="text-center">
+          </nav>          <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-4">
               <MapPin className="w-4 h-4" />
               Alanya Historic Castle Transfer

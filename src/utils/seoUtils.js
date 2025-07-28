@@ -282,3 +282,17 @@ export const generateServiceSchema = (serviceName, serviceDescription, serviceUr
     }
   };
 };
+
+// Generate BreadcrumbList Schema for SEO
+export const generateBreadcrumbSchema = (breadcrumbs) => {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": breadcrumbs.map((item, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "name": item.name,
+      "item": item.url
+    }))
+  };
+};
