@@ -3,8 +3,18 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import WebPerformanceOptimizer from './components/UI/WebPerformanceOptimizer.jsx'
 import { googleAnalytics, seoPerformanceMonitor } from './utils/googleSeoIntegration.js'
+import GoogleAPIErrorHandler from './utils/googleErrorHandler.js'
 import './critical.css'
 import './index.css'
+
+// Google API Error Handler'ı başlat
+if (typeof window !== 'undefined') {
+  // Service Worker'ı kaydet
+  GoogleAPIErrorHandler.registerServiceWorker();
+  
+  // Preload kullanımını kontrol et
+  GoogleAPIErrorHandler.checkPreloadUsage();
+}
 
 // Google Analytics ve SEO Performance Monitoring başlat
 if (typeof window !== 'undefined') {

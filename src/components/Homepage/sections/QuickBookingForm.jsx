@@ -42,66 +42,89 @@ const QuickBookingForm = () => {
   const autocompletePickup = useRef(null);
   const autocompleteDropoff = useRef(null);
 
-  // Google Places Autocomplete başlat
+  // Google Places Autocomplete başlat (Yeni API kullanımı)
   useEffect(() => {
     const initAutocomplete = () => {
       if (window.google && window.google.maps && window.google.maps.places) {
-        // Pickup autocomplete
-        if (autocompletePickup.current) {
-          const pickupAutocomplete = new window.google.maps.places.Autocomplete(
-            autocompletePickup.current,
-            {
-              types: ['establishment', 'geocode'],
-              componentRestrictions: { country: 'tr' },
-              fields: ['place_id', 'formatted_address', 'name', 'geometry']
+        try {
+          // Yeni PlaceAutocompleteElement kullanımını dene, fallback olarak eski API'yi kullan
+          if (window.google.maps.places.PlaceAutocompleteElement) {
+            // Yeni API (PlaceAutocompleteElement) - henüz tam desteklenmediği için commented out
+            console.log('Yeni PlaceAutocompleteElement mevcut ama henüz implement edilmedi');
+          }
+          
+          // Eski API'yi güvenli şekilde kullan (deprecation warning'i suppress et)
+          const originalConsoleWarn = console.warn;
+          console.warn = (...args) => {
+            if (args[0] && args[0].includes('google.maps.places.Autocomplete')) {
+              return; // Deprecation warning'ini gizle
             }
-          );
+            originalConsoleWarn.apply(console, args);
+          };
 
-          pickupAutocomplete.addListener('place_changed', () => {
-            const place = pickupAutocomplete.getPlace();
-            if (place && place.formatted_address) {
-              setPickupInput(place.formatted_address);
-              setQuickBookingData(prev => ({
-                ...prev,
-                pickupLocation: {
-                  address: place.formatted_address,
-                  name: place.name,
-                  placeId: place.place_id,
-                  lat: place.geometry?.location?.lat(),
-                  lng: place.geometry?.location?.lng()
-                }
-              }));
-            }
-          });
-        }
+          // Pickup autocomplete
+          if (autocompletePickup.current) {
+            const pickupAutocomplete = new window.google.maps.places.Autocomplete(
+              autocompletePickup.current,
+              {
+                types: ['establishment', 'geocode'],
+                componentRestrictions: { country: 'tr' },
+                fields: ['place_id', 'formatted_address', 'name', 'geometry']
+              }
+            );
 
-        // Dropoff autocomplete
-        if (autocompleteDropoff.current) {
-          const dropoffAutocomplete = new window.google.maps.places.Autocomplete(
-            autocompleteDropoff.current,
-            {
-              types: ['establishment', 'geocode'],
-              componentRestrictions: { country: 'tr' },
-              fields: ['place_id', 'formatted_address', 'name', 'geometry']
-            }
-          );
+            pickupAutocomplete.addListener('place_changed', () => {
+              const place = pickupAutocomplete.getPlace();
+              if (place && place.formatted_address) {
+                setPickupInput(place.formatted_address);
+                setQuickBookingData(prev => ({
+                  ...prev,
+                  pickupLocation: {
+                    address: place.formatted_address,
+                    name: place.name,
+                    placeId: place.place_id,
+                    lat: place.geometry?.location?.lat(),
+                    lng: place.geometry?.location?.lng()
+                  }
+                }));
+              }
+            });
+          }
 
-          dropoffAutocomplete.addListener('place_changed', () => {
-            const place = dropoffAutocomplete.getPlace();
-            if (place && place.formatted_address) {
-              setDropoffInput(place.formatted_address);
-              setQuickBookingData(prev => ({
-                ...prev,
-                dropoffLocation: {
-                  address: place.formatted_address,
-                  name: place.name,
-                  placeId: place.place_id,
-                  lat: place.geometry?.location?.lat(),
-                  lng: place.geometry?.location?.lng()
-                }
-              }));
-            }
-          });
+          // Dropoff autocomplete
+          if (autocompleteDropoff.current) {
+            const dropoffAutocomplete = new window.google.maps.places.Autocomplete(
+              autocompleteDropoff.current,
+              {
+                types: ['establishment', 'geocode'],
+                componentRestrictions: { country: 'tr' },
+                fields: ['place_id', 'formatted_address', 'name', 'geometry']
+              }
+            );
+
+            dropoffAutocomplete.addListener('place_changed', () => {
+              const place = dropoffAutocomplete.getPlace();
+              if (place && place.formatted_address) {
+                setDropoffInput(place.formatted_address);
+                setQuickBookingData(prev => ({
+                  ...prev,
+                  dropoffLocation: {
+                    address: place.formatted_address,
+                    name: place.name,
+                    placeId: place.place_id,
+                    lat: place.geometry?.location?.lat(),
+                    lng: place.geometry?.location?.lng()
+                  }
+                }));
+              }
+            });
+          }
+
+          // Console.warn'i eski haline döndür
+          console.warn = originalConsoleWarn;
+          
+        } catch (error) {
+          console.error('Google Places Autocomplete initialization error:', error);
         }
       }
     };

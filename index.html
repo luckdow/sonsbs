@@ -21,7 +21,18 @@
     <link rel="dns-prefetch" href="//www.google-analytics.com">
     
     <!-- Resource hints for better LCP -->
-    <link rel="preload" href="/images/hero-antalya-transfer.webp" as="image" type="image/webp">
+    <!-- Hero image conditionally preloaded -->
+    <script>
+      // Only preload hero image on homepage
+      if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.href = '/images/hero-antalya-transfer.webp';
+        link.as = 'image';
+        link.type = 'image/webp';
+        document.head.appendChild(link);
+      }
+    </script>
     <link rel="preload" href="/src/critical.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     
     <!-- Web Vitals iyileştirmeleri -->
@@ -457,17 +468,6 @@
           value: 1
         });
       });
-      
-      // Service Worker for better performance (optional)
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js').then(function(registration) {
-            console.log('SW registered: ', registration);
-          }).catch(function(registrationError) {
-            console.log('SW registration failed: ', registrationError);
-          });
-        });
-      }
     </script>
   </body>
 </html>
