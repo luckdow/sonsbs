@@ -327,11 +327,10 @@ const ReservationIndex = () => {
           passengerCount: reservationData.tripDetails.passengerCount,
           totalPrice: reservationData.totalPrice,
           paymentMethod: reservationData.paymentMethod,
-          qrCodeUrl: qrCodeUrl,
           tripType: reservationData.tripDetails.tripType === 'round-trip' ? 'Gidiş-Dönüş' : 'Tek Yön',
           tempPassword: tempPassword, // Geçici şifreyi email'e ekle
           isNewUser: true // Admin panelinden eklenenler hep yeni kullanıcı
-        });
+        }, qrCodeUrl);
         toast.success('Rezervasyon eklendi ve onay e-postası gönderildi!');
       } catch (emailError) {
         console.error('Email gönderimi hatası:', emailError);

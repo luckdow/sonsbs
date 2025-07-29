@@ -80,6 +80,7 @@ const SettingsPage = () => {
       emailjsServiceId: '',
       emailjsTemplateId: '',
       emailjsPaymentTemplateId: '',
+      emailjsDriverAssignmentTemplateId: '',
       emailjsPublicKey: '',
       senderName: 'SBS Transfer',
       enableEmails: true
@@ -1261,6 +1262,22 @@ const EmailSettings = ({ settings, onChange }) => (
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
+            Şöför Atama Template ID
+          </label>
+          <input
+            type="text"
+            value={settings?.emailjsDriverAssignmentTemplateId || ''}
+            onChange={(e) => onChange('emailjsDriverAssignmentTemplateId', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="template_driver_xxxx"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Şöför atama bilgilerini göndermek için ayrı template (boşsa ana template kullanılır)
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Gönderen Adı
           </label>
           <input
@@ -1295,12 +1312,15 @@ const EmailSettings = ({ settings, onChange }) => (
       <p className="text-sm text-gray-600 mb-4">
         EmailJS şablonlarınızda aşağıdaki değişkenleri kullanabilirsiniz:
       </p>
-      <div className="grid grid-cols-2 gap-4 text-xs text-gray-600">
+      <div className="grid grid-cols-1 gap-4 text-xs text-gray-600">
         <div>
-          <strong>Temel:</strong> to_email, to_name, from_name, reply_to, subject, message
+          <strong>Rezervasyon Template için:</strong> to_email, to_name, from_name, reply_to, subject, message (rezervasyon detayları message içinde)
         </div>
         <div>
-          <strong>Not:</strong> message içinde tüm rezervasyon detayları olacak
+          <strong>Şöför Atama Template için:</strong> to_email, to_name, from_name, subject, reservationId, driverName, driverPhone, vehiclePlate, pickupLocation, dropoffLocation, tripDate, tripTime
+        </div>
+        <div className="text-orange-600">
+          <strong>Önemli:</strong> Şöför atama için ayrı template ID belirtmezseniz ana template kullanılır
         </div>
       </div>
     </div>

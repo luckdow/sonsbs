@@ -3,294 +3,499 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="x-apple-disable-message-reformatting">
-    <title>SBS Transfer - Şoför Bilgileri</title>
+    <title>Gate Transfer - Şoför Atandı</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
         }
+        
         .header {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
-            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .reservation-card {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: white;
             padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .driver-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        .reservation-info {
-            background: #e3f2fd;
-            border: 2px solid #2196f3;
-            padding: 15px;
-            border-radius: 8px;
+            border-radius: 12px;
             text-align: center;
-            margin: 20px 0;
+            margin-bottom: 24px;
         }
-        .reservation-info h2 {
-            margin: 0 0 10px 0;
-            color: #1565c0;
-            font-size: 18px;
+        
+        .reservation-number {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
-        .driver-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #4caf50;
+        
+        .reservation-label {
+            font-size: 14px;
+            opacity: 0.9;
         }
-        .driver-section h3 {
-            margin-top: 0;
-            color: #4caf50;
-            font-size: 18px;
+        
+        .driver-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
         }
-        .driver-info {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid #4caf50;
-            margin: 15px 0;
-        }
-        .info-row {
+        
+        .driver-header {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            min-height: 24px;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
         }
-        .info-row:last-child {
-            border-bottom: none;
+        
+        .driver-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
         }
-        .info-label {
-            font-weight: bold;
-            color: #555;
+        
+        .driver-info {
+            flex: 1;
+        }
+        
+        .driver-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: white;
+        }
+        
+        .driver-title {
+            font-size: 14px;
+            opacity: 0.8;
+            color: #94a3b8;
+        }
+        
+        .driver-detail {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .driver-detail:last-child {
+            margin-bottom: 0;
+        }
+        
+        .detail-icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(5, 150, 105, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 16px;
         }
-        .info-value {
-            color: #333;
+        
+        .detail-text {
             font-size: 16px;
             font-weight: 600;
         }
-        .phone-number {
-            color: #2196f3;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .trip-details {
-            background: #fff3e0;
+        
+        .info-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #ff9800;
+            margin-bottom: 20px;
         }
-        .trip-details h3 {
-            margin-top: 0;
-            color: #ef6c00;
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #64748b;
+        }
+        
+        .info-value {
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .highlight {
+            color: #059669;
             font-size: 16px;
         }
+        
+        .route-section {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
         .route-item {
             display: flex;
             align-items: center;
-            margin: 15px 0;
-            padding: 10px;
-            background: #fff;
-            border-radius: 6px;
-        }
-        .route-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
-        .pickup {
-            background-color: #4caf50;
-        }
-        .dropoff {
-            background-color: #f44336;
-        }
-        .contact-info {
-            background: #e8f5e8;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        .contact-item {
-            margin: 10px 0;
-            font-size: 16px;
-        }
-        .footer {
-            text-align: center;
-            color: #666;
-            font-size: 12px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
+            gap: 16px;
+            margin-bottom: 16px;
         }
         
-        /* Mobile responsive */
-        @media (max-width: 600px) {
+        .route-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .route-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .pickup-dot {
+            background: #059669;
+        }
+        
+        .dropoff-dot {
+            background: #dc2626;
+        }
+        
+        .route-text {
+            flex: 1;
+        }
+        
+        .route-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .route-location {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .alert {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+        
+        .alert-text {
+            color: #92400e;
+            line-height: 1.5;
+        }
+        
+        .contact-section {
+            background: #1e293b;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 14px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
             body {
                 padding: 10px;
             }
+            
             .container {
-                padding: 20px;
+                margin: 0;
             }
+            
             .header {
-                padding: 15px;
+                padding: 24px 20px;
             }
-            .header h1 {
+            
+            .content {
+                padding: 24px 20px;
+            }
+            
+            .driver-header {
+                flex-direction: row;
+                text-align: left;
+                gap: 16px;
+            }
+            
+            .driver-avatar {
+                width: 50px;
+                height: 50px;
                 font-size: 20px;
             }
-            .driver-icon {
-                font-size: 36px;
-            }
-            .info-row {
-                flex-direction: column;
-                padding: 12px 0;
-                text-align: left;
-            }
-            .info-label {
-                margin-bottom: 5px;
-                font-size: 14px;
-            }
-            .info-value {
-                font-size: 16px;
-            }
-            .phone-number {
+            
+            .driver-name {
                 font-size: 18px;
             }
-            .route-item {
+            
+            .info-row {
                 flex-direction: column;
-                text-align: center;
-                padding: 15px 0;
+                gap: 4px;
+                align-items: flex-start;
+                padding: 16px 0;
             }
-            .route-icon {
-                margin-bottom: 8px;
-                margin-right: 0;
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container" style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto;">
+    <div class="container">
         <!-- Header -->
-        <div class="header" style="text-align: center; background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
-            <div class="driver-icon">🚗</div>
-            <h1>Şoförünüz Atandı!</h1>
-            <p>Transfer için şoför bilgileriniz hazır</p>
+        <div class="header">
+            <div class="logo">GATE TRANSFER</div>
+            <div class="subtitle">Premium Transfer Hizmetleri</div>
+            <div class="badge">
+                <span>🚗</span>
+                <span>Şoför Atandı!</span>
+            </div>
         </div>
 
-        <!-- Reservation Info -->
-        <div class="reservation-info">
-            <h2>Rezervasyon No: {{reservationId}}</h2>
-            <p>Sayın {{customerName}}, transferiniz için şoför atanmıştır.</p>
-        </div>
+        <!-- Content -->
+        <div class="content">
+            <!-- Reservation Number -->
+            <div class="reservation-card">
+                <div class="reservation-number">{{reservationId}}</div>
+                <div class="reservation-label">Rezervasyon Numarası</div>
+            </div>
 
-        <!-- Driver Section -->
-        <div class="driver-section">
-            <h3>👨‍✈️ Şoför Bilgileri</h3>
-            <div class="driver-info">
-                <div class="info-row">
-                    <span class="info-label">Ad Soyad:</span>
-                    <span class="info-value">{{driverName}}</span>
+            <!-- Driver Card -->
+            <div class="driver-card">
+                <div class="driver-header">
+                    <div class="driver-avatar">S</div>
+                    <div class="driver-info">
+                        <div class="driver-name">{{driverName}}</div>
+                        <div class="driver-title">Profesyonel Şoför</div>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Telefon:</span>
-                    <span class="info-value phone-number">{{driverPhone}}</span>
+                
+                <div class="driver-detail">
+                    <div class="detail-icon">📞</div>
+                    <div class="detail-text">{{driverPhone}}</div>
                 </div>
+                
                 {{#vehiclePlate}}
-                <div class="info-row">
-                    <span class="info-label">Plaka:</span>
-                    <span class="info-value">{{vehiclePlate}}</span>
+                <div class="driver-detail">
+                    <div class="detail-icon">🚗</div>
+                    <div class="detail-text">{{vehiclePlate}}</div>
                 </div>
                 {{/vehiclePlate}}
             </div>
-        </div>
 
-        <!-- Trip Details -->
-        <div class="trip-details">
-            <h3>📅 Transfer Detayları</h3>
-            
-            <!-- Route Info -->
-            <div class="route-item">
-                <div class="route-icon pickup"></div>
-                <div>
-                    <strong>Kalkış:</strong><br>
-                    {{pickupLocation}}
+            <!-- Customer Info -->
+            <div class="info-section">
+                <div class="section-title">
+                    <span>👤</span>
+                    <span>Müşteri Bilgileri</span>
                 </div>
-            </div>
-            <div style="text-align: center; margin: 10px 0;">
-                <span style="font-size: 20px;">⬇️</span>
-            </div>
-            <div class="route-item">
-                <div class="route-icon dropoff"></div>
-                <div>
-                    <strong>Varış:</strong><br>
-                    {{dropoffLocation}}
+                <div class="info-row">
+                    <span class="info-label">Yolcu Adı</span>
+                    <span class="info-value">{{customerName}}</span>
                 </div>
             </div>
 
-            <div class="info-row">
-                <span class="info-label">Tarih:</span>
-                <span class="info-value" style="color: #ef6c00; font-weight: bold;">{{tripDate}}</span>
+            <!-- Route -->
+            <div class="route-section">
+                <div class="section-title">
+                    <span>🗺️</span>
+                    <span>Transfer Güzergahı</span>
+                </div>
+                <div class="route-item">
+                    <div class="route-dot pickup-dot">A</div>
+                    <div class="route-text">
+                        <div class="route-label">Kalkış Noktası</div>
+                        <div class="route-location">{{pickupLocation}}</div>
+                    </div>
+                </div>
+                <div class="route-item">
+                    <div class="route-dot dropoff-dot">B</div>
+                    <div class="route-text">
+                        <div class="route-label">Varış Noktası</div>
+                        <div class="route-location">{{dropoffLocation}}</div>
+                    </div>
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label">Saat:</span>
-                <span class="info-value" style="color: #ef6c00; font-weight: bold;">{{tripTime}}</span>
-            </div>
-        </div>
 
-        <!-- Important Notes -->
-        <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #856404;">⚠️ Önemli Notlar</h3>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Şoförünüz belirlenen saatte kalkış noktasında sizleri bekleyecek</li>
-                <li>Transfer öncesi şoförünüzle iletişime geçebilirsiniz</li>
-                <li>Herhangi bir gecikme durumunda şoförünüzü arayınız</li>
-                <li>QR kodunuzu hazır bulundurunuz</li>
-            </ul>
-        </div>
+            <!-- Trip Details -->
+            <div class="info-section">
+                <div class="section-title">
+                    <span>📅</span>
+                    <span>Transfer Detayları</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tarih</span>
+                    <span class="info-value highlight">{{tripDate}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Saat</span>
+                    <span class="info-value highlight">{{tripTime}}</span>
+                </div>
+            </div>
 
-        <!-- Contact Info -->
-        <div class="contact-info">
-            <h3>📞 Acil Durum İletişim</h3>
-            <div class="contact-item">
-                <strong>7/24 Destek:</strong> +90 532 574 26 82
+            <!-- Alert -->
+            <div class="alert">
+                <div class="alert-title">⚠️ Önemli Bilgilendirme</div>
+                <div class="alert-text">
+                    Şoförünüz belirlenen saatte sizinle irtibata geçecektir. 
+                    Transfer öncesi hazır bulunmanızı rica ederiz.
+                </div>
             </div>
-            <div class="contact-item">
-                <strong>E-posta:</strong> sbstravel@gmail.com
-            </div>
-            <div class="contact-item">
-                <strong>WhatsApp:</strong> 7/24 Müşteri Desteği
+
+            <!-- Contact -->
+            <div class="contact-section">
+                <div class="section-title" style="color: white;">
+                    <span>📞</span>
+                    <span>Acil Durum İletişim</span>
+                </div>
+                <div class="contact-grid">
+                    <div class="contact-item">
+                        <span>📞</span>
+                        <span>Şoför: {{driverPhone}}</span>
+                    </div>
+                    <div class="contact-item">
+                        <span>🏢</span>
+                        <span>Merkez: +90 532 574 26 82</span>
+                    </div>
+                    <div class="contact-item">
+                        <span>✉️</span>
+                        <span>sbstravel@gmail.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <span>💬</span>
+                        <span>WhatsApp: 7/24 Destek</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Bu e-posta {{from_name}} tarafından gönderilmiştir.</p>
-            <p>Güvenli yolculuklar dileriz! 🚗✨</p>
-            <p><small>Bu e-posta otomatik olarak oluşturulmuştur.</small></p>
+            <p><strong>Gate Transfer</strong> - Premium Transfer Hizmetleri</p>
+            <p>Güvenli ve konforlu yolculuklar dileriz! 🚗✨</p>
         </div>
     </div>
 </body>

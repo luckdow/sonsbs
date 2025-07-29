@@ -7,7 +7,7 @@ export const cityData = {
     metaDescription: "Antalya havalimanı transfer hizmeti. Güvenli, konforlu ve profesyonel Antalya transfer. AYT otel transfer, şehir merkezi ulaşım. 7/24 hizmet.",
     keywords: "antalya transfer, antalya havalimanı transfer, AYT transfer, antalya otel transfer, antalya şehir merkezi transfer, güvenli transfer antalya, profesyonel transfer antalya, antalya havalimanı karşılama, lara transfer, konyaaltı transfer",
     heroImage: "/images/cities/antalya-hero.jpg",
-    shortDescription: "Antalya'nın en güvenilir transfer hizmeti. Havalimanından otele, şehir merkezine konforlu ve güvenli ulaşım.",
+    shortDescription: "TURSAB onaylı güvenilir transfer hizmeti. Havalimanından otele, şehir merkezine konforlu ve güvenli ulaşım.",
     distanceFromAirport: "15 km",
     averageTransferTime: "25-35 dakika",
     

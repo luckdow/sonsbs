@@ -278,7 +278,7 @@ class EmailService {
 }
 
 // EmailJS ile rezervasyon onay maili gönderme fonksiyonu (export edilecek)
-export const sendBookingConfirmationEmail = async (bookingData) => {
+export const sendBookingConfirmationEmail = async (bookingData, qrCodeUrl) => {
   try {
     // Firebase'den EmailJS ayarlarını yükle
     const settingsDoc = await getDoc(doc(db, 'settings', 'main'));
@@ -317,7 +317,7 @@ export const sendBookingConfirmationEmail = async (bookingData) => {
                      bookingData.paymentMethod === 'credit_card' ? 'Kredi Kartı' : 
                      bookingData.paymentMethod === 'bank_transfer' ? 'Havale' : bookingData.paymentMethod,
       tripType: bookingData.tripType,
-      qrCodeUrl: bookingData.qrCodeUrl,
+      qrCodeUrl: qrCodeUrl || '',
       tempPassword: bookingData.tempPassword || '',
       
       // Şirket bilgileri
@@ -344,21 +344,21 @@ export const sendBookingConfirmationEmail = async (bookingData) => {
         to_name: bookingData.customerName,
         from_name: 'Gate Transfer',
         reply_to: 'sbstravel@gmail.com',
-        subject: `Rezervasyon Onayı - ${bookingData.reservationId}`,
-        message: `Rezervasyon Onayı
+        subject: `Rezervasyon Onayi - ${bookingData.reservationId}`,
+        message: `Rezervasyon Onayi
 
-Sayın ${bookingData.customerName},
+Sayin ${bookingData.customerName},
 
-Rezervasyon Numaranız: ${bookingData.reservationId}
-Kalkış: ${bookingData.pickupLocation}
-Varış: ${bookingData.dropoffLocation}
+Rezervasyon Numaraniz: ${bookingData.reservationId}
+Kalkis: ${bookingData.pickupLocation}
+Varis: ${bookingData.dropoffLocation}
 Tarih: ${bookingData.tripDate} ${bookingData.tripTime}
-Yolcu: ${bookingData.passengerCount} kişi
+Yolcu: ${bookingData.passengerCount} kisi
 Fiyat: €${bookingData.totalPrice}
 
-${bookingData.tempPassword ? `🔐 Geçici Şifreniz: ${bookingData.tempPassword}` : ''}
+${bookingData.tempPassword ? `🔐 Gecici Sifreniz: ${bookingData.tempPassword}` : ''}
 
-Teşekkürler,
+Tesekkurler,
 Gate Transfer Ekibi`,
         // Template değişkenleri
         reservationId: bookingData.reservationId,
@@ -373,7 +373,7 @@ Gate Transfer Ekibi`,
         tempPassword: bookingData.tempPassword || '', // Geçici şifre
         paymentMethod: bookingData.paymentMethod,
         tripType: bookingData.tripType,
-        qrCodeUrl: bookingData.qrCodeUrl || ''
+        qrCodeUrl: qrCodeUrl || ''
       },
       {
         publicKey: emailSettings.emailjsPublicKey
@@ -398,11 +398,55 @@ export const sendDriverAssignmentEmail = async (emailData) => {
     console.log('📧 Şoför atama e-postası gönderiliyor...');
     console.log('🔍 EmailJS Template Parameters:', emailData);
     
+    // Firebase'den EmailJS ayarlarını yükle
+    const settingsDoc = await getDoc(doc(db, 'settings', 'main'));
+    if (!settingsDoc.exists()) {
+      throw new Error('EmailJS ayarları bulunamadı');
+    }
+    
+    const settings = settingsDoc.data();
+    const emailSettings = settings.emailSettings;
+    
+    if (!emailSettings?.emailjsServiceId || !emailSettings?.emailjsTemplateId || !emailSettings?.emailjsPublicKey) {
+      throw new Error('EmailJS ayarları eksik');
+    }
+
+    // EmailJS'i başlat
+    emailjs.init(emailSettings.emailjsPublicKey);
+
+    // Şöför atama template'ini kontrol et - önce ayrı template, yoksa genel template kullan
+    const templateId = settings.emailSettings?.emailjsDriverAssignmentTemplateId || emailSettings.emailjsTemplateId;
+    
     // EmailJS template parametreleri
     const templateParams = {
       to_name: emailData.customerName,
       to_email: emailData.customerEmail,
-      from_name: 'Gate Transfer',
+      from_name: settings.general?.companyName || 'Gate Transfer',
+      reply_to: settings.general?.companyEmail || 'sbstravel@gmail.com',
+      subject: `Sofor Atama Bilgisi - ${emailData.reservationId}`,
+      message: `Sofor Atama Bilgisi
+
+Sayin ${emailData.customerName},
+
+Rezervasyon Numaraniz: ${emailData.reservationId}
+
+🚗 SOFOR BILGILERI:
+Sofor Adi: ${emailData.driverName}
+Sofor Telefonu: ${emailData.driverPhone}
+${emailData.vehiclePlate ? `Arac Plakasi: ${emailData.vehiclePlate}` : ''}
+
+📍 TRANSFER BILGILERI:
+Kalkis: ${emailData.pickupLocation}
+Varis: ${emailData.dropoffLocation}
+Tarih: ${emailData.tripDate}
+Saat: ${emailData.tripTime}
+
+Soforunuz belirtilen tarih ve saatte sizinle irtibata gececektir.
+
+Tesekkurler,
+${settings.general?.companyName || 'Gate Transfer'} Ekibi`,
+      
+      // Template değişkenleri
       reservationId: emailData.reservationId,
       customerName: emailData.customerName,
       driverName: emailData.driverName,
@@ -411,26 +455,34 @@ export const sendDriverAssignmentEmail = async (emailData) => {
       pickupLocation: emailData.pickupLocation,
       dropoffLocation: emailData.dropoffLocation,
       tripDate: emailData.tripDate,
-      tripTime: emailData.tripTime
+      tripTime: emailData.tripTime,
+      companyName: settings.general?.companyName || 'Gate Transfer',
+      companyPhone: settings.general?.companyPhone || '',
+      companyEmail: settings.general?.companyEmail || ''
     };
 
     console.log('📧 Customer Email:', emailData.customerEmail);
     console.log('⚙️ EmailJS Settings:', {
-      serviceId: SERVICE_ID,
-      templateId: 'template_driver_assign', // Yeni template ID
-      hasPublicKey: !!PUBLIC_KEY
+      serviceId: emailSettings.emailjsServiceId,
+      templateId: templateId,
+      hasPublicKey: !!emailSettings.emailjsPublicKey
     });
 
     // EmailJS ile gönder
     const result = await emailjs.send(
-      SERVICE_ID,
-      'template_driver_assign', // Şoför atama template'i
+      emailSettings.emailjsServiceId,
+      templateId,
       templateParams,
-      PUBLIC_KEY
+      {
+        publicKey: emailSettings.emailjsPublicKey
+      }
     );
 
     console.log('✅ Şoför atama e-postası gönderildi:', result);
-    return result;
+    return {
+      success: true,
+      response: result
+    };
 
   } catch (error) {
     console.error('❌ Şoför atama e-postası hatası:', error);

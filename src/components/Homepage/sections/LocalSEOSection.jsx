@@ -7,10 +7,10 @@ const LocalSEOSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Antalya'nın En Güvenilir Transfer Hizmeti
+            Türkiye'nin Lider Transfer Platformu
           </h2>
           <p className="text-lg text-gray-600 mb-2">
-            <strong>SBS Turkey Transfer</strong> | <em>gatetransfer.com</em>
+            <strong>Gate Transfer</strong> | <em>Güvenilir • Konforlu • Profesyonel</em>
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-6"></div>
         </div>
@@ -19,52 +19,59 @@ const LocalSEOSection = () => {
           {/* Sol Taraf - Açıklama Metni */}
           <div className="space-y-6">
             <p className="text-lg text-gray-700 leading-relaxed">
-              <strong>SBS Turkey Transfer</strong> (gatetransfer.com) olarak, 2020 yılından beri Antalya havalimanı transfer hizmetlerinde 
-              öncü konumdayız. Antalya'nın her köşesini bilen deneyimli şoför kadromuz ve modern araç filomuz ile 
+              <strong>Gate Transfer</strong> olarak, 2020 yılından beri Türkiye'nin önde gelen havalimanı transfer 
+              platformuyuz. Antalya, İstanbul, İzmir ve diğer şehirlerde geniş şoför ağımız ile 
               güvenli, konforlu ve zamanında ulaşım garantisi sunuyoruz.
             </p>
             
             <p className="text-lg text-gray-700 leading-relaxed">
-              Antalya Havalimanı'ndan Lara, Kemer, Belek, Side, Kaş, Kalkan ve Alanya gibi popüler 
-              destinasyonlara <strong>7/24 kesintisiz transfer hizmeti</strong> veriyoruz. SBS Turkey Transfer markamız altında 
-              VIP araçlarımız ile bireysel yolculardan grup transferlerine kadar her ihtiyaca uygun çözümler sunmaktayız.
+              Havalimanlarından otel, tatil köyü ve şehir merkezlerine <strong>7/24 kesintisiz transfer hizmeti</strong> 
+              veriyoruz. Gate Transfer markamız altında VIP araçlarımız ile bireysel yolculardan 
+              grup transferlerine kadar her ihtiyaca uygun çözümler sunmaktayız.
             </p>
 
             <div className="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-500">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Neden SBS Turkey Transfer?
+                Neden Gate Transfer?
               </h3>
               <ul className="space-y-2 text-gray-700">
-                <li>✓ <strong>5000+</strong> mutlu müşteri deneyimi</li>
-                <li>✓ <strong>%99</strong> zamanında varış garantisi</li>
+                <li>✓ <strong>10.000+</strong> mutlu müşteri deneyimi</li>
+                <li>✓ <strong>%99.5</strong> zamanında varış garantisi</li>
                 <li>✓ <strong>Lisanslı</strong> ve sigortali araç filosu</li>
-                <li>✓ <strong>Profesyonel</strong> ve tecrübeli şoförler</li>
+                <li>✓ <strong>TURSAB</strong> onaylı güvenilir hizmet</li>
                 <li>✓ <strong>Şeffaf</strong> fiyatlandırma, gizli ücret yok</li>
               </ul>
             </div>
 
-            {/* Şirket Bilgileri Kutusu */}
+            {/* TURSAB Bilgileri Kutusu */}
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-blue-600" />
-                Resmi Şirket Bilgileri
+                TURSAB Üyesi Güvencesi
               </h3>
+              <div className="mb-3">
+                <p className="text-sm text-blue-600 font-medium">Türkiye Seyahat Acentaları Birliği Onaylı</p>
+              </div>
               <div className="space-y-2 text-sm text-gray-700">
                 <div className="flex justify-between">
-                  <span>Ticari Unvan:</span>
+                  <span>TURSAB Belge No:</span>
+                  <span className="font-medium text-green-600">11924</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Firma Unvanı:</span>
                   <span className="font-medium">SBS Turkey Turizm San. ve Tic. Ltd. Şti.</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Marka Adı:</span>
-                  <span className="font-medium">SBS Turkey Transfer</span>
+                  <span>Adres:</span>
+                  <span className="font-medium text-right ml-2">Güzelyurt Mah. Serik Cad. No: 138/2 Aksu/Antalya</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Telefon:</span>
+                  <span className="font-medium text-blue-600">+90 532 574 26 82</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Web Sitesi:</span>
                   <span className="font-medium text-blue-600">gatetransfer.com</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Vergi No:</span>
-                  <span className="font-medium">123 456 7890</span>
                 </div>
               </div>
             </div>

@@ -96,30 +96,6 @@ const FAQSection = () => {
             </div>
           ))}
         </div>
-
-        {/* Alt bilgi */}
-        <div className="text-center mt-12 p-8 bg-blue-50 rounded-2xl animate-fade-in">
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">
-            Sorunuz yoksa bizimle iletişime geçin
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Transfer hizmetimiz hakkında daha fazla bilgi almak için müşteri hizmetlerimiz ile konuşabilirsiniz.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="tel:+905551234567"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2"
-            >
-              📞 +90 555 123 4567
-            </a>
-            <a
-              href="mailto:info@antalyatransfer.com"
-              className="bg-white hover:bg-gray-50 text-blue-600 px-6 py-3 rounded-lg font-semibold border border-blue-600 transition-all duration-300 flex items-center justify-center gap-2"
-            >
-              ✉️ info@antalyatransfer.com
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   );
