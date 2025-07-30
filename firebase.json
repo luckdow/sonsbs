@@ -2,6 +2,12 @@
   "projects": {
     "default": "sbs-travel-96d0b"
   },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "hosting": {
     "public": "dist",
     "ignore": [

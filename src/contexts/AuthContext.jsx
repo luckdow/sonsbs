@@ -57,6 +57,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
+      if (!auth || !db) {
+        throw new Error('Firebase not initialized');
+      }
+      
       const result = await signInWithEmailAndPassword(auth, email, password);
       
       // Get user profile from Firestore
@@ -279,6 +283,15 @@ export const AuthProvider = ({ children }) => {
 
   // Auth state listener
   useEffect(() => {
+    // Skip Firebase initialization for bots and crawlers
+    if (typeof window === 'undefined' || 
+        /bot|crawler|spider|crawling/i.test(navigator.userAgent) ||
+        navigator.webdriver) {
+      setLoading(false);
+      setInitialLoad(false);
+      return;
+    }
+
     // Immediately load cached profile for faster initial render
     const cachedProfile = getCachedProfile();
     if (cachedProfile) {

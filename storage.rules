@@ -1,0 +1,43 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // User profile photos - sadece kendi fotoğrafları
+    match /profile-photos/{userId}/{allPaths=**} {
+      allow read: if true; // Profile fotoğrafları public olabilir
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Driver documents - sadece driver ve admin
+    match /driver-documents/{driverId}/{allPaths=**} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == driverId || 
+         get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+    
+    // Company documents - sadece admin
+    match /company-documents/{allPaths=**} {
+      allow read, write: if request.auth != null && 
+        get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Vehicle photos - public read, admin write
+    match /vehicle-photos/{allPaths=**} {
+      allow read: if true; // Vehicle photos can be public
+      allow write: if request.auth != null && 
+        get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Reservation receipts - sadece ilgili kullanıcı
+    match /receipts/{reservationId}/{allPaths=**} {
+      allow read, write: if request.auth != null && 
+        (get(/databases/(default)/documents/reservations/$(reservationId)).data.customerId == request.auth.uid ||
+         get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+    
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - sadece kendi profilleri
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Adminler tüm kullanıcıları görebilir
+      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Reservations collection - güvenli erişim
+    match /reservations/{reservationId} {
+      // Kullanıcı kendi rezervasyonlarını görebilir
+      allow read: if request.auth != null && 
+        (resource.data.customerId == request.auth.uid || 
+         resource.data.driverId == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      
+      // Sadece müşteriler rezervasyon oluşturabilir
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.customerId;
+      
+      // Sadece admin ve driver rezervasyon güncelleyebilir
+      allow update: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'driver']);
+      
+      // Sadece admin silebilir
+      allow delete: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Drivers collection - sadece admin ve driver
+    match /drivers/{driverId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == driverId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Companies collection - sadece admin
+    match /companies/{companyId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Pricing collection - herkes okuyabilir, sadece admin yazabilir
+    match /pricing/{pricingId} {
+      allow read: if true; // Public pricing bilgileri
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Notifications collection - kullanıcı kendi bildirimlerini
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Admin tüm bildirimleri görebilir
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Analytics ve logs - sadece admin
+    match /analytics/{analyticsId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Default deny - güvenlik için
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -15,17 +15,23 @@ const firebaseConfig = {
   measurementId: "G-G4FRHCJEDP"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Bot detection - don't initialize Firebase for crawlers
+const isBot = () => {
+  if (typeof window === 'undefined') return true;
+  return /bot|crawler|spider|crawling|googlebot|bingbot|yandexbot|facebookexternalhit|twitterbot|whatsapp|telegram/i.test(navigator.userAgent);
+};
 
-// Initialize Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+// Initialize Firebase only for real users, not bots
+const app = !isBot() ? initializeApp(firebaseConfig) : null;
 
-// Messaging için güvenli initialization (sadece browser'da)
+// Initialize Firebase services with safe fallbacks
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
+export const storage = app ? getStorage(app) : null;
+
+// Messaging için güvenli initialization (sadece browser'da ve bot değilse)
 let messaging = null;
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+if (!isBot() && typeof window !== 'undefined' && 'serviceWorker' in navigator && app) {
   try {
     messaging = getMessaging(app);
     console.log('✅ Firebase Messaging initialized');
