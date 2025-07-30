@@ -4,7 +4,7 @@
 export const GoogleSEOConfig = {
   // Google Analytics 4 (GA4) Measurement ID
   // Gerçek Google Analytics hesabınızdan alınan measurement ID'yi buraya ekleyin
-  GA_MEASUREMENT_ID: 'G-XXXXXXXXXX', // Örnek: 'G-1234567890'
+  GA_MEASUREMENT_ID: 'G-EQB0RS3034', // Production Google Analytics ID
   
   // Google Search Console Verification Code  
   // Google Search Console'dan alınan verification meta tag içeriğini buraya ekleyin

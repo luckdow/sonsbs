@@ -1,3 +1,7 @@
+# SBS Turkey Transfer - Robots.txt
+# Optimized for Google Search Console compliance
+
+# Default rules for all crawlers
 User-agent: *
 Allow: /
 
@@ -14,68 +18,46 @@ Disallow: /tmp/
 Disallow: /*.json$
 Disallow: /*.config.*$
 
-# Allow specific important files
+# Explicitly allow important files and directories
 Allow: /images/
 Allow: /favicon.ico
 Allow: /robots.txt
-Allow: /sitemap.xml
-Allow: /sitemap-multilingual.xml
+Allow: /sitemap*.xml
 Allow: /manifest.json
 Allow: /firebase-messaging-sw.js
 Allow: /sw-enhanced.js
 
-# Allow important pages for all search engines
+# Allow important pages
 Allow: /hakkimizda
 Allow: /iletisim
 Allow: /hizmetlerimiz
 Allow: /*-transfer
 Allow: /blog/
 
-# Search Engine Specific Directives
+# Specific search engine directives
 User-agent: Googlebot
-Allow: /
 Crawl-delay: 1
 
 User-agent: Bingbot
-Allow: /
 Crawl-delay: 1
 
 User-agent: Slurp
-Allow: /
 Crawl-delay: 1
 
 User-agent: YandexBot
-Allow: /
 Crawl-delay: 2
 
 User-agent: DuckDuckBot
-Allow: /
 Crawl-delay: 1
 
-# Social Media Crawlers
+# Social media crawlers
 User-agent: facebookexternalhit
-Allow: /
-
 User-agent: Twitterbot
-Allow: /
 
-# Sitemap locations - Updated for better indexing
+# Sitemap locations
 Sitemap: https://www.gatetransfer.com/sitemap.xml
 Sitemap: https://www.gatetransfer.com/sitemap-index.xml
 Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
 
-# Host directive for canonical domain
+# Host directive for preferred domain
 Host: www.gatetransfer.com
-
-# Additional SEO directives for better crawling
-User-agent: *
-Allow: /
-Crawl-delay: 1
-
-# Priority pages for search engines
-Allow: /hakkimizda
-Allow: /iletisim  
-Allow: /hizmetlerimiz
-Allow: /blog
-Allow: /antalya-transfer
-Allow: /antalya-havalimanı-transfer
