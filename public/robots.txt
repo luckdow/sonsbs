@@ -59,10 +59,23 @@ Allow: /
 User-agent: Twitterbot
 Allow: /
 
-# Sitemap locations
-Sitemap: https://www.gatetransfer.com/sitemap-index.xml
+# Sitemap locations - Updated for better indexing
 Sitemap: https://www.gatetransfer.com/sitemap.xml
+Sitemap: https://www.gatetransfer.com/sitemap-index.xml
 Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
 
 # Host directive for canonical domain
 Host: www.gatetransfer.com
+
+# Additional SEO directives for better crawling
+User-agent: *
+Allow: /
+Crawl-delay: 1
+
+# Priority pages for search engines
+Allow: /hakkimizda
+Allow: /iletisim  
+Allow: /hizmetlerimiz
+Allow: /blog
+Allow: /antalya-transfer
+Allow: /antalya-havalimanı-transfer

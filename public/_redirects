@@ -1,3 +1,7 @@
+# Domain redirects - www enforcement
+http://gatetransfer.com/*    https://www.gatetransfer.com/:splat    301!
+https://gatetransfer.com/*    https://www.gatetransfer.com/:splat    301!
+
 # Netlify redirects - For SPA routing
 /*    /index.html   200
 
