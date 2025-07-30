@@ -1,11 +1,109 @@
 {
+  "build": {
+    "env": {
+      "NODE_VERSION": "18"
+    }
+  },
+  "functions": {
+    "app/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
+  "redirects": [
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/anasayfa",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/transfers/(.*)",
+      "destination": "/transfer/$1",
+      "permanent": true
+    },
+    {
+      "source": "/reservations/(.*)",
+      "destination": "/rezervasyon/$1",
+      "permanent": true
+    },
+    {
+      "source": "/services/(.*)",
+      "destination": "/hizmetlerimiz/$1",
+      "permanent": true
+    },
+    {
+      "source": "/about",
+      "destination": "/hakkimizda",
+      "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/iletisim",
+      "permanent": true
+    }
+  ],
   "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(self)"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap*.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
     {
       "source": "/sw.js",
       "headers": [
@@ -24,7 +122,16 @@
       ]
     },
     {
-      "source": "/(.*)",
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|eot))",
       "headers": [
         {
           "key": "Cache-Control",

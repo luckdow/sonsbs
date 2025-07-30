@@ -1,1 +1,27 @@
+# Netlify redirects - For SPA routing
 /*    /index.html   200
+
+# SEO friendly redirects
+/home    /    301
+/anasayfa    /    301
+
+# Transfer pages
+/transfers/*    /transfer/:splat    301
+/reservations/*    /rezervasyon/:splat    301
+
+# Blog redirects
+/blog/    /blog    301
+/haberler/*    /blog/:splat    301
+
+# Service redirects
+/services/    /hizmetlerimiz    301
+/about/    /hakkimizda    301
+/contact/    /iletisim    301
+
+# Security headers
+/_/*    /404.html    404
+
+# Force HTTPS
+http://gatetransfer.com/*    https://www.gatetransfer.com/:splat    301!
+http://www.gatetransfer.com/*    https://www.gatetransfer.com/:splat    301!
+https://gatetransfer.com/*    https://www.gatetransfer.com/:splat    301!

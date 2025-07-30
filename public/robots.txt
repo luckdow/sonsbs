@@ -24,62 +24,14 @@ Allow: /manifest.json
 Allow: /firebase-messaging-sw.js
 Allow: /sw-enhanced.js
 
-# Google specific directives
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-# Bing specific directives  
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-# Yandex specific directives
-User-agent: YandexBot
-Allow: /
-Crawl-delay: 2
-
-# Social Media Crawlers
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-# SEO optimized directives
-# Sitemap locations
-Sitemap: https://gatetransfer.com/sitemap.xml
-Sitemap: https://gatetransfer.com/sitemap-multilingual.xml
-
-# Host directive for canonical domain
-Host: gatetransfer.com
-
-# Bing specific directives  
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 2
-
-# Yandex specific directives
-User-agent: YandexBot
-Allow: /
-Crawl-delay: 3
-
 # Allow important pages for all search engines
-Allow: /
 Allow: /hakkimizda
 Allow: /iletisim
 Allow: /hizmetlerimiz
 Allow: /*-transfer
 Allow: /blog/
 
-# Crawl delay for better server performance
-Crawl-delay: 1
-
-# Sitemap location
-Sitemap: https://www.gatetransfer.com/sitemap.xml
-Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
-
-# Popular search engines
+# Search Engine Specific Directives
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 1
@@ -92,6 +44,24 @@ User-agent: Slurp
 Allow: /
 Crawl-delay: 1
 
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
 User-agent: DuckDuckBot
 Allow: /
 Crawl-delay: 1
+
+# Social Media Crawlers
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+# Sitemap locations
+Sitemap: https://www.gatetransfer.com/sitemap.xml
+Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
+
+# Host directive for canonical domain
+Host: www.gatetransfer.com
