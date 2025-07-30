@@ -60,6 +60,7 @@ User-agent: Twitterbot
 Allow: /
 
 # Sitemap locations
+Sitemap: https://www.gatetransfer.com/sitemap-index.xml
 Sitemap: https://www.gatetransfer.com/sitemap.xml
 Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
 
