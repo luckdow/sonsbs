@@ -196,6 +196,68 @@ class PushNotificationService {
       }
     };
   }
+
+  /**
+   * Server-side için background notification gönder
+   * Bu fonksiyon Firebase Cloud Functions'dan çağrılacak
+   */
+  static async sendBackgroundNotification(tokens, title, body, data = {}) {
+    // Bu fonksiyon Cloud Functions'da kullanılacak
+    // Client-side'da sadece referans için burada
+    
+    const message = {
+      notification: {
+        title: title,
+        body: body,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico'
+      },
+      data: {
+        url: data.url || '/admin',
+        type: data.type || 'general',
+        reservationId: data.reservationId || '',
+        timestamp: Date.now().toString()
+      },
+      tokens: Array.isArray(tokens) ? tokens : [tokens]
+    };
+    
+    console.log('📤 Background notification prepared:', message);
+    return message;
+  }
+
+  /**
+   * Test notification gönder (development için)
+   */
+  async sendTestNotification() {
+    if (!this.isSupported) return false;
+    
+    try {
+      if (Notification.permission === 'granted') {
+        const notification = new Notification('🧪 Test Notification', {
+          body: 'SBS Transfer background notification test',
+          icon: '/favicon.ico',
+          tag: 'test-notification',
+          requireInteraction: true,
+          data: {
+            url: '/admin',
+            type: 'test'
+          }
+        });
+        
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+        
+        console.log('✅ Test notification sent');
+        return true;
+      }
+    } catch (error) {
+      console.error('❌ Test notification error:', error);
+    }
+    
+    return false;
+  }
 }
 
 export default new PushNotificationService();

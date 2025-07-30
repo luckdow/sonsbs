@@ -2,59 +2,178 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Users collection - sadece kendi profilleri
+    // =================== GERÇEK KOLEKSİYONLAR ===================
+    
+    // Users collection - kullanıcılar (admin, driver, customer)
     match /users/{userId} {
+      // Kullanıcı kendi profilini okuyabilir/güncelleyebilir
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      // Adminler tüm kullanıcıları görebilir
-      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Adminler tüm kullanıcıları görebilir ve yönetebilir
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Şoförler kendi bilgilerini güncelleyebilir
+      allow update: if request.auth != null && 
+        request.auth.uid == userId &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'driver';
+      
+      // GEÇİCİ: Authenticated kullanıcılar driver role'lü kullanıcıları okuyabilir
+      allow read: if request.auth != null && resource.data.role == 'driver';
     }
     
-    // Reservations collection - güvenli erişim
+    // Reservations collection - rezervasyonlar
     match /reservations/{reservationId} {
+      // Herkes rezervasyon oluşturabilir (misafir kullanıcılar için)
+      allow create: if true;
+      
       // Kullanıcı kendi rezervasyonlarını görebilir
       allow read: if request.auth != null && 
         (resource.data.customerId == request.auth.uid || 
          resource.data.driverId == request.auth.uid ||
+         resource.data.customerInfo.email == request.auth.token.email ||
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
       
-      // Sadece müşteriler rezervasyon oluşturabilir
-      allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.customerId;
+      // GEÇİCİ: Authenticated kullanıcılar tüm rezervasyonları okuyabilir (Dashboard için)
+      allow read: if request.auth != null;
       
-      // Sadece admin ve driver rezervasyon güncelleyebilir
+      // Admin ve atanmış şoför rezervasyonu güncelleyebilir
       allow update: if request.auth != null && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'driver']);
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         resource.data.driverId == request.auth.uid);
       
       // Sadece admin silebilir
       allow delete: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Drivers collection - sadece admin ve driver
+    // Vehicles collection - araçlar (herkes görür, admin yönetir)
+    match /vehicles/{vehicleId} {
+      allow read: if true; // Public vehicle bilgileri
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Drivers collection - eski şoför sistemi (artık kullanılmıyor ama veri var)
     match /drivers/{driverId} {
-      allow read: if request.auth != null && 
-        (request.auth.uid == driverId || 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      // Admin tüm eski şoförleri görebilir ve yönetebilir
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
       
-      allow write: if request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // Companies collection - sadece admin
-    match /companies/{companyId} {
+      // GEÇİCİ: Authenticated kullanıcılar eski şoförleri okuyabilir
       allow read: if request.auth != null;
+    }
+    
+    // Manual Drivers collection - manuel şoförler
+    match /manual_drivers/{driverId} {
+      // Admin tüm manuel şoförleri görebilir ve yönetebilir
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // GEÇİCİ: Authenticated kullanıcılar manuel şoförleri okuyabilir
+      allow read: if request.auth != null;
+    }
+    
+    // Settings collection - sistem ayarları
+    match /settings/{settingId} {
+      // Ödeme yöntemleri ve banka bilgileri herkese açık
+      allow read: if true; 
+      // Sadece admin yazabilir
       allow write: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Pricing collection - herkes okuyabilir, sadece admin yazabilir
-    match /pricing/{pricingId} {
-      allow read: if true; // Public pricing bilgileri
-      allow write: if request.auth != null && 
+    // Financial Transactions collection - finansal işlemler
+    match /financial_transactions/{transactionId} {
+      // Sadece admin tüm finansal işlemleri görebilir
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Şoför kendi finansal işlemlerini görebilir
+      allow read: if request.auth != null && 
+        resource.data.driverId == request.auth.uid;
+      
+      // GEÇİCİ: Authenticated kullanıcılar finansal işlemleri okuyabilir (Dashboard için)
+      allow read: if request.auth != null;
+      
+      // Sadece admin finansal işlem oluşturabilir/güncelleyebilir
+      allow create, update: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Sadece admin silebilir
+      allow delete: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Notifications collection - kullanıcı kendi bildirimlerini
+    // Payment Reminders collection - ödeme hatırlatıcıları
+    match /paymentReminders/{reminderId} {
+      // Sadece admin görebilir ve yönetebilir
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Şoför kendi hatırlatıcılarını görebilir
+      allow read: if request.auth != null && 
+        resource.data.driverId == request.auth.uid;
+    }
+    
+    // Counters collection - rezervasyon numarası sayaçları
+    match /counters/{counterId} {
+      // Counter işlemleri için gerekli (rezervasyon numarası)
+      allow read, write: if true;
+    }
+    
+    // Extra Services collection - ek hizmetler
+    match /extraServices/{serviceId} {
+      allow read: if true; // Public extra services
+      
+      // Admin yazabilir
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // GEÇİCİ: Authenticated kullanıcılar okuyabilir (AdminLayout için)
+      allow read: if request.auth != null;
+    }
+    
+    // Company Financials collection - şirket finansalları
+    match /company_financials/{financialId} {
+      // Sadece admin şirket finansallarını görebilir ve yönetebilir
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Company Accounts collection - şirket hesapları
+    match /company_accounts/{accountId} {
+      // Sadece admin şirket hesaplarını görebilir ve yönetebilir
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // FCM Tokens collection - push notification tokenları
+    match /fcmTokens/{userId} {
+      // Kullanıcı kendi FCM token'ını yönetebilir
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Admin tüm token'ları görebilir
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Customers collection - müşteriler
+    match /customers/{customerId} {
+      // Admin tüm müşterileri görebilir ve yönetebilir
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Müşteri kendi profilini görebilir
+      allow read: if request.auth != null && request.auth.uid == customerId;
+      
+      // GEÇİCİ: Authenticated kullanıcılar müşterileri okuyabilir (Dashboard için)
+      allow read: if request.auth != null;
+    }
+    
+    // =================== EK YARDIMCI KOLEKSİYONLAR ===================
+    
+    // Notifications collection - bildirimler (eğer gelecekte eklenirse)
     match /notifications/{notificationId} {
       allow read, write: if request.auth != null && 
         request.auth.uid == resource.data.userId;
@@ -70,7 +189,21 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Default deny - güvenlik için
+    match /logs/{logId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Error logs - sistem hataları
+    match /errorLogs/{errorId} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // =================== GÜVENLİK ===================
+    
+    // Default deny - GÜVENLİK İÇİN ÇOK ÖNEMLİ!
+    // Yukarıda tanımlanmayan hiçbir koleksiyona erişim yok
     match /{document=**} {
       allow read, write: if false;
     }

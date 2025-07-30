@@ -1,14 +1,38 @@
-import { Loader } from '@googlemaps/js-api-loader';
 import { GOOGLE_MAPS_CONFIG } from '../config/constants';
 
 class GoogleMapsService {
   constructor() {
-    this.loader = new Loader(GOOGLE_MAPS_CONFIG);
+    // Script tag ile yüklendiği için Loader kullanmıyoruz
     this.google = null;
     this.placesService = null;
     this.directionsService = null;
     this.autocompleteService = null;
     this.geocoder = null;
+  }
+
+  /**
+   * Google Maps'in script tag ile yüklenmesini bekle
+   */
+  async waitForGoogleMaps(timeout = 10000) {
+    return new Promise((resolve, reject) => {
+      if (window.google && window.google.maps) {
+        resolve(true);
+        return;
+      }
+
+      const checkInterval = setInterval(() => {
+        if (window.google && window.google.maps) {
+          clearInterval(checkInterval);
+          clearTimeout(timeoutHandle);
+          resolve(true);
+        }
+      }, 100);
+
+      const timeoutHandle = setTimeout(() => {
+        clearInterval(checkInterval);
+        reject(new Error('Google Maps script tag yükleme timeout'));
+      }, timeout);
+    });
   }
 
   /**
@@ -53,8 +77,10 @@ class GoogleMapsService {
         return true;
       }
       
-      // Eğer yüklenmemişse, loader ile yükle
-      this.google = await this.loader.load();
+      // Script tag ile yüklenene kadar bekle
+      console.log('🔄 Google Maps script tag ile yükleniyor...');
+      await this.waitForGoogleMaps();
+      this.google = window.google;
       
       // Services'i güvenli bir şekilde initialize et
       try {

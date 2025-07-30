@@ -232,6 +232,8 @@ const BookingConfirmationPage = () => {
 
     // Async function for processing
     const processReservation = async () => {
+      let isNewUser = false; // Değişkeni en başta tanımla
+      
       try {
         if (location.state?.bookingData) {
           console.log('🔄 BookingConfirmation: İşlem başlatılıyor...');
@@ -273,7 +275,6 @@ const BookingConfirmationPage = () => {
           setReservationId(reservationCode);
           
           // Otomatik kullanıcı hesabı oluştur
-          let isNewUser = false;
           if (data.customerInfo?.email) {
             console.log('👤 Otomatik kullanıcı hesabı oluşturuluyor...');
             const password = generateTempPassword();

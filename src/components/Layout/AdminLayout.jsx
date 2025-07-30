@@ -170,11 +170,6 @@ const AdminLayout = () => {
     };
     
     const setupNotificationSystem = async () => {
-      console.log('🔔 Admin bildirim sistemi geçici olarak devre dışı...');
-      // PWA sorunları nedeniyle geçici olarak devre dışı bırakıldı
-      return;
-      
-      /*
       console.log('🔔 Admin bildirim sistemi başlatılıyor...');
 
       // FCM Push Notification kurulumu
@@ -211,7 +206,6 @@ const AdminLayout = () => {
           setPushEnabled(false);
         }
       }
-      */
     };
 
     // Gerçek verileri çek ve unsubscribe fonksiyonlarını al
@@ -878,6 +872,21 @@ const AdminLayout = () => {
                               <span className="text-xs text-gray-600">
                                 Push: {pushEnabled ? 'Aktif' : 'Pasif'}
                               </span>
+                              {pushEnabled && (
+                                <button
+                                  onClick={async () => {
+                                    const success = await PushNotificationService.sendTestNotification();
+                                    if (success) {
+                                      toast.success('🧪 Test notification gönderildi!');
+                                    } else {
+                                      toast.error('❌ Test notification gönderilemedi');
+                                    }
+                                  }}
+                                  className="text-xs text-purple-600 hover:text-purple-800 font-medium"
+                                >
+                                  Test
+                                </button>
+                              )}
                             </div>
                           </div>
                           {notifications.length > 0 && (
