@@ -9,6 +9,9 @@
       "runtime": "nodejs18.x"
     }
   },
+  "buildCommand": "npm run build:ssg",
+  "outputDirectory": "dist",
+  "framework": "vite",
   "rewrites": [
     {
       "source": "/(.*)",

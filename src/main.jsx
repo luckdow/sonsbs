@@ -54,9 +54,22 @@ if ('requestIdleCallback' in window) {
 }
 
 // Create root and render app
-ReactDOM.createRoot(document.getElementById('root')).render(
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+// Hide SEO content when React loads
+const hideSEOContent = () => {
+  const seoContent = document.getElementById('seo-content');
+  if (seoContent) {
+    seoContent.style.display = 'none';
+  }
+};
+
+root.render(
   <React.StrictMode>
     <WebPerformanceOptimizer />
     <App />
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);
+
+// Hide SEO content after render
+setTimeout(hideSEOContent, 100);
