@@ -4,11 +4,6 @@
       "NODE_VERSION": "18"
     }
   },
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "buildCommand": "npm run build && bash scripts/generate-static.sh",
   "outputDirectory": "dist",
   "framework": "vite",
