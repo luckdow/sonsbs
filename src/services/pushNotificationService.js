@@ -114,23 +114,12 @@ class PushNotificationService {
       
       const { title, body } = payload.notification || {};
       
-      // Toast bildirimi göster
-      toast.success(`${title || 'Bildirim'}: ${body || 'Yeni mesaj'}`, {
-        duration: 6000,
-        style: {
-          background: '#f0f9ff',
-          border: '1px solid #0ea5e9',
-          borderRadius: '8px',
-          padding: '12px'
-        }
-      });
-
-      // Browser notification da göster
+      // Sadece browser notification göster, toast'ı kaldır
       if (Notification.permission === 'granted') {
         new Notification(title || 'SBS Transfer', {
           body: body || 'Yeni bildirim',
-          icon: '/logo192.png',
-          badge: '/logo192.png',
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
           tag: 'sbs-notification',
           requireInteraction: true
         });
@@ -226,38 +215,61 @@ class PushNotificationService {
   }
 
   /**
-   * Test notification gönder (development için)
+   * Gerçek rezervasyon bildirimi gönder
    */
-  async sendTestNotification() {
+  async sendReservationNotification(reservationData) {
     if (!this.isSupported) return false;
     
     try {
+      const customerName = `${reservationData.customerInfo?.firstName || ''} ${reservationData.customerInfo?.lastName || ''}`.trim();
+      const direction = reservationData.direction === 'from_airport' ? 'Havaalanından' : 'Havaalanına';
+      const vehicleType = reservationData.selectedVehicle?.name || 'Araç';
+      
+      // Browser notification
       if (Notification.permission === 'granted') {
-        const notification = new Notification('🧪 Test Notification', {
-          body: 'SBS Transfer background notification test',
+        new Notification('🆕 Yeni Rezervasyon', {
+          body: `${customerName} - ${direction} transfer (${vehicleType})`,
           icon: '/favicon.ico',
-          tag: 'test-notification',
+          badge: '/favicon.ico',
+          tag: `reservation-${reservationData.reservationCode}`,
           requireInteraction: true,
           data: {
-            url: '/admin',
-            type: 'test'
+            url: '/admin/reservations',
+            type: 'new_reservation',
+            reservationId: reservationData.reservationCode
           }
         });
-        
-        notification.onclick = () => {
-          window.focus();
-          notification.close();
-        };
-        
-        console.log('✅ Test notification sent');
-        return true;
       }
+
+      // Service Worker notification (butonlu)
+      const swRegistration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+      if (swRegistration) {
+        await swRegistration.showNotification('🆕 Yeni Rezervasyon Alındı', {
+          body: `${customerName}\n${direction} Transfer\n${reservationData.tripDetails?.date} ${reservationData.tripDetails?.time}`,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          tag: `sw-reservation-${reservationData.reservationCode}`,
+          requireInteraction: true,
+          actions: [
+            { action: 'view', title: 'Görüntüle' },
+            { action: 'close', title: 'Kapat' }
+          ],
+          data: {
+            url: '/admin/reservations',
+            type: 'new_reservation',
+            reservationId: reservationData.reservationCode
+          }
+        });
+      }
+
+      console.log('✅ Rezervasyon bildirimi gönderildi:', reservationData.reservationCode);
+      return true;
     } catch (error) {
-      console.error('❌ Test notification error:', error);
+      console.error('❌ Rezervasyon bildirim hatası:', error);
+      return false;
     }
-    
-    return false;
   }
+
 }
 
 export default new PushNotificationService();

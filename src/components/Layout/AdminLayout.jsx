@@ -249,7 +249,8 @@ const AdminLayout = () => {
             
             if (createdTime > oneHourAgo && !processedIds.has(notificationId)) {
               processedIds.add(notificationId);
-              newNotifications.push({
+              
+              const notification = {
                 id: notificationId,
                 type: 'new_reservation',
                 title: 'Yeni Rezervasyon',
@@ -257,7 +258,17 @@ const AdminLayout = () => {
                 time: data.createdAt,
                 reservationId: reservationId,
                 read: false
-              });
+              };
+              
+              newNotifications.push(notification);
+              
+              // Her yeni rezervasyonda push notification gönder (browser durumuna bakılmaksızın)
+              try {
+                PushNotificationService.sendReservationNotification(data);
+                console.log('🔔 Yeni rezervasyon bildirimi gönderildi:', reservationId);
+              } catch (error) {
+                console.error('Push notification hatası:', error);
+              }
             }
           }
 
@@ -872,21 +883,6 @@ const AdminLayout = () => {
                               <span className="text-xs text-gray-600">
                                 Push: {pushEnabled ? 'Aktif' : 'Pasif'}
                               </span>
-                              {pushEnabled && (
-                                <button
-                                  onClick={async () => {
-                                    const success = await PushNotificationService.sendTestNotification();
-                                    if (success) {
-                                      toast.success('🧪 Test notification gönderildi!');
-                                    } else {
-                                      toast.error('❌ Test notification gönderilemedi');
-                                    }
-                                  }}
-                                  className="text-xs text-purple-600 hover:text-purple-800 font-medium"
-                                >
-                                  Test
-                                </button>
-                              )}
                             </div>
                           </div>
                           {notifications.length > 0 && (

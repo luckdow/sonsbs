@@ -5,11 +5,11 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 // Firebase Config (same as main app)
 const firebaseConfig = {
   apiKey: "AIzaSyB6903uKvs3vjCkfreIvzensUFa25wVB9c",
-  authDomain: "sonsbs-82e0b.firebaseapp.com",
-  projectId: "sonsbs-82e0b",
-  storageBucket: "sonsbs-82e0b.firebasestorage.app",
-  messagingSenderId: "294166397650",
-  appId: "1:294166397650:web:7b4e1a7b9d8c9f0a8b9c0d"
+  authDomain: "sbs-travel-96d0b.firebaseapp.com",
+  projectId: "sbs-travel-96d0b",
+  storageBucket: "sbs-travel-96d0b.firebasestorage.app",
+  messagingSenderId: "689333443277",
+  appId: "1:689333443277:web:d26c455760eb28a41e6784"
 };
 
 // Initialize Firebase
@@ -60,7 +60,12 @@ self.addEventListener('notificationclick', (event) => {
     return;
   }
   
-  const urlToOpen = event.notification.data?.url || '/admin';
+  const urlToOpen = event.notification.data?.url || '/admin/reservations';
+  
+  // Rezervasyon bildirimi ise doğrudan rezervasyonlar sayfasına git
+  if (event.notification.data?.type === 'new_reservation') {
+    urlToOpen = '/admin/reservations';
+  }
   
   // Open/focus the app
   event.waitUntil(

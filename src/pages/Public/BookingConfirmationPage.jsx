@@ -443,6 +443,15 @@ const BookingConfirmationPage = () => {
       const docRef = await addDoc(collection(db, 'reservations'), reservationData);
       toast.success(`Rezervasyonunuz başarıyla kaydedildi! Rezervasyon kodunuz: ${reservationCode}`);
       
+      // Admin paneline push notification gönder
+      try {
+        const { default: PushNotificationService } = await import('../../services/pushNotificationService');
+        await PushNotificationService.sendReservationNotification(reservationData);
+        console.log('✅ Admin paneline bildirim gönderildi');
+      } catch (error) {
+        console.error('❌ Admin bildirim hatası:', error);
+      }
+      
       // E-posta gönder - EmailJS ile
       try {
         console.log('📧 EmailJS ile e-posta gönderimi başlatılıyor...');
