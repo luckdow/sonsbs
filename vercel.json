@@ -9,6 +9,22 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
+      "source": "/sitemap-index.xml", 
+      "destination": "/sitemap-index.xml"
+    },
+    {
+      "source": "/sitemap-multilingual.xml",
+      "destination": "/sitemap-multilingual.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
