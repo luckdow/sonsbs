@@ -12,17 +12,7 @@ npm-debug.log*
 .env.production.local
 .git
 .gitignore
-README.md
 DEVELOPMENT_ROADMAP.md
-*.md
-src/
-public/
-vite.config.js
-tailwind.config.js
-postcss.config.js
-package.json
-package-lock.json
-tsconfig.json
 .vscode/
 functions/
 netlify.toml
