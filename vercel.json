@@ -35,9 +35,15 @@
   ],
   "redirects": [
     {
-      "source": "https://gatetransfer.com/(.*)",
+      "source": "/(.*)",
       "destination": "https://www.gatetransfer.com/$1",
-      "permanent": true
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "gatetransfer.com"
+        }
+      ]
     },
     {
       "source": "/home",
