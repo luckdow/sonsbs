@@ -20,10 +20,9 @@ self.addEventListener('install', (event) => {
         return cache.addAll(urlsToCache);
       })
       .catch((error) => {
-        console.log('Cache failed:', error);
+        console.warn('SW Install: Cache error', error);
       })
   );
-  self.skipWaiting();
 });
 
 // Activate event

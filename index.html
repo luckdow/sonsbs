@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- Canonical URL - Critical for SEO -->
+    <link rel="canonical" href="https://www.gatetransfer.com/" />
+    
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@gatetransfer" />
@@ -79,15 +82,17 @@
     <meta name="geo.position" content="36.8969;30.7133">
     <meta name="ICBM" content="36.8969, 30.7133">
     
-    <!-- Google Analytics 4 (GA4) - SBS Turkey Transfer -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EQB0RS3034" onerror="console.warn('Google Analytics yüklenemedi')"></script>
+    <!-- Google Analytics 4 (GA4) - SBS Turkey Transfer - Dual Tracking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EQB0RS3034" onerror="console.warn('Google Analytics 1 yüklenemedi')"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EV2DQW5LD9" onerror="console.warn('Google Analytics 2 yüklenemedi')"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       
-      // Error handling for GA
+      // Error handling for both GA accounts
       try {
+        // Primary GA Account (G-EQB0RS3034)
         gtag('config', 'G-EQB0RS3034', {
           // Privacy-friendly ayarlar
           anonymize_ip: true,
@@ -108,6 +113,22 @@
             'business_type': 'transportation',
             'service_area': 'antalya',
             'company_name': 'sbs_turkey_transfer'
+          }
+        });
+
+        // Secondary GA Account (G-EV2DQW5LD9)
+        gtag('config', 'G-EV2DQW5LD9', {
+          // Privacy-friendly ayarlar
+          anonymize_ip: true,
+          allow_google_signals: false,
+          allow_ad_personalization_signals: false,
+          // Same tracking configuration
+          send_page_view: true,
+          transport_type: 'beacon',
+          custom_parameters: {
+            'business_type': 'transportation',
+            'service_area': 'antalya',
+            'company_name': 'sbs_turkey_transfer_secondary'
           }
         });
       } catch (error) {
@@ -189,9 +210,6 @@
     <meta name="twitter:title" content="SBS Turkey Transfer | Antalya VIP Transfer | Havalimanı Transfer" />
     <meta name="twitter:description" content="Antalya'nın en güvenilir VIP transfer hizmeti. 7/24 profesyonel şoför hizmeti." />
     <meta name="twitter:image" content="https://www.gatetransfer.com/images/sbs-turkey-transfer-og.jpg" />
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://www.gatetransfer.com/" />
     
     <!-- Manifest - Disabled in development due to CORS issues -->
     <!-- <link rel="manifest" href="/site.webmanifest"> -->
@@ -422,27 +440,36 @@
     </script>
   </head>
   <body>
+    <!-- Structured Data for Better SEO -->
     <div id="root">
       <!-- Enhanced SEO Content for Search Engines & Crawlers -->
-      <div style="display: none;" id="seo-content">
-        <h1>SBS Turkey Transfer | Antalya Havalimanı Transfer Hizmeti</h1>
-        <p>Türkiye'nin lider transfer platformu Gate Transfer. TURSAB onaylı güvenilir havalimanı transfer hizmetleri. 7/24 profesyonel şoför hizmeti, lüks araçlar ve uygun fiyatlar.</p>
+      <article style="display: none;" id="seo-content">
+        <header>
+          <h1>SBS Turkey Transfer | Antalya Havalimanı Transfer Hizmeti</h1>
+          <p>Türkiye'nin lider transfer platformu Gate Transfer. TURSAB onaylı güvenilir havalimanı transfer hizmetleri. 7/24 profesyonel şoför hizmeti, lüks araçlar ve uygun fiyatlar.</p>
+        </header>
         
-        <h2>Transfer Hizmetlerimiz</h2>
-        <ul>
-          <li>Antalya Havalimanı Transfer</li>
-          <li>Kemer Transfer - Otel ve şehir merkezi transfer hizmeti</li>
-          <li>Side Transfer - Antik kent ve otel transfer</li>
-          <li>Belek Transfer - Golf otelleri ve tatil köyleri</li>
-          <li>Alanya Transfer - Şehir merkezi ve oteller</li>
-          <li>Lara Transfer - Lüks otel bölgesi transfer</li>
-          <li>Kaş Transfer - Doğa ve kültür turları</li>
-          <li>Kalkan Transfer - Butik otel ve marina</li>
-          <li>Manavgat Transfer - Şelale ve antik şehir</li>
-          <li>Serik Transfer - Golf ve tatil merkezleri</li>
-        </ul>
+        <main>
+          <section>
+            <h2>Transfer Hizmetlerimiz</h2>
+        <section>
+          <h2>Transfer Hizmetlerimiz</h2>
+          <ul>
+            <li>Antalya Havalimanı Transfer</li>
+            <li>Kemer Transfer - Otel ve şehir merkezi transfer hizmeti</li>
+            <li>Side Transfer - Antik kent ve otel transfer</li>
+            <li>Belek Transfer - Golf otelleri ve tatil köyleri</li>
+            <li>Alanya Transfer - Şehir merkezi ve oteller</li>
+            <li>Lara Transfer - Lüks otel bölgesi transfer</li>
+            <li>Kaş Transfer - Doğa ve kültür turları</li>
+            <li>Kalkan Transfer - Butik otel ve marina</li>
+            <li>Manavgat Transfer - Şelale ve antik şehir</li>
+            <li>Serik Transfer - Golf ve tatil merkezleri</li>
+          </ul>
+          </section>
         
-        <h3>Neden SBS Turkey Transfer?</h3>
+        <section>
+          <h3>Neden SBS Turkey Transfer?</h3>
         <ul>
           <li>TURSAB onaylı güvenilir hizmet</li>
           <li>7/24 müşteri destek hattı</li>
@@ -453,14 +480,22 @@
           <li>Havalimanı karşılama hizmeti</li>
           <li>Güvenli ödeme seçenekleri</li>
         </ul>
+        </section>
         
-        <h3>Transfer Bölgelerimiz</h3>
-        <p>Antalya, Kemer, Side, Belek, Alanya, Lara, Kaş, Kalkan, Manavgat, Serik ve çevresinde güvenilir transfer hizmeti sunuyoruz.</p>
+        <section>
+          <h3>Transfer Bölgelerimiz</h3>
+          <p>Antalya, Kemer, Side, Belek, Alanya, Lara, Kaş, Kalkan, Manavgat, Serik ve çevresinde güvenilir transfer hizmeti sunuyoruz.</p>
+        </section>
         
-        <h3>İletişim</h3>
-        <p>Rezervasyon ve bilgi için: +90 532 574 26 82</p>
-        <p>E-posta: sbstravel@gmail.com</p>
-        <p>Website: https://www.gatetransfer.com</p>
+        <address>
+          <h3>İletişim</h3>
+          <p>Rezervasyon ve bilgi için: <a href="tel:+905325742682">+90 532 574 26 82</a></p>
+          <p>E-posta: <a href="mailto:sbstravel@gmail.com">sbstravel@gmail.com</a></p>
+          <p>Website: <a href="https://www.gatetransfer.com">https://www.gatetransfer.com</a></p>
+        </address>
+        </main>
+        
+        <footer>
         
         <!-- Sayfa linkleri (internal linking) -->
         <nav>
@@ -477,7 +512,8 @@
             <li><a href="/alanya-transfer">Alanya Transfer</a></li>
           </ul>
         </nav>
-      </div>
+        </footer>
+      </article>
       
       <!-- Loading state for better UX -->
       <div id="loading-fallback" style="

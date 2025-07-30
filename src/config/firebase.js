@@ -53,19 +53,57 @@ try {
   app = null;
 }
 
-// Initialize Firebase services with safe fallbacks
+// Initialize Firebase services with safe fallbacks and timeout settings
 export const auth = app ? getAuth(app) : null;
-export const db = app ? getFirestore(app) : null;
+
+// Firestore with timeout and offline settings
+let db = null;
+if (app) {
+  try {
+    db = getFirestore(app);
+    
+    // Configure Firestore settings for better performance and timeout handling
+    if (typeof window !== 'undefined') {
+      // Enable offline persistence with timeout settings
+      db._settings = {
+        ...db._settings,
+        ignoreUndefinedProperties: true,
+        merge: true,
+        // Connection timeout settings
+        experimentalForceLongPolling: false,
+        experimentalAutoDetectLongPolling: true
+      };
+    }
+    
+    console.log('✅ Firestore initialized with timeout settings');
+  } catch (error) {
+    console.warn('⚠️ Firestore initialization warning:', error.message);
+    db = null;
+  }
+}
+
+export { db };
 export const storage = app ? getStorage(app) : null;
 
-// Messaging için güvenli initialization (sadece browser'da ve bot değilse)
+// Messaging için güvenli initialization (browser compatibility check)
 let messaging = null;
-if (!isBot() && typeof window !== 'undefined' && 'serviceWorker' in navigator && app) {
+if (!isBot() && typeof window !== 'undefined' && app) {
   try {
-    messaging = getMessaging(app);
-    console.log('✅ Firebase Messaging initialized');
+    // Messaging support check
+    const supportsMessaging = 'serviceWorker' in navigator && 
+                             'PushManager' in window && 
+                             'Notification' in window &&
+                             !window.safari; // Safari has limited support
+    
+    if (supportsMessaging) {
+      messaging = getMessaging(app);
+      console.log('✅ Firebase Messaging initialized');
+    } else {
+      console.log('ℹ️ Firebase Messaging: Browser not supported or limited support');
+    }
   } catch (error) {
-    console.error('❌ Firebase Messaging initialization error:', error);
+    console.warn('⚠️ Firebase Messaging not available:', error.message);
+    messaging = null;
   }
 }
 

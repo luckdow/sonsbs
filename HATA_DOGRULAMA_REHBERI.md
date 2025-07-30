@@ -1,9 +1,10 @@
 # Firebase ve Google Analytics Hata Doğrulama Rehberi
 
-## 1. Google Analytics Doğrulama
+## 1. Google Analytics Doğrulama (Dual Tracking)
 - Chrome DevTools → Network → gtag.js (200 OK olmalı)
 - Real-time reports: https://analytics.google.com/analytics/web/
-- Tek GA ID kontrolü: `G-EQB0RS3034`
+- Primary GA ID kontrolü: `G-EQB0RS3034`
+- Secondary GA ID kontrolü: `G-EV2DQW5LD9`
 
 ## 2. Firebase Firestore Doğrulama
 - Firebase Console: https://console.firebase.google.com/project/sbs-travel-96d0b

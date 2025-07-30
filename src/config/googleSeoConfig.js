@@ -2,9 +2,12 @@
 // Bu dosyada gerçek Google Analytics ID ve Search Console verification kodlarını güncellemelisiniz
 
 export const GoogleSEOConfig = {
-  // Google Analytics 4 (GA4) Measurement ID
-  // Gerçek Google Analytics hesabınızdan alınan measurement ID'yi buraya ekleyin
-  GA_MEASUREMENT_ID: 'G-EQB0RS3034', // Production Google Analytics ID
+  // Google Analytics 4 (GA4) Measurement IDs - Dual Tracking
+  // Primary Google Analytics hesabı
+  GA_MEASUREMENT_ID: 'G-EQB0RS3034', // Primary Google Analytics ID
+  
+  // Secondary Google Analytics hesabı
+  GA_MEASUREMENT_ID_SECONDARY: 'G-EV2DQW5LD9', // Secondary Google Analytics ID
   
   // Google Search Console Verification Code  
   // Google Search Console'dan alınan verification meta tag içeriğini buraya ekleyin
@@ -99,13 +102,15 @@ export const GoogleSEOConfig = {
 // Ortam-bazlı konfigürasyon
 const EnvironmentConfig = {
   development: {
-    GA_MEASUREMENT_ID: 'G-EQB0RS3034', // Development için test ID
+    GA_MEASUREMENT_ID: 'G-EQB0RS3034', // Development primary ID
+    GA_MEASUREMENT_ID_SECONDARY: 'G-EV2DQW5LD9', // Development secondary ID
     debug_mode: true,
     console_logging: true
   },
   
   production: {
-    GA_MEASUREMENT_ID: 'G-EQB0RS3034', // Production için gerçek ID
+    GA_MEASUREMENT_ID: 'G-EQB0RS3034', // Production primary ID
+    GA_MEASUREMENT_ID_SECONDARY: 'G-EV2DQW5LD9', // Production secondary ID
     debug_mode: false,
     console_logging: false
   }
@@ -122,7 +127,11 @@ export const validateConfig = () => {
   const errors = [];
   
   if (!ActiveConfig.GA_MEASUREMENT_ID || ActiveConfig.GA_MEASUREMENT_ID === 'G-XXXXXXXXXX') {
-    errors.push('Google Analytics Measurement ID not configured');
+    errors.push('Primary Google Analytics Measurement ID not configured');
+  }
+  
+  if (!ActiveConfig.GA_MEASUREMENT_ID_SECONDARY || ActiveConfig.GA_MEASUREMENT_ID_SECONDARY === 'G-YYYYYYYYYY') {
+    errors.push('Secondary Google Analytics Measurement ID not configured');
   }
   
   if (!ActiveConfig.SEARCH_CONSOLE_VERIFICATION || ActiveConfig.SEARCH_CONSOLE_VERIFICATION === 'YOUR_VERIFICATION_CODE_HERE') {
@@ -135,6 +144,8 @@ export const validateConfig = () => {
     console.warn('📝 Please update /src/config/googleSeoConfig.js with your actual Google Analytics and Search Console credentials');
   } else {
     console.log('✅ Google SEO Configuration is valid');
+    console.log(`📊 Primary GA: ${ActiveConfig.GA_MEASUREMENT_ID}`);
+    console.log(`📊 Secondary GA: ${ActiveConfig.GA_MEASUREMENT_ID_SECONDARY}`);
   }
   
   return errors.length === 0;
