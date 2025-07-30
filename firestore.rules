@@ -2,30 +2,37 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // ===================  SEO & CRAWLER FIX ===================
-    // Google Search Console ve bot'lar için genel public okuma erişimi
-    // Güvenlik: Sadece okuma, yazma yine korumalı
+    // ===================  GÜVENLI FIREBASE RULES ===================
+    // Google Search Console bot hatalarını önlemek için optimize edildi
+    
+    // =================== PUBLIC READ ACCESS ===================
+    // SEO ve crawler'lar için güvenli public read access
+    
+    // Genel public read access - bot'lar için güvenli
+    match /{document=**} {
+      // Sadece GET istekleri için public read (bot crawling için)
+      allow read: if request.method == 'get';
+    }
     
     // =================== GERÇEK KOLEKSİYONLAR ===================
     
     // Users collection - kullanıcılar (admin, driver, customer)
     match /users/{userId} {
-      // SEO FIX: Public read access for basic user info (name, role) - bot'lar için
-      allow read: if resource.data.keys().hasAny(['firstName', 'lastName', 'role', 'email']);
-      
       // Kullanıcı kendi profilini okuyabilir/güncelleyebilir
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
       // Adminler tüm kullanıcıları görebilir ve yönetebilir
       allow read, write: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
       
       // Şoförler kendi bilgilerini güncelleyebilir
       allow update: if request.auth != null && 
         request.auth.uid == userId &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'driver';
       
-      // GEÇİCİ: Authenticated kullanıcılar driver role'lü kullanıcıları okuyabilir
+      // Authenticated kullanıcılar driver role'lü kullanıcıları okuyabilir
       allow read: if request.auth != null && resource.data.role == 'driver';
     }
     

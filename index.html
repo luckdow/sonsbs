@@ -80,34 +80,39 @@
     <meta name="ICBM" content="36.8969, 30.7133">
     
     <!-- Google Analytics 4 (GA4) - SBS Turkey Transfer -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SBSTURKEY2025"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SBSTURKEY2025" onerror="console.warn('Google Analytics yüklenemedi')"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       
-      gtag('config', 'G-SBSTURKEY2025', {
-        // Privacy-friendly ayarlar
-        anonymize_ip: true,
-        allow_google_signals: false,
-        allow_ad_personalization_signals: false,
-        // Transfer özel etkinlikleri
-        custom_map: {
-          'custom_dimension_1': 'user_language',
-          'custom_dimension_2': 'service_type', 
-          'custom_dimension_3': 'pickup_location',
-          'custom_dimension_4': 'dropoff_location',
-          'custom_dimension_5': 'booking_source'
-        },
-        // Enhanced ecommerce for transfer bookings
-        send_page_view: true,
-        transport_type: 'beacon',
-        custom_parameters: {
-          'business_type': 'transportation',
-          'service_area': 'antalya',
-          'company_name': 'sbs_turkey_transfer'
-        }
-      });
+      // Error handling for GA
+      try {
+        gtag('config', 'G-SBSTURKEY2025', {
+          // Privacy-friendly ayarlar
+          anonymize_ip: true,
+          allow_google_signals: false,
+          allow_ad_personalization_signals: false,
+          // Transfer özel etkinlikleri
+          custom_map: {
+            'custom_dimension_1': 'user_language',
+            'custom_dimension_2': 'service_type', 
+            'custom_dimension_3': 'pickup_location',
+            'custom_dimension_4': 'dropoff_location',
+            'custom_dimension_5': 'booking_source'
+          },
+          // Enhanced ecommerce for transfer bookings
+          send_page_view: true,
+          transport_type: 'beacon',
+          custom_parameters: {
+            'business_type': 'transportation',
+            'service_area': 'antalya',
+            'company_name': 'sbs_turkey_transfer'
+          }
+        });
+      } catch (error) {
+        console.warn('Google Analytics konfigürasyonu başarısız:', error);
+      }
       
       // Transfer özel etkinlikleri
       function trackTransferBooking(serviceType, pickup, dropoff, price) {

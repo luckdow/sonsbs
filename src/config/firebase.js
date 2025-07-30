@@ -31,11 +31,27 @@ const isBot = () => {
     'prerender', 'phantomjs', 'headless', 'curl', 'wget'
   ];
   
-  return botPatterns.some(pattern => userAgent.includes(pattern));
+  // Bot detection with additional safety checks
+  const isLikelyBot = botPatterns.some(pattern => userAgent.includes(pattern));
+  const hasNoWindow = typeof window === 'undefined';
+  const hasNoDocument = typeof document === 'undefined';
+  
+  return isLikelyBot || hasNoWindow || hasNoDocument;
 };
 
-// Initialize Firebase only for real users, not bots
-const app = !isBot() ? initializeApp(firebaseConfig) : null;
+// Initialize Firebase with improved error handling
+let app = null;
+try {
+  if (!isBot() && typeof window !== 'undefined') {
+    app = initializeApp(firebaseConfig);
+    console.log('✅ Firebase app initialized successfully');
+  } else {
+    console.log('🤖 Bot detected - Firebase initialization skipped');
+  }
+} catch (error) {
+  console.error('❌ Firebase initialization error:', error);
+  app = null;
+}
 
 // Initialize Firebase services with safe fallbacks
 export const auth = app ? getAuth(app) : null;

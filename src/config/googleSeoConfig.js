@@ -99,13 +99,13 @@ export const GoogleSEOConfig = {
 // Ortam-bazlı konfigürasyon
 const EnvironmentConfig = {
   development: {
-    GA_MEASUREMENT_ID: 'G-XXXXXXXXXX', // Development için test ID
+    GA_MEASUREMENT_ID: 'G-SBSTURKEY2025', // Development için test ID
     debug_mode: true,
     console_logging: true
   },
   
   production: {
-    GA_MEASUREMENT_ID: 'G-YYYYYYYYYY', // Production için gerçek ID
+    GA_MEASUREMENT_ID: 'G-SBSTURKEY2025', // Production için gerçek ID
     debug_mode: false,
     console_logging: false
   }
