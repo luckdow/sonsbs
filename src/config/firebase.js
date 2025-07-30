@@ -15,10 +15,23 @@ const firebaseConfig = {
   measurementId: "G-G4FRHCJEDP"
 };
 
-// Bot detection - don't initialize Firebase for crawlers
+// Enhanced bot detection - Google Search Console crawlers dahil
 const isBot = () => {
   if (typeof window === 'undefined') return true;
-  return /bot|crawler|spider|crawling|googlebot|bingbot|yandexbot|facebookexternalhit|twitterbot|whatsapp|telegram/i.test(navigator.userAgent);
+  if (typeof navigator === 'undefined') return true;
+  
+  const userAgent = navigator.userAgent.toLowerCase();
+  const botPatterns = [
+    'bot', 'crawler', 'spider', 'crawling', 'scraper',
+    'googlebot', 'bingbot', 'yandexbot', 'baiduspider',
+    'facebookexternalhit', 'twitterbot', 'whatsapp', 'telegram',
+    'slurp', 'duckduckbot', 'ia_archiver', 'archive.org_bot',
+    'google-structured-data-testing-tool', 'google-site-verification',
+    'lighthouse', 'pagespeed', 'gtmetrix', 'pingdom',
+    'prerender', 'phantomjs', 'headless', 'curl', 'wget'
+  ];
+  
+  return botPatterns.some(pattern => userAgent.includes(pattern));
 };
 
 // Initialize Firebase only for real users, not bots

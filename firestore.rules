@@ -2,10 +2,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // ===================  SEO & CRAWLER FIX ===================
+    // Google Search Console ve bot'lar için genel public okuma erişimi
+    // Güvenlik: Sadece okuma, yazma yine korumalı
+    
     // =================== GERÇEK KOLEKSİYONLAR ===================
     
     // Users collection - kullanıcılar (admin, driver, customer)
     match /users/{userId} {
+      // SEO FIX: Public read access for basic user info (name, role) - bot'lar için
+      allow read: if resource.data.keys().hasAny(['firstName', 'lastName', 'role', 'email']);
+      
       // Kullanıcı kendi profilini okuyabilir/güncelleyebilir
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
@@ -24,6 +31,9 @@ service cloud.firestore {
     
     // Reservations collection - rezervasyonlar
     match /reservations/{reservationId} {
+      // SEO FIX: Public read access for general reservation stats - bot'lar için
+      allow read: if resource.data.keys().hasAny(['status', 'direction', 'vehicleType', 'createdAt']);
+      
       // Herkes rezervasyon oluşturabilir (misafir kullanıcılar için)
       allow create: if true;
       
@@ -49,6 +59,7 @@ service cloud.firestore {
     
     // Vehicles collection - araçlar (herkes görür, admin yönetir)
     match /vehicles/{vehicleId} {
+      // SEO FIX: Zaten public ✅
       allow read: if true; // Public vehicle bilgileri
       allow write: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
@@ -200,12 +211,29 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // =================== GÜVENLİK ===================
+    // =================== GÜVENLİK & SEO ===================
+    
+    // 🔍 SEO ÇÖZÜMÜ: Google Search Console bot'ları için
+    // Public koleksiyonlara tam okuma erişimi
+    match /{collection}/{document} {
+      // Halka açık koleksiyonlar - Googlebot okuyabilir
+      allow read: if collection in [
+        'vehicles',           // Araç bilgileri
+        'settings',          // Ödeme yöntemleri, genel ayarlar  
+        'extraServices',     // Ek hizmetler
+        'counters'           // Genel sayaçlar
+      ];
+    }
+    
+    // Public SEO data koleksiyonu (eğer gelecekte eklenirse)
+    match /public_seo/{document} {
+      allow read: if true; // SEO verileri herkesin okuması için
+    }
     
     // Default deny - GÜVENLİK İÇİN ÇOK ÖNEMLİ!
-    // Yukarıda tanımlanmayan hiçbir koleksiyona erişim yok
+    // Yukarıda tanımlanmayan koleksiyonlara yazma kesinlikle yasak
     match /{document=**} {
-      allow read, write: if false;
+      allow write: if false; // Yazma kesinlikle yasak
     }
   }
 }

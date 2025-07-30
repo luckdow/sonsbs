@@ -7,8 +7,23 @@ import GoogleAPIErrorHandler from './utils/googleErrorHandler.js'
 import './critical.css'
 import './index.css'
 
-// Google API Error Handler'ı başlat
-if (typeof window !== 'undefined') {
+// Enhanced Bot Detection for SEO
+const isBot = () => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return true;
+  
+  const userAgent = navigator.userAgent.toLowerCase();
+  const botPatterns = [
+    'googlebot', 'bingbot', 'yandexbot', 'baiduspider', 'slurp',
+    'facebookexternalhit', 'twitterbot', 'linkedinbot',
+    'google-structured-data-testing-tool', 'lighthouse',
+    'pagespeed', 'gtmetrix', 'pingdom', 'prerender'
+  ];
+  
+  return botPatterns.some(pattern => userAgent.includes(pattern));
+};
+
+// Google API Error Handler'ı başlat (sadece gerçek kullanıcılar için)
+if (typeof window !== 'undefined' && !isBot()) {
   // Service Worker'ı kaydet
   GoogleAPIErrorHandler.registerServiceWorker();
   
@@ -16,8 +31,8 @@ if (typeof window !== 'undefined') {
   GoogleAPIErrorHandler.checkPreloadUsage();
 }
 
-// Google Analytics ve SEO Performance Monitoring başlat
-if (typeof window !== 'undefined') {
+// Google Analytics ve SEO Performance Monitoring başlat (sadece gerçek kullanıcılar için)
+if (typeof window !== 'undefined' && !isBot()) {
   // Google Analytics'i başlat
   googleAnalytics.initialize();
   

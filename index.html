@@ -43,8 +43,11 @@
     <meta name="color-scheme" content="light">
     
     <!-- Google Search Console Verification -->
-    <!-- Mülk doğrulaması tamamlandı, meta tag aktif -->
-    <meta name="google-site-verification" content="google-site-verification-active" />
+    <!-- 🚨 KRİTİK: Bu kodu Google Search Console'dan aldığınız gerçek kod ile değiştirin -->
+    <!-- 1. https://search.google.com/search-console adresine gidin -->
+    <!-- 2. Properties → Settings → Verification → HTML tag --> 
+    <!-- 3. content="..." içindeki kodu buraya yazın -->
+    <meta name="google-site-verification" content="GERÇEK_GOOGLE_VERIFICATION_KODUNUZU_BURAYA_YAPIŞTIRIN" />
     
     <!-- Google Analytics 4 (GA4) - SBS Turkey Transfer -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-SBSTURKEY2025"></script>
@@ -386,7 +389,7 @@
   </head>
   <body>
     <div id="root">
-      <!-- Server-side SEO Content for Search Engines -->
+      <!-- Enhanced SEO Content for Search Engines & Crawlers -->
       <div style="display: none;" id="seo-content">
         <h1>SBS Turkey Transfer | Antalya Havalimanı Transfer Hizmeti</h1>
         <p>Türkiye'nin lider transfer platformu Gate Transfer. TURSAB onaylı güvenilir havalimanı transfer hizmetleri. 7/24 profesyonel şoför hizmeti, lüks araçlar ve uygun fiyatlar.</p>
@@ -424,7 +427,55 @@
         <p>Rezervasyon ve bilgi için: +90 532 574 26 82</p>
         <p>E-posta: sbstravel@gmail.com</p>
         <p>Website: https://www.gatetransfer.com</p>
+        
+        <!-- Sayfa linkleri (internal linking) -->
+        <nav>
+          <h3>Sitemap</h3>
+          <ul>
+            <li><a href="/">Ana Sayfa</a></li>
+            <li><a href="/rezervasyon">Rezervasyon</a></li>
+            <li><a href="/hakkimizda">Hakkımızda</a></li>
+            <li><a href="/iletisim">İletişim</a></li>
+            <li><a href="/hizmetlerimiz">Hizmetlerimiz</a></li>
+            <li><a href="/kemer-transfer">Kemer Transfer</a></li>
+            <li><a href="/side-transfer">Side Transfer</a></li>
+            <li><a href="/belek-transfer">Belek Transfer</a></li>
+            <li><a href="/alanya-transfer">Alanya Transfer</a></li>
+          </ul>
+        </nav>
       </div>
+      
+      <!-- Loading state for better UX -->
+      <div id="loading-fallback" style="
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        min-height: 100vh; 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+      ">
+        <div>
+          <h1 style="font-size: 2rem; margin-bottom: 1rem;">SBS Turkey Transfer</h1>
+          <p style="font-size: 1.1rem; margin-bottom: 2rem;">Antalya VIP Transfer Hizmeti Yükleniyor...</p>
+          <div style="
+            width: 40px; 
+            height: 40px; 
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease infinite;
+            margin: 0 auto;
+          "></div>
+        </div>
+      </div>
+      
+      <style>
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      </style>
     </div>
     <script type="module" src="/src/main.jsx"></script>
     
