@@ -47,27 +47,45 @@ Allow: /blog/
 
 # Specific search engine directives
 User-agent: Googlebot
+Allow: /
 
 User-agent: Bingbot
+Allow: /
 Crawl-delay: 1
 
 User-agent: Slurp
+Allow: /
 Crawl-delay: 1
 
 User-agent: YandexBot
+Allow: /
 Crawl-delay: 2
 
 User-agent: DuckDuckBot
+Allow: /
 Crawl-delay: 1
 
 # Social media crawlers
 User-agent: facebookexternalhit
+Allow: /
+
 User-agent: Twitterbot
+Allow: /
+
+# Archive bots - Explicitly allow
+User-agent: archive.org_bot
+Allow: /
+
+User-agent: ia_archiver
+Allow: /
 
 # Sitemap locations
 Sitemap: https://www.gatetransfer.com/sitemap.xml
 Sitemap: https://www.gatetransfer.com/sitemap-index.xml
 Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
+
+# Host directive for preferred domain
+Host: www.gatetransfer.com
 
 # Host directive for preferred domain
 Host: www.gatetransfer.com
