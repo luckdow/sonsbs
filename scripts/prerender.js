@@ -25,29 +25,56 @@ async function prerender() {
   
   const browser = await puppeteer.launch({
     headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: [
+      '--no-sandbox', 
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process'
+    ]
   });
 
   const page = await browser.newPage();
   
-  // Increase timeout
-  page.setDefaultTimeout(30000);
+  // Increase timeout to 60 seconds
+  page.setDefaultTimeout(60000);
+  
+  // Set user agent to avoid bot detection
+  await page.setUserAgent('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
   
   for (const route of routes) {
     try {
       console.log(`📄 Pre-rendering: ${route}`);
       
+      const url = `http://localhost:3000${route}`;
+      console.log(`🌐 Navigating to: ${url}`);
+      
       // Navigate to the route
-      await page.goto(`http://localhost:4173${route}`, {
-        waitUntil: 'networkidle2',
-        timeout: 30000
+      await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000
       });
       
-      // Wait for React to render
-      await page.waitForSelector('#root', { timeout: 10000 });
+      // Wait for React app to mount and render
+      console.log('⏳ Waiting for React app to load...');
+      await page.waitForSelector('#root', { timeout: 30000 });
       
-      // Wait for content to load
-      await page.waitForTimeout(2000);
+      // Wait for content to fully load
+      await page.waitForTimeout(5000);
+      
+      // Check if React content is actually rendered
+      const hasContent = await page.evaluate(() => {
+        const root = document.getElementById('root');
+        return root && root.children.length > 0;
+      });
+      
+      if (!hasContent) {
+        console.log('⚠️ React content not found, trying fallback method...');
+        // Try to wait for hidden SEO content
+        await page.waitForSelector('#seo-content', { timeout: 10000 });
+      }
       
       // Get the full HTML
       const html = await page.content();
@@ -68,6 +95,8 @@ async function prerender() {
       
     } catch (error) {
       console.error(`❌ Error pre-rendering ${route}:`, error.message);
+      // Continue with next route instead of failing completely
+      continue;
     }
   }
   
@@ -78,26 +107,20 @@ async function prerender() {
 // Check if we need to start a local server first
 async function main() {
   try {
-    // Test if local server is running
-    const response = await fetch('http://localhost:4173');
+    // Test if local server is running on port 3000 (Vite dev server)
+    console.log('🔍 Checking if dev server is running...');
+    const response = await fetch('http://localhost:3000');
     if (response.ok) {
+      console.log('✅ Dev server is running, starting prerender...');
       await prerender();
     } else {
-      throw new Error('Server not running');
+      throw new Error('Server not responding');
     }
   } catch (error) {
-    console.log('📡 Starting local preview server...');
-    const { spawn } = await import('child_process');
-    
-    const server = spawn('npx', ['vite', 'preview', '--port', '4173'], {
-      stdio: 'pipe'
-    });
-    
-    // Wait for server to start
-    setTimeout(async () => {
-      await prerender();
-      server.kill();
-    }, 5000);
+    console.log('📡 Dev server not running, starting it...');
+    console.log('💡 Run "npm run dev" in another terminal first, then try prerender again.');
+    console.log('🔧 Or use: npm run build && npm run preview');
+    process.exit(1);
   }
 }
 

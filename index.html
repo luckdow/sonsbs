@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- Bot Detection and SEO Fallback -->
+    <script>
+      (function() {
+        var userAgent = navigator.userAgent || '';
+        var isBot = /bot|crawler|spider|crawling|googlebot|bingbot|slurp|yandex|baidu|facebookexternalhit|twitterbot|linkedinbot|pinterest|whatsapp/i.test(userAgent);
+        
+        if (isBot) {
+          // Redirect bots to SEO-optimized static content
+          window.location.href = '/seo-fallback.html';
+        }
+      })();
+    </script>
+    
     <!-- Canonical URL - Critical for SEO -->
     <link rel="canonical" href="https://www.gatetransfer.com/" />
     
@@ -52,25 +65,8 @@
     <meta name="theme-color" content="#1e3a8a">
     <meta name="color-scheme" content="light">
     
-    <!-- Additional SEO meta tags -->
-    <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="format-detection" content="telephone=yes">
-    <meta name="author" content="SBS Turkey Transfer">
-    <meta name="publisher" content="SBS Turkey Transfer">
-    <meta name="application-name" content="Gate Transfer">
-    <meta name="msapplication-TileColor" content="#1e3a8a">
-    <meta name="msapplication-config" content="/browserconfig.xml">
-    
-    <!-- Google Search Console Verification -->
-    <!-- 🚨 KRİTİK: Bu kodu Google Search Console'dan aldığınız gerçek kod ile değiştirin -->
-    <!-- 1. https://search.google.com/search-console adresine gidin -->
-    <!-- 2. Properties → Settings → Verification → HTML tag --> 
-    <!-- 3. content="..." içindeki kodu buraya yazın -->
-    <meta name="google-site-verification" content="GERÇEK_GOOGLE_VERIFICATION_KODUNUZU_BURAYA_YAPIŞTIRIN" />
-    
-    <!-- Additional indexing signals -->
+    <!-- SEO Robot Directives - Birleştirilmiş -->
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="bingbot" content="index, follow">
     <meta name="slurp" content="index, follow">
