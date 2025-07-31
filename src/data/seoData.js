@@ -5,8 +5,8 @@ export const seoData = {
     siteUrl: "https://www.gatetransfer.com",
     pages: {
       homepage: {
-        title: "SBS Turkey Transfer | Antalya VIP Transfer",
-        description: "Antalya havalimanı VIP transfer hizmeti. Profesyonel şoförler, güvenli araçlar. Hemen rezervasyon yapın!",
+        title: "Antalya Transfer | VIP Havalimanı Transfer",
+        description: "Antalya havalimanı transfer hizmeti. Güvenli, konforlu ve ekonomik. 7/24 profesyonel hizmet. Hemen rezervasyon!",
         keywords: [
           "antalya transfer",
           "antalya havalimanı transfer", 
@@ -38,8 +38,8 @@ export const seoData = {
     siteUrl: "https://www.gatetransfer.com/en", 
     pages: {
       homepage: {
-        title: "SBS Turkey Transfer | Antalya Airport Transfer",
-        description: "Professional Antalya Airport transfer service. Safe, comfortable and affordable. Book now!",
+        title: "Antalya Airport Transfer | VIP Service",
+        description: "Professional Antalya Airport transfer. Safe, comfortable and affordable. 24/7 service. Book now!",
         keywords: [
           "antalya airport transfer",
           "antalya vip transfer",

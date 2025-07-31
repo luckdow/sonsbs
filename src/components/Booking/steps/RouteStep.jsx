@@ -640,6 +640,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
             <input
               ref={pickupRef}
               type="text"
+              name="pickup-location"
               placeholder="Başlangıç noktanızı girin..."
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
               value={typeof pickupLocation === 'string' ? pickupLocation : pickupLocation?.address || ''}
@@ -707,6 +708,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
             <input
               ref={dropoffRef}
               type="text"
+              name="dropoff-location"
               placeholder="Varış noktanızı girin..."
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
               value={typeof dropoffLocation === 'string' ? dropoffLocation : dropoffLocation?.address || ''}
@@ -871,6 +873,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="date"
+                name="departure-date"
                 value={date}
                 min={getTodayDate()}
                 onChange={(e) => setDate(e.target.value)}
@@ -887,6 +890,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
               <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="time"
+                name="departure-time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -904,6 +908,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="date"
+                  name="return-date"
                   value={returnDate}
                   min={date || getTodayDate()}
                   onChange={(e) => setReturnDate(e.target.value)}
@@ -918,6 +923,7 @@ const RouteStep = ({ bookingData, updateBookingData, onNext }) => {
                 <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="time"
+                  name="return-time"
                   value={returnTime}
                   onChange={(e) => setReturnTime(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"

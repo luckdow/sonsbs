@@ -144,8 +144,8 @@ const AntalyaTransfer = () => {
   return (
     <>
       <Helmet>
-        <title>Antalya Transfer | Havalimanı Transfer Hizmeti | AYT Otel Ulaşım</title>
-        <meta name="description" content="Antalya havalimanı transfer hizmeti. AYT'den Lara, Konyaaltı, Kaleiçi, Kemer, Side, Belek'e güvenli ulaşım. 7/24 rezervasyon, uygun fiyat. Antalya transfer firması." />
+        <title>Antalya Transfer | Havalimanı VIP Ulaşım</title>
+        <meta name="description" content="Antalya havalimanı transfer hizmeti. AYT'den tüm otellere güvenli ulaşım. 7/24 rezervasyon, uygun fiyat." />
         <meta name="keywords" content="antalya transfer, antalya havalimanı transfer, AYT transfer, antalya taksi, lara transfer, konyaaltı transfer, kaleiçi transfer, antalya otel transfer, antalya ulaşım, antalya şoför hizmeti" />
         <link rel="canonical" href="https://www.gatetransfer.com/antalya-transfer" />
         

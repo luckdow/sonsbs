@@ -135,7 +135,7 @@ const KemerTransfer = () => {
   return (
     <>
       <Helmet>
-        <title>Kemer Transfer | Antalya Kemer Transfer | Kemer Otel Havalimanı Ulaşım</title>
+        <title>Kemer Transfer | Antalya Havalimanı Ulaşım</title>
         <meta name="description" content="Kemer transfer hizmeti. Antalya havalimanından Kemer'e güvenli transfer. Kemer otel, Çamyuva, Tekirova, Olimpos transfer. Doğa turu ulaşımı." />
         <meta name="keywords" content="kemer transfer, antalya kemer transfer, kemer havalimanı transfer, kemer otel transfer, çamyuva transfer, tekirova transfer, olimpos transfer, phaselis transfer" />
         <link rel="canonical" href="https://www.gatetransfer.com/kemer-transfer" />

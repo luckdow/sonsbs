@@ -222,7 +222,7 @@ class PushNotificationService {
     
     try {
       const customerName = `${reservationData.customerInfo?.firstName || ''} ${reservationData.customerInfo?.lastName || ''}`.trim();
-      const direction = reservationData.direction === 'from_airport' ? 'Havaalanından' : 'Havaalanına';
+      const direction = reservationData.direction === 'from_airport' ? 'Havalimanından' : 'Havalimanına';
       const vehicleType = reservationData.selectedVehicle?.name || 'Araç';
       
       // Browser notification

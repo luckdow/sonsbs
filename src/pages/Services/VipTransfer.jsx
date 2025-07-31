@@ -302,7 +302,7 @@ const VipTransfer = () => {
               {
                 time: 'Uçuş Saati',
                 title: 'Uçuş Takibi',
-                description: 'Professional ekibimiz uçuşunuzu takip eder, havaalanında VIP temsilcimiz hazırlık yapar.'
+                description: 'Professional ekibimiz uçuşunuzu takip eder, havalimanında VIP temsilcimiz hazırlık yapar.'
               },
               {
                 time: 'İniş Sonrası',
