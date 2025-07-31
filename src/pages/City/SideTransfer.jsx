@@ -136,7 +136,7 @@ const SideTransfer = () => {
     <>
       <Helmet>
         <title>Side Transfer | Antalya Side Transfer | Side Antik Kent Havalimanı Ulaşım</title>
-        <meta name="description" content="Side transfer hizmeti. Antalya havalimanından Side'ye antik kent transfer. Side Apollon Tapınağı, antik tiyatro, müze transfer. Kültür turizmi." />
+        <meta name="description" content="Antalya havalimanından Side'ye antik kent transfer hizmeti. TURSAB onaylı güvenli ulaşım, Side Apollon Tapınağı, antik tiyatro, Side müzesi. 7/24 konforlu araçlar, kültür turizmi transferi. Hemen rezervasyon!" />
         <meta name="keywords" content="side transfer, antalya side transfer, side havalimanı transfer, side antik kent transfer, apollon tapınağı transfer, side müzesi transfer" />
         <link rel="canonical" href="https://www.gatetransfer.com/side-transfer" />
         
