@@ -152,6 +152,12 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Page Title */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Yönetici Paneli</h1>
+        <p className="text-gray-600 mt-1">Rezervasyonlar, araçlar ve genel istatistikleri görüntüleyin</p>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => (
@@ -181,16 +187,16 @@ const AdminDashboard = () => {
         {/* Recent Reservations */}
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-gray-900">
               Son Rezervasyonlar
-            </h3>
+            </h2>
           </div>
           <div className="p-6">
             {reservations.length === 0 ? (
               <div className="text-center py-8">
-                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500">Henüz rezervasyon yok</p>
-                <p className="text-sm text-gray-400 mt-1">
+                <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-700">Henüz rezervasyon yok</p>
+                <p className="text-sm text-gray-600 mt-1">
                   Yeni rezervasyonlar burada görünecektir
                 </p>
               </div>
@@ -235,9 +241,9 @@ const AdminDashboard = () => {
         {/* Quick Actions */}
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Özet
-            </h3>
+                        <h2 className="text-lg font-semibold text-gray-900">
+              Hızlı İşlemler
+            </h2>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-2 gap-4">

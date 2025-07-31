@@ -117,9 +117,9 @@ const TestimonialsSection = () => {
                   {testimonial.avatar}
                 </div>
                 <div className="ml-3">
-                  <h4 className="font-semibold text-gray-900">
+                  <p className="font-semibold text-gray-900">
                     {testimonial.name}
-                  </h4>
+                  </p>
                   <div className="flex items-center text-sm text-gray-500">
                     <MapPin className="w-3 h-3 mr-1" />
                     {testimonial.location}

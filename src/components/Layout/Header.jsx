@@ -183,7 +183,12 @@ const Header = () => {
             {/* Şehirler Dropdown - Sadece giriş yapmamış kullanıcılar için göster */}
             {!user && (
               <div className="relative group">
-                <button className="relative font-medium transition-colors duration-300 text-white hover:text-yellow-200 flex items-center space-x-1">
+                <button 
+                  className="relative font-medium transition-colors duration-300 text-white hover:text-yellow-200 flex items-center space-x-1"
+                  aria-label="Şehir transfer seçenekleri menüsü"
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                >
                   <span>Şehirler</span>
                   <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
                 </button>
@@ -309,6 +314,9 @@ const Header = () => {
             <button
               className={`lg:hidden p-2 rounded-xl transition-all duration-300 hover:scale-105 text-white hover:bg-white/10`}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "Mobil menüyü kapat" : "Mobil menüyü aç"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -317,6 +325,7 @@ const Header = () => {
 
         {/* Mobile Menu */}
         <div
+          id="mobile-menu"
           className={`lg:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} transition-all duration-300`}
         >
           <div className="py-4 space-y-4 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 rounded-b-2xl shadow-xl">

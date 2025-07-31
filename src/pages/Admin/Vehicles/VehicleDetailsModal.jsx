@@ -153,32 +153,32 @@ const VehicleDetailsModal = ({ vehicle, onClose }) => {
                   
                   <div className="space-y-3">
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Marka</label>
+                      <label className="text-sm font-medium text-gray-700">Marka</label>
                       <p className="text-sm text-gray-900">{vehicle.brand}</p>
                     </div>
                     
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Model</label>
+                      <label className="text-sm font-medium text-gray-700">Model</label>
                       <p className="text-sm text-gray-900">{vehicle.model}</p>
                     </div>
                     
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Yıl</label>
+                      <label className="text-sm font-medium text-gray-700">Yıl</label>
                       <p className="text-sm text-gray-900">{vehicle.year}</p>
                     </div>
                     
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Plaka</label>
+                      <label className="text-sm font-medium text-gray-700">Plaka</label>
                       <p className="text-sm text-gray-900 font-mono">{vehicle.plateNumber}</p>
                     </div>
                     
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Renk</label>
+                      <label className="text-sm font-medium text-gray-700">Renk</label>
                       <p className="text-sm text-gray-900">{vehicle.color}</p>
                     </div>
                     
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Tip</label>
+                      <label className="text-sm font-medium text-gray-700">Tip</label>
                       <p className="text-sm text-gray-900 capitalize">{vehicle.type}</p>
                     </div>
                   </div>
