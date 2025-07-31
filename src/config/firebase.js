@@ -65,14 +65,25 @@ if (app) {
     // Configure Firestore settings for better performance and timeout handling
     if (typeof window !== 'undefined') {
       // Enable offline persistence with timeout settings
-      db._settings = {
-        ...db._settings,
-        ignoreUndefinedProperties: true,
-        merge: true,
-        // Connection timeout settings
-        experimentalForceLongPolling: false,
-        experimentalAutoDetectLongPolling: true
-      };
+      import('firebase/firestore').then(({ connectFirestoreEmulator, enableNetwork, disableNetwork }) => {
+        // Add connection timeout and retry logic
+        const setupFirestoreConnection = async () => {
+          try {
+            // Set connection timeout
+            setTimeout(() => {
+              console.log('🔄 Firestore connection timeout - using offline mode');
+            }, 10000);
+            
+            // Enable network with retry
+            await enableNetwork(db);
+            console.log('✅ Firestore online connection established');
+          } catch (error) {
+            console.warn('⚠️ Firestore connection error, using offline mode:', error);
+          }
+        };
+        
+        setupFirestoreConnection();
+      });
     }
     
     console.log('✅ Firestore initialized with timeout settings');

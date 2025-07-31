@@ -86,6 +86,3 @@ Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
 
 # Host directive for preferred domain
 Host: www.gatetransfer.com
-
-# Host directive for preferred domain
-Host: www.gatetransfer.com

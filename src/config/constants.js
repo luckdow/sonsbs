@@ -4,7 +4,13 @@ export const GOOGLE_MAPS_CONFIG = {
   libraries: ["places", "geometry", "drawing"],
   version: "weekly",
   language: "tr",
-  region: "TR"
+  region: "TR",
+  // Error handling for API loading
+  onError: (error) => {
+    console.warn('⚠️ Google Maps API loading error:', error);
+  },
+  // Timeout for API loading
+  timeout: 10000
 };
 
 // Application Constants
