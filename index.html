@@ -14,6 +14,17 @@
     <!-- Canonical URL - Critical for SEO -->
     <link rel="canonical" href="https://www.gatetransfer.com/" />
     
+    <!-- Domain Verification for Google Search Console -->
+    <meta name="google-site-verification" content="" />
+    
+    <!-- Alternative Domain Handling -->
+    <script>
+      // Ensure consistent www domain usage
+      if (window.location.hostname === 'gatetransfer.com') {
+        window.location.replace('https://www.gatetransfer.com' + window.location.pathname + window.location.search);
+      }
+    </script>
+    
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@gatetransfer" />
