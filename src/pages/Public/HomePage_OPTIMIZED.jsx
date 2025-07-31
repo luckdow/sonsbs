@@ -64,6 +64,11 @@ const HomePage = () => {
         
         {/* Enhanced Schema.org JSON-LD */}
         <Helmet>
+          {/* Primary SEO Tags */}
+          <title>SBS Turkey Transfer | Antalya VIP Havalimanı Transfer Hizmeti</title>
+          <meta name="description" content="Antalya havalimanı transfer hizmeti. TURSAB onaylı güvenli ulaşım, konforlu araçlar, 7/24 profesyonel şoför hizmeti. Kemer, Side, Belek, Alanya transferi. Hemen rezervasyon yapın!" />
+          <link rel="canonical" href="https://www.gatetransfer.com/" />
+          
           <script type="application/ld+json">
             {JSON.stringify(localBusinessSchema)}
           </script>
@@ -72,6 +77,8 @@ const HomePage = () => {
           </script>
           
           {/* Additional SEO enhancements */}
+          <meta property="og:title" content="SBS Turkey Transfer | Antalya VIP Transfer" />
+          <meta property="og:description" content="Antalya'nın en güvenilir transfer hizmeti. TURSAB onaylı, 7/24 hizmet." />
           <meta property="og:type" content="website" />
           <meta property="og:url" content="https://www.gatetransfer.com/" />
           <meta property="og:image" content="https://www.gatetransfer.com/images/sbs-transfer-og.jpg" />
