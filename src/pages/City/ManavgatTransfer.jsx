@@ -98,7 +98,7 @@ const ManavgotTransfer = () => {
         <title>Manavgat Transfer | Antalya Manavgat Transfer | Manavgat Otel Havalimanı Ulaşım</title>
         <meta name="description" content="Manavgat transfer hizmeti. Antalya havalimanından Manavgat'a hızlı transfer. Manavgat otel, Side, şelale transfer. Uygun fiyat garantisi." />
         <meta name="keywords" content="manavgat transfer, antalya manavgat transfer, manavgat havalimanı transfer, manavgat otel transfer, side transfer, manavgat şelalesi transfer, köprülü kanyon transfer" />
-        <link rel="canonical" href="https://gatetransfer.com/manavgat-transfer" />
+        <link rel="canonical" href="https://www.gatetransfer.com/manavgat-transfer" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Manavgat Transfer Hizmeti | Manavgat Otel ve Havalimanı Transferi" />

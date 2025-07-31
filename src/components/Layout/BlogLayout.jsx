@@ -34,7 +34,7 @@ const BlogLayout = ({ children, seo = {}, heroTitle, heroSubtitle }) => {
         {/* Additional SEO Tags */}
         <meta name="robots" content="index, follow" />
         <meta name="author" content="GATE Transfer" />
-        <link rel="canonical" href={`https://gatetransfer.com${window.location.pathname}`} />
+        <link rel="canonical" href={`https://www.gatetransfer.com${window.location.pathname}`} />
         
         {/* Schema.org JSON-LD */}
         <script type="application/ld+json">

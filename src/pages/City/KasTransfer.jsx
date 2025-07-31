@@ -98,7 +98,7 @@ const KasTransfer = () => {
         <title>Kaş Transfer | Antalya Kaş Transfer | Kaş Otel Havalimanı Ulaşım</title>
         <meta name="description" content="Kaş transfer hizmeti. Antalya havalimanından Kaş'a güvenli transfer. Kaş otel, Kalkan, Patara antik kentler transfer. Likya yolu manzaralı yolculuk." />
         <meta name="keywords" content="kaş transfer, antalya kaş transfer, kaş havalimanı transfer, kaş otel transfer, kalkan kaş transfer, patara transfer, likya yolu transfer, kaş antik kentler" />
-        <link rel="canonical" href="https://gatetransfer.com/kas-transfer" />
+        <link rel="canonical" href="https://www.gatetransfer.com/kas-transfer" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Kaş Transfer Hizmeti | Kaş Otel ve Havalimanı Transferi" />

@@ -72,10 +72,10 @@ const HomePage = () => {
           </script>
           
           {/* Additional SEO enhancements */}
-          <link rel="canonical" href="https://gatetransfer.com" />
+          <link rel="canonical" href="https://www.gatetransfer.com/" />
           <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://gatetransfer.com" />
-          <meta property="og:image" content="https://gatetransfer.com/images/sbs-transfer-og.jpg" />
+          <meta property="og:url" content="https://www.gatetransfer.com/" />
+          <meta property="og:image" content="https://www.gatetransfer.com/images/sbs-transfer-og.jpg" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="geo.region" content="TR-07" />
           <meta name="geo.placename" content="Antalya" />

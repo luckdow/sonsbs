@@ -34,12 +34,12 @@ const CityPageLayout = ({
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content={keywords} />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`https://gatetransfer.com.tr/${slug}`} />
+        <link rel="canonical" href={`https://www.gatetransfer.com/${slug}`} />
         
         {/* Open Graph Tags */}
         <meta property="og:title" content={metaTitle} />
         <meta property="og:description" content={metaDescription} />
-        <meta property="og:url" content={`https://gatetransfer.com.tr/${slug}`} />
+        <meta property="og:url" content={`https://www.gatetransfer.com/${slug}`} />
         <meta property="og:type" content="website" />
         <meta property="og:image" content={heroImage} />
         

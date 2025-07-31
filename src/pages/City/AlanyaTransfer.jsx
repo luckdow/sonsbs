@@ -98,7 +98,7 @@ const AlanyaTransfer = () => {
         <title>Alanya Transfer | Antalya Alanya Transfer | Alanya Havalimanı Ulaşım Hizmeti</title>
         <meta name="description" content="Alanya transfer hizmeti. Antalya havalimanından Alanya'ya uzun mesafe transfer. Alanya Kalesi, Kleopatra Plajı, tarihi yerler transfer. Güvenli ulaşım." />
         <meta name="keywords" content="alanya transfer, antalya alanya transfer, alanya havalimanı transfer, alanya kale transfer, kleopatra plajı transfer, alanya turizm transfer" />
-        <link rel="canonical" href="https://gatetransfer.com/alanya-transfer" />
+        <link rel="canonical" href="https://www.gatetransfer.com/alanya-transfer" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Alanya Transfer Hizmeti | Alanya Tarihi Yerler Transferi" />

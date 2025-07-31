@@ -138,7 +138,7 @@ const BelekTransfer = () => {
         <title>Belek Transfer | Antalya Belek Transfer | Belek Golf Resort Havalimanı Ulaşım</title>
         <meta name="description" content="Belek transfer hizmeti. Antalya havalimanından Belek'e golf transfer. Belek golf sahaları, lüks resort, Aspendos antik tiyatro transfer. Golf turizmi." />
         <meta name="keywords" content="belek transfer, antalya belek transfer, belek havalimanı transfer, belek golf transfer, belek resort transfer, aspendos transfer, golf turizmi transfer" />
-        <link rel="canonical" href="https://gatetransfer.com/belek-transfer" />
+        <link rel="canonical" href="https://www.gatetransfer.com/belek-transfer" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Belek Transfer Hizmeti | Belek Golf Resort Transferi" />

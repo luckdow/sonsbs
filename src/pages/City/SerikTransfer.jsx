@@ -98,7 +98,7 @@ const SerikTransfer = () => {
         <title>Serik Transfer | Antalya Serik Transfer | Belek Golf Resort Havalimanı Ulaşım</title>
         <meta name="description" content="Serik transfer hizmeti. Antalya havalimanından Serik'e hızlı transfer. Belek golf resort, Aspendos antik tiyatro transfer. Golf turizmi ulaşım." />
         <meta name="keywords" content="serik transfer, antalya serik transfer, serik havalimanı transfer, belek golf transfer, serik otel transfer, aspendos transfer, golf resort transfer, belek transfer" />
-        <link rel="canonical" href="https://gatetransfer.com/serik-transfer" />
+        <link rel="canonical" href="https://www.gatetransfer.com/serik-transfer" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Serik Transfer Hizmeti | Serik Belek Golf Resort Transferi" />

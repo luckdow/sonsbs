@@ -18,6 +18,17 @@ Disallow: /tmp/
 Disallow: /*.json$
 Disallow: /*.config.*$
 
+# Disallow legacy hash routing URLs
+Disallow: /*#!*
+
+# Disallow AJAX crawling URLs
+Disallow: /*_escaped_fragment_*
+
+# Disallow legacy 404 URLs
+Disallow: /readme.html
+Disallow: /lander
+Disallow: /online-reservation/
+
 # Explicitly allow important files and directories
 Allow: /images/
 Allow: /favicon.ico

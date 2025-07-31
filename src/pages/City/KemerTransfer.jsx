@@ -138,7 +138,7 @@ const KemerTransfer = () => {
         <title>Kemer Transfer | Antalya Kemer Transfer | Kemer Otel Havalimanı Ulaşım</title>
         <meta name="description" content="Kemer transfer hizmeti. Antalya havalimanından Kemer'e güvenli transfer. Kemer otel, Çamyuva, Tekirova, Olimpos transfer. Doğa turu ulaşımı." />
         <meta name="keywords" content="kemer transfer, antalya kemer transfer, kemer havalimanı transfer, kemer otel transfer, çamyuva transfer, tekirova transfer, olimpos transfer, phaselis transfer" />
-        <link rel="canonical" href="https://gatetransfer.com/kemer-transfer" />
+        <link rel="canonical" href="https://www.gatetransfer.com/kemer-transfer" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Kemer Transfer Hizmeti | Kemer Otel ve Havalimanı Transferi" />

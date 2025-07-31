@@ -39,6 +39,49 @@
   ],
   "redirects": [
     {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "query",
+          "key": "_escaped_fragment_",
+          "value": "kurumsal(.*)"
+        }
+      ],
+      "destination": "/hizmetler/kurumsal-transfer",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "query",
+          "key": "_escaped_fragment_"
+        }
+      ],
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/readme.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/lander",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/online-reservation/(.*)",
+      "destination": "/rezervasyon",
+      "permanent": true
+    },
+    {
+      "source": "/online-reservation",
+      "destination": "/rezervasyon",
+      "permanent": true
+    },
+    {
       "source": "/index.html",
       "destination": "/",
       "permanent": true

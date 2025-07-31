@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
@@ -169,14 +169,14 @@ function App() {
                 <Route path="hizmetler/karsilama-hizmeti" element={<KarsilamaHizmeti />} />
                 
                 {/* Legacy Service Routes - Redirect to new paths */}
-                <Route path="havaalani-transfer" element={<HavaalaniTransfer />} />
-                <Route path="vip-transfer" element={<VipTransfer />} />
-                <Route path="grup-transfer" element={<GrupTransfer />} />
-                <Route path="otel-transfer" element={<OtelTransfer />} />
-                <Route path="sehir-ici-transfer" element={<SehirIciTransfer />} />
-                <Route path="dugun-transfer" element={<DugunTransfer />} />
-                <Route path="kurumsal-transfer" element={<KurumsalTransfer />} />
-                <Route path="karsilama-hizmeti" element={<KarsilamaHizmeti />} />
+                <Route path="havaalani-transfer" element={<Navigate to="/hizmetler/havaalani-transfer" replace />} />
+                <Route path="vip-transfer" element={<Navigate to="/hizmetler/vip-transfer" replace />} />
+                <Route path="grup-transfer" element={<Navigate to="/hizmetler/grup-transfer" replace />} />
+                <Route path="otel-transfer" element={<Navigate to="/hizmetler/otel-transfer" replace />} />
+                <Route path="sehir-ici-transfer" element={<Navigate to="/hizmetler/sehir-ici-transfer" replace />} />
+                <Route path="dugun-transfer" element={<Navigate to="/hizmetler/dugun-transfer" replace />} />
+                <Route path="kurumsal-transfer" element={<Navigate to="/hizmetler/kurumsal-transfer" replace />} />
+                <Route path="karsilama-hizmeti" element={<Navigate to="/hizmetler/karsilama-hizmeti" replace />} />
               </Route>
 
               {/* Blog Pages - Standalone Routes */}

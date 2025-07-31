@@ -99,7 +99,7 @@ const LaraTransfer = () => {
         <title>Lara Transfer | Lara Otel Transfer | Antalya Havalimanı Lara Ulaşım</title>
         <meta name="description" content="Lara transfer hizmeti. Antalya havalimanından Lara Beach otellerine güvenli transfer. Lara Barut Collection, Concorde, Delphin otel transferi. 7/24 hizmet." />
         <meta name="keywords" content="lara transfer, lara otel transfer, antalya lara transfer, lara beach transfer, antalya havalimanı lara, lara barut transfer, lara concorde transfer, lara kundu transfer" />
-        <link rel="canonical" href="https://gatetransfer.com/lara-transfer" />
+        <link rel="canonical" href="https://www.gatetransfer.com/lara-transfer" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Lara Transfer Hizmeti | Lara Otel ve Havalimanı Transferi" />

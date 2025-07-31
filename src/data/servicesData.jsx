@@ -244,7 +244,7 @@ export const servicesData = {
     title: 'Kurumsal Transfer Antalya | Corporate Transfer ve İş Ulaşım Hizmeti',
     description: 'Antalya kurumsal transfer hizmeti ile profesyonel iş ulaşımı. Executive transfer, kongre ulaşımı ve şirket etkinlikleri için çözüm.',
     keywords: 'antalya kurumsal transfer, corporate transfer, iş ulaşımı, executive transfer, kongre transfer, şirket ulaşım',
-    canonicalUrl: '/kurumsal-transfer',
+    canonicalUrl: '/hizmetler/kurumsal-transfer',
     heroTitle: 'Kurumsal Transfer',
     heroSubtitle: 'Profesyonel İş Ulaşımı',
     heroDescription: 'Şirketiniz için executive transfer, kongre ulaşımı, misafir ağırlama ve kurumsal etkinlik transferleri.',

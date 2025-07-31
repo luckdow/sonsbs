@@ -98,7 +98,7 @@ const KalkanTransfer = () => {
         <title>Kalkan Transfer | Antalya Kalkan Transfer | Kalkan Otel Havalimanı Ulaşım</title>
         <meta name="description" content="Kalkan transfer hizmeti. Antalya havalimanından Kalkan'a lüks transfer. Kalkan otel, villa, plaj transfer. Kapıtaş, Patara plajları ulaşım." />
         <meta name="keywords" content="kalkan transfer, antalya kalkan transfer, kalkan havalimanı transfer, kalkan otel transfer, kapıtaş plajı transfer, patara plajı transfer, kalkan villa transfer, lüks kalkan transfer" />
-        <link rel="canonical" href="https://gatetransfer.com/kalkan-transfer" />
+        <link rel="canonical" href="https://www.gatetransfer.com/kalkan-transfer" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Kalkan Transfer Hizmeti | Kalkan Lüks Otel ve Havalimanı Transferi" />

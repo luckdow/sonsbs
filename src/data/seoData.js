@@ -2,7 +2,7 @@
 export const seoData = {
   tr: {
     siteName: "SBS Turkey Transfer | Antalya Havalimanı Transfer Hizmeti",
-    siteUrl: "https://gatetransfer.com",
+    siteUrl: "https://www.gatetransfer.com",
     pages: {
       homepage: {
         title: "SBS Turkey Transfer | Antalya Havalimanı Transfer | 7/24 Güvenli VIP Transfer Hizmeti",
@@ -35,7 +35,7 @@ export const seoData = {
   },
   en: {
     siteName: "SBS Turkey Transfer | Antalya Airport Transfer Service",
-    siteUrl: "https://gatetransfer.com/en", 
+    siteUrl: "https://www.gatetransfer.com/en", 
     pages: {
       homepage: {
         title: "SBS Turkey Transfer | Antalya Airport Transfer | 24/7 Safe VIP Transportation Service",
@@ -63,7 +63,7 @@ export const seoData = {
   },
   ru: {
     siteName: "SBS Turkey Transfer | Трансфер из аэропорта Антальи",
-    siteUrl: "https://gatetransfer.com/ru",
+    siteUrl: "https://www.gatetransfer.com/ru",
     pages: {
       homepage: {
         title: "SBS Turkey Transfer | Трансфер из аэропорта Антальи | 24/7 VIP Трансфер",
@@ -87,7 +87,7 @@ export const seoData = {
   },
   de: {
     siteName: "SBS Turkey Transfer | Antalya Flughafentransfer Service",
-    siteUrl: "https://gatetransfer.com/de",
+    siteUrl: "https://www.gatetransfer.com/de",
     pages: {
       homepage: {
         title: "SBS Turkey Transfer | Antalya Flughafentransfer | 24/7 VIP Transport",
@@ -111,7 +111,7 @@ export const seoData = {
   },
   ar: {
     siteName: "SBS Turkey Transfer | خدمة النقل من مطار انطاليا",
-    siteUrl: "https://gatetransfer.com/ar",
+    siteUrl: "https://www.gatetransfer.com/ar",
     pages: {
       homepage: {
         title: "SBS Turkey Transfer | نقل مطار انطاليا | خدمة النقل VIP 24/7",
@@ -135,7 +135,7 @@ export const seoData = {
   },
   ro: {
     siteName: "SBS Turkey Transfer | Serviciu Transfer Aeroport Antalya",
-    siteUrl: "https://gatetransfer.com/ro",
+    siteUrl: "https://www.gatetransfer.com/ro",
     pages: {
       homepage: {
         title: "SBS Turkey Transfer | Transfer Aeroport Antalya | Serviciu VIP Transfer | Transport Sigur 24/7",
@@ -159,7 +159,7 @@ export const seoData = {
   },
   pl: {
     siteName: "SBS Turkey Transfer | Usługa Transferu z Lotniska Antalya",
-    siteUrl: "https://gatetransfer.com/pl",
+    siteUrl: "https://www.gatetransfer.com/pl",
     pages: {
       homepage: {
         title: "SBS Turkey Transfer | Transfer z Lotniska Antalya | Usługa VIP Transfer | Bezpieczny Transport 24/7",
@@ -190,7 +190,7 @@ export const generateStructuredData = (language = 'tr') => {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi",
-    "url": data?.siteUrl || "https://gatetransfer.com",
+    "url": data?.siteUrl || "https://www.gatetransfer.com",
     "description": data?.pages?.homepage?.description,
     "telephone": "+905325742682",
     "email": "sbstravel@gmail.com",

@@ -2,8 +2,25 @@
 http://gatetransfer.com/*    https://www.gatetransfer.com/:splat    301!
 https://gatetransfer.com/*    https://www.gatetransfer.com/:splat    301!
 
+# Legacy URL redirects - Fix 404 errors
+/readme.html    /    301!
+/lander    /    301!
+/online-reservation/    /rezervasyon    301!
+/online-reservation    /rezervasyon    301!
+
+# AJAX Crawling redirects - Fix _escaped_fragment_ URLs
+/?_escaped_fragment_=kurumsal*    /hizmetler/kurumsal-transfer    301!
+/?_escaped_fragment_=*    /    301!
+
+# Hash routing redirects - Fix legacy URLs
+/#!kurumsal/*    /hizmetler/kurumsal-transfer    301!
+/#!*    /    301!
+
 # Netlify redirects - For SPA routing
 /*    /index.html   200
+
+# 404 fallback
+/*    /404.html     404
 
 # SEO friendly redirects
 /home    /    301
