@@ -72,7 +72,6 @@ const HomePage = () => {
           </script>
           
           {/* Additional SEO enhancements */}
-          <link rel="canonical" href="https://www.gatetransfer.com/" />
           <meta property="og:type" content="website" />
           <meta property="og:url" content="https://www.gatetransfer.com/" />
           <meta property="og:image" content="https://www.gatetransfer.com/images/sbs-transfer-og.jpg" />
