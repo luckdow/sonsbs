@@ -1,0 +1,3 @@
+# Google Site Verification placeholder
+# Buraya Google Search Console'dan aldığınız verification kodunu ekleyin
+# Örnek: google-site-verification: your-verification-code
