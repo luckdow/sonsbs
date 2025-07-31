@@ -399,12 +399,17 @@ const SEOAdminPanel = () => {
                 </div>
                 
                 <div className="flex space-x-4">
-                  <Button onClick={generateNewSitemap} className="bg-blue-600 hover:bg-blue-700">
+                  <Button 
+                    onClick={generateNewSitemap} 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    aria-label="Sitemap dosyasını güncelle"
+                  >
                     🔄 Sitemap Güncelle
                   </Button>
                   <Button 
                     onClick={() => window.open('/sitemap.xml', '_blank')}
                     variant="outline"
+                    aria-label="Sitemap dosyasını yeni sekmede görüntüle"
                   >
                     👁️ Sitemap Görüntüle
                   </Button>
@@ -428,7 +433,11 @@ const SEOAdminPanel = () => {
                       Tüm SEO metrikleri ve önerileri içeren detaylı rapor
                     </div>
                   </div>
-                  <Button onClick={exportSEOReport} className="bg-green-600 hover:bg-green-700">
+                  <Button 
+                    onClick={exportSEOReport} 
+                    className="bg-green-600 hover:bg-green-700"
+                    aria-label="SEO performans raporunu JSON formatında indir"
+                  >
                     📊 Rapor İndir
                   </Button>
                 </div>
