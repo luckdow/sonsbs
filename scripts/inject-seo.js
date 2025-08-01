@@ -218,8 +218,8 @@ const botDetectionScript = `
 `;
 
 function injectDynamicCanonicals(htmlContent) {
-  // Remove any existing static canonical
-  htmlContent = htmlContent.replace(/<link rel="canonical"[^>]*>/g, '');
+  // Don't remove existing canonical - just add dynamic ones via script
+  // htmlContent = htmlContent.replace(/<link rel="canonical"[^>]*>/g, '');
   
   // Inject comprehensive dynamic SEO script that works for all pages
   const dynamicSEOScript = `
@@ -307,16 +307,16 @@ function injectDynamicCanonicals(htmlContent) {
         // Update document title
         document.title = seoData.title;
         
-        // Remove existing meta tags to prevent duplicates
+        // Remove existing meta tags to prevent duplicates (except canonical)
         const existingTags = ['description', 'keywords', 'og:title', 'og:description', 'og:url', 'og:image'];
         existingTags.forEach(tag => {
           const existing = document.querySelector(\`meta[name="\${tag}"], meta[property="\${tag}"]\`);
           if (existing) existing.remove();
         });
         
-        // Remove existing canonical
-        const existingCanonical = document.querySelector('link[rel="canonical"]');
-        if (existingCanonical) existingCanonical.remove();
+        // Don't remove existing canonical - add additional ones if needed
+        // const existingCanonical = document.querySelector('link[rel="canonical"]');
+        // if (existingCanonical) existingCanonical.remove();
         
         // Add new meta tags
         const createMeta = (name, content, isProperty = false) => {
