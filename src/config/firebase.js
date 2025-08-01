@@ -39,12 +39,34 @@ const isBot = () => {
   return isLikelyBot || hasNoWindow || hasNoDocument;
 };
 
-// Initialize Firebase with improved error handling
+// Initialize Firebase with improved error handling and debugging
 let app = null;
 try {
   if (!isBot() && typeof window !== 'undefined') {
     app = initializeApp(firebaseConfig);
     console.log('✅ Firebase app initialized successfully');
+    
+    // Additional debug logging for auth state
+    if (typeof window !== 'undefined') {
+      import('firebase/auth').then(({ getAuth, onAuthStateChanged }) => {
+        const auth = getAuth(app);
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            console.log('🔑 Firebase Auth: User is signed in', user.uid);
+            
+            // Manually force Firestore token refresh for more reliable permissions
+            user.getIdToken(true).then(() => {
+              console.log('🔄 Firebase Auth: Token refreshed successfully');
+            }).catch(error => {
+              console.error('❌ Token refresh error:', error);
+            });
+            
+          } else {
+            console.log('⚠️ Firebase Auth: No user signed in');
+          }
+        });
+      });
+    }
   } else {
     console.log('🤖 Bot detected - Firebase initialization skipped');
   }
@@ -54,7 +76,23 @@ try {
 }
 
 // Initialize Firebase services with safe fallbacks and timeout settings
-export const auth = app ? getAuth(app) : null;
+let authInstance = null;
+try {
+  if (app) {
+    authInstance = getAuth(app);
+    console.log('✅ Firebase Auth initialized successfully');
+  }
+} catch (error) {
+  console.error('❌ Firebase Auth initialization error:', error);
+}
+
+// Auth değişkeni her zaman bir nesne olsun (null hatası almamak için)
+export const auth = authInstance || {
+  currentUser: null,
+  onAuthStateChanged: (callback) => callback(null),
+  signOut: async () => {},
+  signInWithEmailAndPassword: async () => { throw new Error('Auth not initialized') }
+};
 
 // Firestore with timeout and offline settings
 let db = null;
@@ -69,10 +107,10 @@ if (app) {
         // Add connection timeout and retry logic
         const setupFirestoreConnection = async () => {
           try {
-            // Set connection timeout
+            // Set connection timeout - extended to 30 seconds to give more time for auth
             setTimeout(() => {
               console.log('🔄 Firestore connection timeout - using offline mode');
-            }, 10000);
+            }, 30000);
             
             // Enable network with retry
             await enableNetwork(db);

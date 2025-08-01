@@ -289,7 +289,7 @@ const BookingConfirmationPage = () => {
           
           // Rezervasyonu doğru formatta Firebase'e kaydet
           console.log('💾 Firebase\'e rezervasyon kaydediliyor...');
-          await saveReservationToFirebase(data, reservationCode);
+          await saveReservationToFirebase(data, reservationCode, tempPassword, isNewUser);
           
           // QR kod oluştur - hemen oluştur
           console.log('🔲 QR kod oluşturuluyor...');
@@ -385,7 +385,7 @@ const BookingConfirmationPage = () => {
   }, []); // BOŞALT - Sadece component mount'ta çalışsın
 
   // Rezervasyonu Firebase'e admin panelin beklediği formatta kaydet
-  const saveReservationToFirebase = async (data, reservationCode) => {
+  const saveReservationToFirebase = async (data, reservationCode, tempPassword = null, isNewUser = false) => {
     try {
       
       const reservationData = {

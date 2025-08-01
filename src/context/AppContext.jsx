@@ -336,6 +336,39 @@ export const AppProvider = ({ children }) => {
 
     async getAll(collectionName, orderByField = 'createdAt') {
       try {
+        // Güvenlik kontrolü için daha güvenli bir yaklaşım kullanın
+        let authStatus = false;
+        
+        // Auth kontrolünü güvenli bir şekilde yap
+        try {
+          const { getAuth } = await import('firebase/auth');
+          const authInstance = getAuth();
+          // authInstance mevcut mu kontrol et
+          if (authInstance) {
+            const currentUser = authInstance.currentUser;
+            authStatus = !!currentUser;
+            
+            if (currentUser) {
+              console.log(`✅ Authenticated user found: ${currentUser.uid}`);
+            }
+          }
+        } catch (authError) {
+          console.warn('Authentication check failed:', authError.message);
+          // Auth kontrolü başarısız olsa da devam et
+        }
+
+        // Eğer kimlik doğrulama yoksa ve koleksiyon kısıtlı erişimliyse uyarı ver
+        if (!authStatus) {
+          console.warn(`Warning: Trying to fetch ${collectionName} without authentication`);
+          
+          // Genel koleksiyonlar için kimlik doğrulaması olmadan da erişime izin ver
+          if (!['vehicles', 'settings', 'extraServices', 'counters'].includes(collectionName)) {
+            // Hata yerine sessiz bir şekilde boş array dön - bu şekilde UI çalışmaya devam eder
+            console.warn(`💡 Non-authenticated access to ${collectionName} - returning empty results`);
+            return [];
+          }
+        }
+
         const q = query(
           collection(db, collectionName),
           orderBy(orderByField, 'desc')
@@ -347,6 +380,39 @@ export const AppProvider = ({ children }) => {
         }));
       } catch (error) {
         console.error(`Error fetching ${collectionName}:`, error);
+        
+        // If this is a permissions error, automatically attempt token refresh
+        if (error.code === 'permission-denied') {
+          try {
+            // Doğrudan import etmek yerine getAuth'u kullan
+            const { getAuth } = await import('firebase/auth');
+            const authInstance = getAuth();
+            
+            if (authInstance && authInstance.currentUser) {
+              // Try to refresh the token and retry
+              await authInstance.currentUser.getIdToken(true);
+              console.log('🔄 Auth token refreshed, retrying...');
+              
+              // Retry the request after token refresh
+              const q = query(
+                collection(db, collectionName),
+                orderBy(orderByField, 'desc')
+              );
+              const querySnapshot = await getDocs(q);
+              return querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }));
+            } else {
+              console.warn('⚠️ Cannot refresh token - no authenticated user');
+              return [];
+            }
+          } catch (retryError) {
+            console.error(`Failed to refresh token and retry:`, retryError);
+            return [];
+          }
+        }
+        
         throw error;
       }
     }
@@ -581,22 +647,59 @@ export const AppProvider = ({ children }) => {
       try {
         actions.setLoading(true);
         
-        const [vehicles, drivers, customers, extraServices, reservations] = await Promise.all([
-          firebaseOperations.getAll('vehicles'),
-          firebaseOperations.getAll('drivers'),
-          firebaseOperations.getAll('customers'),
-          firebaseOperations.getAll('extraServices'),
-          firebaseOperations.getAll('reservations')
-        ]);
-
-        actions.setVehicles(vehicles);
-        actions.setDrivers(drivers);
-        actions.setCustomers(customers);
-        actions.setExtraServices(extraServices);
-        actions.setReservations(reservations);
+        // Koleksiyonları ayrı ayrı yükle, böylece bir hata diğerlerini etkilemez
+        let vehicles = [], drivers = [], customers = [], extraServices = [], reservations = [];
+        
+        // Her bir koleksiyonu ayrı try-catch bloklarında yükle
+        try {
+          vehicles = await firebaseOperations.getAll('vehicles');
+          actions.setVehicles(vehicles);
+          console.log(`✅ Loaded ${vehicles.length} vehicles`);
+        } catch (error) {
+          console.error('Error loading vehicles:', error);
+          actions.setVehicles([]);
+        }
+        
+        try {
+          drivers = await firebaseOperations.getAll('drivers');
+          actions.setDrivers(drivers);
+          console.log(`✅ Loaded ${drivers.length} drivers`);
+        } catch (error) {
+          console.error('Error loading drivers:', error);
+          actions.setDrivers([]);
+        }
+        
+        try {
+          customers = await firebaseOperations.getAll('customers');
+          actions.setCustomers(customers);
+          console.log(`✅ Loaded ${customers.length} customers`);
+        } catch (error) {
+          console.error('Error loading customers:', error);
+          actions.setCustomers([]);
+        }
+        
+        try {
+          extraServices = await firebaseOperations.getAll('extraServices');
+          actions.setExtraServices(extraServices);
+          console.log(`✅ Loaded ${extraServices.length} extraServices`);
+        } catch (error) {
+          console.error('Error loading extra services:', error);
+          actions.setExtraServices([]);
+        }
+        
+        try {
+          reservations = await firebaseOperations.getAll('reservations');
+          actions.setReservations(reservations);
+          console.log(`✅ Loaded ${reservations.length} reservations`);
+        } catch (error) {
+          console.error('Error loading reservations:', error);
+          actions.setReservations([]);
+        }
+        
+        console.log('✅ Data loading completed with some results');
       } catch (error) {
-        console.error('Error loading data:', error);
-        actions.showNotification('error', 'Veriler yüklenirken hata oluştu', 'Hata');
+        console.error('Error in overall loadAllData process:', error);
+        actions.showNotification('error', 'Veriler yüklenirken bir sorun oluştu, kısmi veriler görüntüleniyor', 'Uyarı');
       } finally {
         actions.setLoading(false);
       }
