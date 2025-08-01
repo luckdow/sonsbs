@@ -539,6 +539,73 @@
         }
       </style>
     </div>
+    
+    <!-- Critical Bot Detection & SEO Enhancement -->
+    <script>
+      (function() {
+        // Enhanced bot detection
+        const userAgent = navigator.userAgent || '';
+        const isBot = /bot|crawler|spider|crawling|googlebot|bingbot|slurp|yandex|baidu|facebookexternalhit|twitterbot|linkedinbot|pinterest|whatsapp|telegram|skype|google|bing|yahoo|duckduck/i.test(userAgent);
+        
+        // Additional bot indicators
+        const isHeadless = navigator.webdriver || window.phantom || window._phantom || window.callPhantom;
+        const isAutomated = window.chrome && window.chrome.runtime && window.chrome.runtime.onConnect;
+        
+        // Check for missing browser APIs that bots might not have
+        const hasNormalBrowserAPIs = !!(
+          window.localStorage && 
+          window.sessionStorage && 
+          window.indexedDB && 
+          document.documentElement.style.webkitTransform !== undefined
+        );
+        
+        const isBotLikely = isBot || isHeadless || isAutomated || !hasNormalBrowserAPIs;
+        
+        if (isBotLikely) {
+          // Bot detected - show SEO content immediately
+          const seoContent = document.getElementById('seo-content');
+          const loadingFallback = document.getElementById('loading-fallback');
+          
+          if (seoContent) {
+            seoContent.style.visibility = 'visible';
+            seoContent.style.position = 'relative';
+            seoContent.style.top = 'auto';
+            seoContent.style.padding = '20px';
+            seoContent.style.fontFamily = 'Arial, sans-serif';
+            seoContent.style.lineHeight = '1.6';
+            seoContent.style.background = '#ffffff';
+            seoContent.style.margin = '20px auto';
+            seoContent.style.maxWidth = '1200px';
+          }
+          
+          if (loadingFallback) {
+            loadingFallback.style.display = 'none';
+          }
+          
+          // Don't load React for bots to save resources
+          console.log('Bot detected - serving static SEO content');
+          return;
+        }
+        
+        // Human user detected - load React app
+        console.log('Human user detected - loading React application');
+        
+        // Hide loading screen once React loads
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = '/src/main.jsx';
+        document.head.appendChild(script);
+        
+        // Hide SEO content for humans (it will be replaced by React)
+        setTimeout(() => {
+          const seoContent = document.getElementById('seo-content');
+          if (seoContent) {
+            seoContent.remove();
+          }
+        }, 100);
+      })();
+    </script>
+    
     <script type="module" src="/src/main.jsx"></script>
     
     <!-- Enhanced Performance & Web Vitals Monitoring -->
