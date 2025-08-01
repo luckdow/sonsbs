@@ -17,27 +17,32 @@ const DriverQRScanner = () => {
       setLoading(true);
       
       // QR kod verisini parse et
-      let reservationData;
+      let reservationId;
+      
       try {
-        reservationData = JSON.parse(qrData);
+        // Önce JSON parse etmeyi dene
+        const parsedData = JSON.parse(qrData);
+        reservationId = parsedData.reservationId;
       } catch (error) {
-        toast.error('Geçersiz QR kod formatı');
+        // JSON değilse, direkt string olarak kullan (manuel giriş için)
+        reservationId = qrData.trim();
+        console.log('📝 Manual ID input detected:', reservationId);
+      }
+
+      // Rezervasyon ID kontrolü
+      if (!reservationId) {
+        toast.error('QR kodunda veya manuel girişte rezervasyon ID bulunamadı');
         return;
       }
 
-      // QR kodundan rezervasyon ID'sini al
-      const reservationId = reservationData.reservationId; // Gerçek Firebase ID
-      if (!reservationId) {
-        toast.error('QR kodunda rezervasyon ID bulunamadı');
-        return;
-      }
+      console.log('🔍 Searching for reservation ID:', reservationId);
 
       // Firebase'den rezervasyon verilerini al
       const reservationRef = doc(db, 'reservations', reservationId);
       const reservationSnap = await getDoc(reservationRef);
 
       if (!reservationSnap.exists()) {
-        toast.error('Rezervasyon bulunamadı');
+        toast.error(`Bu QR koda ait rezervasyon bulunamadı: ${reservationId}`);
         return;
       }
 

@@ -68,8 +68,17 @@ if ('requestIdleCallback' in window) {
   });
 }
 
-// Create root and render app
-const root = ReactDOM.createRoot(document.getElementById('root'));
+// Create root and render app - Fix for multiple createRoot calls
+const rootElement = document.getElementById('root');
+
+// More robust check for existing root
+let root;
+if (!rootElement._reactRoot) {
+  root = ReactDOM.createRoot(rootElement);
+  rootElement._reactRoot = root; // Store on the element itself
+} else {
+  root = rootElement._reactRoot;
+}
 
 // Hide SEO content when React loads
 const hideSEOContent = () => {
@@ -80,10 +89,11 @@ const hideSEOContent = () => {
 };
 
 root.render(
-  <React.StrictMode>
+  // Temporarily remove StrictMode to avoid double createRoot warning in development
+  <>
     <WebPerformanceOptimizer />
     <App />
-  </React.StrictMode>
+  </>
 );
 
 // Hide SEO content after render

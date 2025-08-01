@@ -28,6 +28,15 @@ const QRScannerComponent = ({ isOpen, onClose, onScan }) => {
   const startCamera = async () => {
     try {
       console.log('🎥 Kamera başlatılıyor...');
+      
+      // Önce mevcut izinleri kontrol et
+      const permissions = await navigator.permissions.query({ name: 'camera' });
+      console.log('📷 Kamera izin durumu:', permissions.state);
+      
+      if (permissions.state === 'denied') {
+        throw new Error('Kamera izni reddedildi. Lütfen tarayıcı ayarlarından kamera izinlerini kontrol edin.');
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'environment',
@@ -44,11 +53,35 @@ const QRScannerComponent = ({ isOpen, onClose, onScan }) => {
         setCameraActive(true);
         console.log('✅ setCameraActive(true) çağırıldı');
         scanningRef.current = true;
+        
+        // Video yüklendikten sonra scanning başlat
+        videoRef.current.addEventListener('loadedmetadata', () => {
+          console.log('📹 Video metadata yüklendi, QR scanning başlatılıyor...');
+          startQRScanning();
+        });
       } else {
         console.error('❌ videoRef.current null!');
       }
     } catch (err) {
       console.error('❌ Kamera hatası:', err);
+      
+      // Kullanıcı dostu hata mesajları
+      let errorMessage = 'Kamera erişim hatası';
+      if (err.name === 'NotAllowedError') {
+        errorMessage = 'Kamera izni reddedildi. Lütfen tarayıcı ayarlarından kamera izinlerini kontrol edin.';
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'Kamera bulunamadı. Cihazınızda kamera olduğundan emin olun.';
+      } else if (err.name === 'NotSupportedError') {
+        errorMessage = 'Kamera bu tarayıcıda desteklenmiyor.';
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = 'Kamera başka bir uygulama tarafından kullanılıyor.';
+      }
+      
+      // Toast message göster (eğer toast library varsa)
+      if (typeof window !== 'undefined' && window.alert) {
+        alert(errorMessage);
+      }
+      
       setCameraActive(false);
     }
   };
@@ -88,11 +121,29 @@ const QRScannerComponent = ({ isOpen, onClose, onScan }) => {
   };
 
   const handleManualSubmit = () => {
-    if (manualInput.trim()) {
-      console.log('✋ Manuel ID girişi:', manualInput.trim());
-      onScan(manualInput.trim());
+    const trimmedInput = manualInput.trim();
+    
+    if (!trimmedInput) {
+      alert('Lütfen geçerli bir rezervasyon ID\'si girin.');
+      return;
+    }
+    
+    // Basit ID format kontrolü
+    if (trimmedInput.length < 3) {
+      alert('Rezervasyon ID\'si çok kısa. Lütfen doğru ID\'yi girin.');
+      return;
+    }
+    
+    try {
+      console.log('✋ Manuel ID girişi:', trimmedInput);
+      
+      // Direkt ID olarak gönder (JSON wrapper'a gerek yok)
+      onScan(trimmedInput);
       setManualInput('');
       onClose();
+    } catch (error) {
+      console.error('Manuel ID işlem hatası:', error);
+      alert('Manuel ID işlenirken hata oluştu. Lütfen tekrar deneyin.');
     }
   };
 
