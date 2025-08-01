@@ -1,27 +1,54 @@
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
+import fetch from 'node-fetch';
 
+// App.jsx'deki GERÇEK route'ları kullan
 const routes = [
   '/',
   '/rezervasyon',
   '/hakkimizda', 
   '/iletisim',
   '/hizmetlerimiz',
-  '/kemer-transfer',
-  '/side-transfer',
-  '/belek-transfer',
-  '/alanya-transfer',
+  '/sss',
+  '/gizlilik-politikasi',
+  '/kullanim-sartlari',
+  '/kvkk',
+  '/cerez-politikasi',
+  '/iade-iptal',
+  
+  // Şehir transfer sayfaları
   '/antalya-transfer',
+  '/lara-transfer', 
   '/kas-transfer',
   '/kalkan-transfer',
-  '/lara-transfer',
   '/manavgat-transfer',
-  '/serik-transfer'
+  '/serik-transfer',
+  '/kemer-transfer',
+  '/belek-transfer',
+  '/alanya-transfer',
+  '/side-transfer',
+  
+  // Hizmet sayfaları
+  '/hizmetler/havaalani-transfer',
+  '/hizmetler/vip-transfer',
+  '/hizmetler/grup-transfer',
+  '/hizmetler/otel-transfer',
+  '/hizmetler/sehir-ici-transfer',
+  '/hizmetler/dugun-transfer',
+  '/hizmetler/kurumsal-transfer',
+  '/hizmetler/karsilama-hizmeti',
+  
+  // Blog sayfaları
+  '/blog'
 ];
 
 async function prerender() {
   console.log('🚀 Starting pre-rendering with Puppeteer...');
+  
+  // Use live domain by default
+  const baseUrl = process.env.PRERENDER_URL || 'https://www.gatetransfer.com';
+  console.log(`🌐 Using base URL: ${baseUrl}`);
   
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -48,7 +75,7 @@ async function prerender() {
     try {
       console.log(`📄 Pre-rendering: ${route}`);
       
-      const url = `http://localhost:3000${route}`;
+      const url = `${baseUrl}${route}`;
       console.log(`🌐 Navigating to: ${url}`);
       
       // Navigate to the route
@@ -107,19 +134,10 @@ async function prerender() {
 // Check if we need to start a local server first
 async function main() {
   try {
-    // Test if local server is running on port 3000 (Vite dev server)
-    console.log('🔍 Checking if dev server is running...');
-    const response = await fetch('http://localhost:3000');
-    if (response.ok) {
-      console.log('✅ Dev server is running, starting prerender...');
-      await prerender();
-    } else {
-      throw new Error('Server not responding');
-    }
+    console.log('🚀 Starting prerender directly with live site...');
+    await prerender();
   } catch (error) {
-    console.log('📡 Dev server not running, starting it...');
-    console.log('💡 Run "npm run dev" in another terminal first, then try prerender again.');
-    console.log('🔧 Or use: npm run build && npm run preview');
+    console.error('❌ Prerender failed:', error.message);
     process.exit(1);
   }
 }

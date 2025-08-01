@@ -12,37 +12,65 @@ const seoData = {
   '/': {
     title: 'SBS Turkey Transfer | Antalya VIP Havalimanı Transfer Hizmeti',
     description: 'Antalya havalimanı transfer hizmeti. TURSAB onaylı güvenli ulaşım, konforlu araçlar, 7/24 profesyonel şoför hizmeti. Kemer, Side, Belek, Alanya transferi. Hemen rezervasyon yapın!',
-    canonical: 'https://www.gatetransfer.com/'
+    keywords: 'antalya transfer, havalimanı transfer, kemer transfer, side transfer, belek transfer, alanya transfer, vip transfer, airport transfer, turkey transfer, antalya airport transfer',
+    canonical: 'https://www.gatetransfer.com/',
+    ogTitle: 'SBS Turkey Transfer | Antalya VIP Havalimanı Transfer Hizmeti',
+    ogDescription: 'Antalya havalimanı transfer hizmeti. TURSAB onaylı güvenli ulaşım, konforlu araçlar, 7/24 profesyonel şoför hizmeti.',
+    ogImage: 'https://www.gatetransfer.com/images/sbs-turkey-transfer-og.jpg'
   },
   '/kemer-transfer': {
     title: 'Kemer Transfer - Antalya Havalimanı Kemer Transfer | SBS Turkey',
     description: 'Antalya havalimanından Kemer transfer hizmeti. 7/24 güvenli ulaşım, konforlu araçlar, uygun fiyat.',
-    canonical: 'https://www.gatetransfer.com/kemer-transfer'
+    keywords: 'kemer transfer, antalya kemer transfer, havalimanı kemer, kemer otel transfer, kemer şehir merkezi',
+    canonical: 'https://www.gatetransfer.com/kemer-transfer',
+    ogTitle: 'Kemer Transfer - Antalya Havalimanı Kemer Transfer',
+    ogDescription: 'Antalya havalimanından Kemer transfer hizmeti. 7/24 güvenli ulaşım, konforlu araçlar.',
+    ogImage: 'https://www.gatetransfer.com/images/kemer-transfer-og.jpg'
   },
   '/alanya-transfer': {
     title: 'Alanya Transfer - Antalya Havalimanı Alanya Transfer | SBS Turkey',  
     description: 'Alanya transfer hizmeti. Antalya havalimanından Alanya güvenli ve konforlu ulaşım.',
-    canonical: 'https://www.gatetransfer.com/alanya-transfer'
+    keywords: 'alanya transfer, antalya alanya transfer, havalimanı alanya, alanya otel transfer, alanya şehir merkezi',
+    canonical: 'https://www.gatetransfer.com/alanya-transfer',
+    ogTitle: 'Alanya Transfer - Antalya Havalimanı Alanya Transfer',
+    ogDescription: 'Alanya transfer hizmeti. Antalya havalimanından Alanya güvenli ve konforlu ulaşım.',
+    ogImage: 'https://www.gatetransfer.com/images/alanya-transfer-og.jpg'
   },
   '/antalya-transfer': {
     title: 'Antalya Transfer - Şehir Merkezi Transfer | SBS Turkey',
     description: 'Antalya şehir merkezi transfer. Havalimanından Kaleiçi, Lara, Konyaaltı transfer.',
-    canonical: 'https://www.gatetransfer.com/antalya-transfer'
+    keywords: 'antalya şehir merkezi transfer, kaleiçi transfer, lara transfer, konyaaltı transfer, antalya havalimanı',
+    canonical: 'https://www.gatetransfer.com/antalya-transfer',
+    ogTitle: 'Antalya Transfer - Şehir Merkezi Transfer',
+    ogDescription: 'Antalya şehir merkezi transfer. Havalimanından Kaleiçi, Lara, Konyaaltı transfer.',
+    ogImage: 'https://www.gatetransfer.com/images/antalya-transfer-og.jpg'
   },
   '/side-transfer': {
     title: 'Side Transfer - Antalya Havalimanı Side Transfer | SBS Turkey',
     description: 'Side transfer hizmeti. Antalya havalimanından Side antik kentine güvenli ulaşım.',
-    canonical: 'https://www.gatetransfer.com/side-transfer'
+    keywords: 'side transfer, antalya side transfer, havalimanı side, side antik kent, side otel transfer',
+    canonical: 'https://www.gatetransfer.com/side-transfer',
+    ogTitle: 'Side Transfer - Antalya Havalimanı Side Transfer',
+    ogDescription: 'Side transfer hizmeti. Antalya havalimanından Side antik kentine güvenli ulaşım.',
+    ogImage: 'https://www.gatetransfer.com/images/side-transfer-og.jpg'
   },
   '/belek-transfer': {
     title: 'Belek Transfer - Golf Otelleri Transfer | SBS Turkey',
     description: 'Belek golf otelleri transfer. Antalya havalimanından Belek lüks araçlarla ulaşım.',
-    canonical: 'https://www.gatetransfer.com/belek-transfer'
+    keywords: 'belek transfer, antalya belek transfer, havalimanı belek, belek golf otelleri, belek resort',
+    canonical: 'https://www.gatetransfer.com/belek-transfer',
+    ogTitle: 'Belek Transfer - Golf Otelleri Transfer',
+    ogDescription: 'Belek golf otelleri transfer. Antalya havalimanından Belek lüks araçlarla ulaşım.',
+    ogImage: 'https://www.gatetransfer.com/images/belek-transfer-og.jpg'
   },
   '/lara-transfer': {
     title: 'Lara Transfer - Antalya Lara Plajı Transfer | SBS Turkey',
     description: 'Lara plajı transfer hizmeti. Antalya havalimanından Lara bölgesine güvenli ulaşım.',
-    canonical: 'https://www.gatetransfer.com/lara-transfer'
+    keywords: 'lara transfer, antalya lara transfer, havalimanı lara, lara plajı transfer, lara otelleri',
+    canonical: 'https://www.gatetransfer.com/lara-transfer',
+    ogTitle: 'Lara Transfer - Antalya Lara Plajı Transfer',
+    ogDescription: 'Lara plajı transfer hizmeti. Antalya havalimanından Lara bölgesine güvenli ulaşım.',
+    ogImage: 'https://www.gatetransfer.com/images/lara-transfer-og.jpg'
   }
 };
 
@@ -193,52 +221,138 @@ function injectDynamicCanonicals(htmlContent) {
   // Remove any existing static canonical
   htmlContent = htmlContent.replace(/<link rel="canonical"[^>]*>/g, '');
   
-  // Inject dynamic canonical script that works for all pages
-  const dynamicCanonicalScript = `
+  // Inject comprehensive dynamic SEO script that works for all pages
+  const dynamicSEOScript = `
     <script>
-      // Dynamic canonical URL injection for all pages
+      // Dynamic SEO tags injection for all pages
       (function() {
         const currentPath = window.location.pathname;
         const seoMappings = {
-          '/': 'https://www.gatetransfer.com/',
-          '/kemer-transfer': 'https://www.gatetransfer.com/kemer-transfer',
-          '/alanya-transfer': 'https://www.gatetransfer.com/alanya-transfer',
-          '/antalya-transfer': 'https://www.gatetransfer.com/antalya-transfer',
-          '/side-transfer': 'https://www.gatetransfer.com/side-transfer',
-          '/belek-transfer': 'https://www.gatetransfer.com/belek-transfer',
-          '/lara-transfer': 'https://www.gatetransfer.com/lara-transfer',
-          '/kas-transfer': 'https://www.gatetransfer.com/kas-transfer',
-          '/kalkan-transfer': 'https://www.gatetransfer.com/kalkan-transfer',
-          '/manavgat-transfer': 'https://www.gatetransfer.com/manavgat-transfer',
-          '/serik-transfer': 'https://www.gatetransfer.com/serik-transfer',
-          '/hakkimizda': 'https://www.gatetransfer.com/hakkimizda',
-          '/iletisim': 'https://www.gatetransfer.com/iletisim',
-          '/hizmetlerimiz': 'https://www.gatetransfer.com/hizmetlerimiz',
-          '/blog': 'https://www.gatetransfer.com/blog',
-          '/sss': 'https://www.gatetransfer.com/sss'
+          '/': {
+            title: 'SBS Turkey Transfer | Antalya VIP Havalimanı Transfer Hizmeti',
+            description: 'Antalya havalimanı transfer hizmeti. TURSAB onaylı güvenli ulaşım, konforlu araçlar, 7/24 profesyonel şoför hizmeti.',
+            keywords: 'antalya transfer, havalimanı transfer, kemer transfer, side transfer, belek transfer, alanya transfer, vip transfer, airport transfer, turkey transfer, antalya airport transfer',
+            canonical: 'https://www.gatetransfer.com/',
+            ogTitle: 'SBS Turkey Transfer | Antalya VIP Havalimanı Transfer Hizmeti',
+            ogDescription: 'Antalya havalimanı transfer hizmeti. TURSAB onaylı güvenli ulaşım, konforlu araçlar, 7/24 profesyonel şoför hizmeti.',
+            ogImage: 'https://www.gatetransfer.com/images/sbs-turkey-transfer-og.jpg'
+          },
+          '/kemer-transfer': {
+            title: 'Kemer Transfer - Antalya Havalimanı Kemer Transfer | SBS Turkey',
+            description: 'Antalya havalimanından Kemer transfer hizmeti. 7/24 güvenli ulaşım, konforlu araçlar, uygun fiyat.',
+            keywords: 'kemer transfer, antalya kemer transfer, havalimanı kemer, kemer otel transfer, kemer şehir merkezi',
+            canonical: 'https://www.gatetransfer.com/kemer-transfer',
+            ogTitle: 'Kemer Transfer - Antalya Havalimanı Kemer Transfer',
+            ogDescription: 'Antalya havalimanından Kemer transfer hizmeti. 7/24 güvenli ulaşım, konforlu araçlar.',
+            ogImage: 'https://www.gatetransfer.com/images/kemer-transfer-og.jpg'
+          },
+          '/alanya-transfer': {
+            title: 'Alanya Transfer - Antalya Havalimanı Alanya Transfer | SBS Turkey',
+            description: 'Alanya transfer hizmeti. Antalya havalimanından Alanya güvenli ve konforlu ulaşım.',
+            keywords: 'alanya transfer, antalya alanya transfer, havalimanı alanya, alanya otel transfer, alanya şehir merkezi',
+            canonical: 'https://www.gatetransfer.com/alanya-transfer',
+            ogTitle: 'Alanya Transfer - Antalya Havalimanı Alanya Transfer',
+            ogDescription: 'Alanya transfer hizmeti. Antalya havalimanından Alanya güvenli ve konforlu ulaşım.',
+            ogImage: 'https://www.gatetransfer.com/images/alanya-transfer-og.jpg'
+          },
+          '/antalya-transfer': {
+            title: 'Antalya Transfer - Şehir Merkezi Transfer | SBS Turkey',
+            description: 'Antalya şehir merkezi transfer. Havalimanından Kaleiçi, Lara, Konyaaltı transfer.',
+            keywords: 'antalya şehir merkezi transfer, kaleiçi transfer, lara transfer, konyaaltı transfer, antalya havalimanı',
+            canonical: 'https://www.gatetransfer.com/antalya-transfer',
+            ogTitle: 'Antalya Transfer - Şehir Merkezi Transfer',
+            ogDescription: 'Antalya şehir merkezi transfer. Havalimanından Kaleiçi, Lara, Konyaaltı transfer.',
+            ogImage: 'https://www.gatetransfer.com/images/antalya-transfer-og.jpg'
+          },
+          '/side-transfer': {
+            title: 'Side Transfer - Antalya Havalimanı Side Transfer | SBS Turkey',
+            description: 'Side transfer hizmeti. Antalya havalimanından Side antik kentine güvenli ulaşım.',
+            keywords: 'side transfer, antalya side transfer, havalimanı side, side antik kent, side otel transfer',
+            canonical: 'https://www.gatetransfer.com/side-transfer',
+            ogTitle: 'Side Transfer - Antalya Havalimanı Side Transfer',
+            ogDescription: 'Side transfer hizmeti. Antalya havalimanından Side antik kentine güvenli ulaşım.',
+            ogImage: 'https://www.gatetransfer.com/images/side-transfer-og.jpg'
+          },
+          '/belek-transfer': {
+            title: 'Belek Transfer - Golf Otelleri Transfer | SBS Turkey',
+            description: 'Belek golf otelleri transfer. Antalya havalimanından Belek lüks araçlarla ulaşım.',
+            keywords: 'belek transfer, antalya belek transfer, havalimanı belek, belek golf otelleri, belek resort',
+            canonical: 'https://www.gatetransfer.com/belek-transfer',
+            ogTitle: 'Belek Transfer - Golf Otelleri Transfer',
+            ogDescription: 'Belek golf otelleri transfer. Antalya havalimanından Belek lüks araçlarla ulaşım.',
+            ogImage: 'https://www.gatetransfer.com/images/belek-transfer-og.jpg'
+          },
+          '/lara-transfer': {
+            title: 'Lara Transfer - Antalya Lara Plajı Transfer | SBS Turkey',
+            description: 'Lara plajı transfer hizmeti. Antalya havalimanından Lara bölgesine güvenli ulaşım.',
+            keywords: 'lara transfer, antalya lara transfer, havalimanı lara, lara plajı transfer, lara otelleri',
+            canonical: 'https://www.gatetransfer.com/lara-transfer',
+            ogTitle: 'Lara Transfer - Antalya Lara Plajı Transfer',
+            ogDescription: 'Lara plajı transfer hizmeti. Antalya havalimanından Lara bölgesine güvenli ulaşım.',
+            ogImage: 'https://www.gatetransfer.com/images/lara-transfer-og.jpg'
+          }
         };
         
-        const canonicalUrl = seoMappings[currentPath] || \`https://www.gatetransfer.com\${currentPath}\`;
+        // Default fallback for unmapped pages
+        const seoData = seoMappings[currentPath] || {
+          title: 'SBS Turkey Transfer | Antalya Transfer Hizmeti',
+          description: 'Antalya ve çevresine güvenli transfer hizmeti. 7/24 profesyonel şoför hizmeti.',
+          keywords: 'antalya transfer, havalimanı transfer, turkey transfer',
+          canonical: \`https://www.gatetransfer.com\${currentPath}\`,
+          ogTitle: 'SBS Turkey Transfer | Antalya Transfer Hizmeti',
+          ogDescription: 'Antalya ve çevresine güvenli transfer hizmeti. 7/24 profesyonel şoför hizmeti.',
+          ogImage: 'https://www.gatetransfer.com/images/sbs-turkey-transfer-og.jpg'
+        };
         
-        // Remove existing canonical if any
+        // Update document title
+        document.title = seoData.title;
+        
+        // Remove existing meta tags to prevent duplicates
+        const existingTags = ['description', 'keywords', 'og:title', 'og:description', 'og:url', 'og:image'];
+        existingTags.forEach(tag => {
+          const existing = document.querySelector(\`meta[name="\${tag}"], meta[property="\${tag}"]\`);
+          if (existing) existing.remove();
+        });
+        
+        // Remove existing canonical
         const existingCanonical = document.querySelector('link[rel="canonical"]');
-        if (existingCanonical) {
-          existingCanonical.remove();
-        }
+        if (existingCanonical) existingCanonical.remove();
         
-        // Add new canonical
+        // Add new meta tags
+        const createMeta = (name, content, isProperty = false) => {
+          const meta = document.createElement('meta');
+          if (isProperty) {
+            meta.setAttribute('property', name);
+          } else {
+            meta.setAttribute('name', name);
+          }
+          meta.setAttribute('content', content);
+          document.head.appendChild(meta);
+        };
+        
+        // Add canonical link
         const canonical = document.createElement('link');
         canonical.rel = 'canonical';
-        canonical.href = canonicalUrl;
+        canonical.href = seoData.canonical;
         document.head.appendChild(canonical);
         
-        console.log('Dynamic canonical set:', canonicalUrl);
+        // Add meta tags
+        createMeta('description', seoData.description);
+        createMeta('keywords', seoData.keywords);
+        createMeta('og:title', seoData.ogTitle, true);
+        createMeta('og:description', seoData.ogDescription, true);
+        createMeta('og:url', seoData.canonical, true);
+        createMeta('og:image', seoData.ogImage, true);
+        createMeta('og:type', 'website', true);
+        createMeta('og:site_name', 'SBS Turkey Transfer', true);
+        
+        console.log('Dynamic SEO tags injected for:', currentPath);
       })();
     </script>
   `;
   
-  // Inject the dynamic canonical script in head
-  htmlContent = htmlContent.replace('</head>', `${dynamicCanonicalScript}\n</head>`);
+  // Inject the dynamic SEO script in head
+  htmlContent = htmlContent.replace('</head>', `${dynamicSEOScript}\n</head>`);
   
   return htmlContent;
 }
