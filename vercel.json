@@ -17,7 +17,7 @@
       "destination": "/sitemap.xml"
     },
     {
-      "source": "/sitemap-index.xml", 
+      "source": "/sitemap-index.xml",
       "destination": "/sitemap-index.xml"
     },
     {
@@ -33,6 +33,114 @@
       "destination": "/.well-known/$1"
     },
     {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/antalya-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kemer-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/side-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/belek-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/alanya-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/lara-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kas-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kalkan-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/manavgat-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/serik-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hizmetlerimiz",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/havaalani-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vip-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/grup-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/otel-transfer",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hakkimizda",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/iletisim",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/rezervasyon",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sss",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gizlilik-politikasi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kullanim-kosullari",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/kvkk",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cerez-politikasi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/iptal-iade",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/app/(.*)",
       "destination": "/index.html"
     },
@@ -41,95 +149,14 @@
       "destination": "/index.html"
     }
   ],
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "query",
-          "key": "_escaped_fragment_",
-          "value": "kurumsal(.*)"
-        }
-      ],
-      "destination": "/hizmetler/kurumsal-transfer",
-      "permanent": true
-    },
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "query",
-          "key": "_escaped_fragment_"
-        }
-      ],
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/readme.html",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/lander",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/online-reservation/(.*)",
-      "destination": "/rezervasyon",
-      "permanent": true
-    },
-    {
-      "source": "/online-reservation",
-      "destination": "/rezervasyon",
-      "permanent": true
-    },
-    {
-      "source": "/index.html",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/home",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/anasayfa",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/transfers/(.*)",
-      "destination": "/transfer/$1",
-      "permanent": true
-    },
-    {
-      "source": "/reservations/(.*)",
-      "destination": "/rezervasyon/$1",
-      "permanent": true
-    },
-    {
-      "source": "/services/(.*)",
-      "destination": "/hizmetlerimiz/$1",
-      "permanent": true
-    },
-    {
-      "source": "/about",
-      "destination": "/hakkimizda",
-      "permanent": true
-    },
-    {
-      "source": "/contact",
-      "destination": "/iletisim",
-      "permanent": true
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "index, follow"
+        },
         {
           "key": "X-Frame-Options",
           "value": "DENY"
@@ -344,6 +371,111 @@
           "value": "public, max-age=0, must-revalidate"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "https://gatetransfer.com",
+      "destination": "https://www.gatetransfer.com",
+      "permanent": true
+    },
+    {
+      "source": "https://gatetransfer.com/(.*)",
+      "destination": "https://www.gatetransfer.com/$1",
+      "permanent": true
+    },
+    {
+      "source": "https://gatetransfer.com/:path*",
+      "destination": "https://www.gatetransfer.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "query",
+          "key": "_escaped_fragment_",
+          "value": "kurumsal(.*)"
+        }
+      ],
+      "destination": "/hizmetler/kurumsal-transfer",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "query",
+          "key": "_escaped_fragment_"
+        }
+      ],
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "https://gatetransfer.com/:path*",
+      "destination": "https://www.gatetransfer.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/readme.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/lander",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/online-reservation/(.*)",
+      "destination": "/rezervasyon",
+      "permanent": true
+    },
+    {
+      "source": "/online-reservation",
+      "destination": "/rezervasyon",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/anasayfa",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/transfers/(.*)",
+      "destination": "/transfer/$1",
+      "permanent": true
+    },
+    {
+      "source": "/reservations/(.*)",
+      "destination": "/rezervasyon/$1",
+      "permanent": true
+    },
+    {
+      "source": "/services/(.*)",
+      "destination": "/hizmetlerimiz/$1",
+      "permanent": true
+    },
+    {
+      "source": "/about",
+      "destination": "/hakkimizda",
+      "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/iletisim",
+      "permanent": true
     }
   ]
 }

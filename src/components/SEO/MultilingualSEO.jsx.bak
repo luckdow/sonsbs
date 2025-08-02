@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 import { 
   multilingualKeywords, 
   multilingualSeoTemplates, 
@@ -7,27 +8,59 @@ import {
   generateHreflangTags,
   hreflangMapping
 } from '../../data/multilingualSeoKeywords';
+import { 
+  generateLocalBusinessSchema, 
+  generateWebsiteSchema,
+  generateBreadcrumbSchema,
+  generateServiceSchema,
+  generateArticleSchema,
+  generateFAQSchema
+} from '../../utils/enhancedSchemaMarkup';
 
+/**
+ * Optimize edilmiş ve birleştirilmiş SEO bileşeni
+ * - MultilingualSEO + AdvancedSEO + SEOManager özelliklerini birleştirir
+ * - Schema.org yapılandırması, hreflang etiketleri ve çoklu dil desteği sağlar
+ * - Tüm sitede tutarlı SEO yönetimi için tek kaynak noktası
+ */
 const MultilingualSEO = ({ 
   currentLanguage = 'tr',
   pageType = 'city', // 'city', 'service', 'blog', 'home'
+  page = 'homepage',
   location = '',
   title = '',
   description = '',
   canonicalUrl = '',
   currentPath = '',
   customKeywords = '',
+  keywords = '',
   schemaData = null,
   openGraphImage = '',
+  article = null,
+  service = null, 
+  faq = null,
+  customSchema = null,
+  noIndex = false,
   availableLanguages = ['tr', 'en', 'de', 'ru', 'ar']
 }) => {
+  const routerLocation = useLocation();
+  const baseUrl = 'https://www.gatetransfer.com';
+  
+  // Geçerli URL ve canonical URL
+  const currentUrl = `${baseUrl}${currentPath || routerLocation.pathname}`;
+  const finalCanonicalUrl = canonicalUrl || currentUrl;
+
+  // Varsayılan değerler
+  const defaultTitle = "GATE Transfer - Antalya Havalimanı Transfer Hizmetleri";
+  const defaultDescription = "Antalya havalimanı transfer hizmetleri. Güvenli, konforlu ve ekonomik transfer seçenekleri ile havalimanından otel ve şehir merkezlerine ulaşım.";
+  const defaultOgImage = `${baseUrl}/images/gate-transfer-og.jpg`;
   
   // Generate title based on language and page type
   const generateTitle = () => {
     if (title) return title;
     
     const templates = multilingualSeoTemplates[currentLanguage];
-    if (!templates) return 'GATE Transfer';
+    if (!templates) return defaultTitle;
     
     if (pageType === 'city' && location) {
       return templates.cityPageTitle(location);
@@ -37,7 +70,7 @@ const MultilingualSEO = ({
       return templates.servicePageTitle(location);
     }
     
-    return 'GATE Transfer';
+    return defaultTitle;
   };
 
   // Generate description based on language and page type
@@ -45,7 +78,7 @@ const MultilingualSEO = ({
     if (description) return description;
     
     const templates = multilingualSeoTemplates[currentLanguage];
-    if (!templates) return 'Professional transfer services in Antalya';
+    if (!templates) return defaultDescription;
     
     if (pageType === 'city' && location) {
       return templates.cityPageDescription(location);

@@ -1,11 +1,19 @@
-# SBS Turkey Transfer - Robots.txt
-# Optimized for Google Search Console compliance
+# GATE Transfer - Robots.txt
+# Optimize edilmiş ve güncellenmiş versiyon - 2 Ağustos 2025
 
-# Default rules for all crawlers
+# Tercih edilen domain bilgisi
+Host: https://www.gatetransfer.com
+
+# Sitemap bilgileri
+Sitemap: https://www.gatetransfer.com/sitemap.xml
+Sitemap: https://www.gatetransfer.com/sitemap-index.xml
+Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
+
+# Tüm botlar için varsayılan kurallar
 User-agent: *
 Allow: /
 
-# Disallow admin and private areas
+# Yönetim ve özel alanların erişim engelleri
 Disallow: /admin/
 Disallow: /api/
 Disallow: /private/
@@ -17,6 +25,22 @@ Disallow: /temp/
 Disallow: /tmp/
 Disallow: /*.json$
 Disallow: /*.config.*$
+Disallow: /*?*
+Disallow: /*?
+
+# Özel botlar için kurallar
+User-agent: GPTBot
+Allow: /blog/
+Allow: /hizmetlerimiz/
+Allow: /iletisim
+Allow: /hakkimizda
+Disallow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+# Crawl gecikmesi (saniye cinsinden)
+Crawl-delay: 1
 
 # Disallow legacy hash routing URLs
 Disallow: /*#!*

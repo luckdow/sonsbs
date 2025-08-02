@@ -29,11 +29,8 @@
       // SEO content is now directly available in main HTML
     </script>
     
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://www.gatetransfer.com/" />
-    
-    <!-- Disable AJAX Crawling -->
-    <meta name="fragment" content="!">
+    <!-- AJAX Crawling Directive Removed - Modern SEO Best Practice -->
+    <!-- Fragment meta tag removed as it's deprecated since 2015 -->
     
     <!-- Domain Verification via Domain Provider - Meta tag not needed -->
     
@@ -560,7 +557,9 @@
       (function() {
         // Enhanced bot detection
         const userAgent = navigator.userAgent || '';
-        const isBot = /bot|crawler|spider|crawling|googlebot|bingbot|slurp|yandex|baidu|facebookexternalhit|twitterbot|linkedinbot|pinterest|whatsapp|telegram|skype|google|bing|yahoo|duckduck/i.test(userAgent);
+        // Bot tespiti güncellendi - Google bot için izin verildi
+        const isBot = /crawler|facebookexternalhit|twitterbot|linkedinbot|pinterest|whatsapp|telegram|skype/i.test(userAgent);
+        // Arama motoru botlarına izin ver (googlebot, bingbot, slurp, yandex, vb)
         
         // Additional bot indicators
         const isHeadless = navigator.webdriver || window.phantom || window._phantom || window.callPhantom;

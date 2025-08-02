@@ -1,6 +1,6 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import UnifiedSEO from '../../components/SEO/UnifiedSEO';
 import { 
   MapPin,
   Clock,
@@ -143,29 +143,24 @@ const AntalyaTransfer = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Antalya Transfer | Havalimanı VIP Ulaşım</title>
-        <meta name="description" content="Antalya havalimanı transfer hizmeti. AYT'den tüm otellere güvenli ulaşım. 7/24 rezervasyon, uygun fiyat." />
-        <meta name="keywords" content="antalya transfer, antalya havalimanı transfer, AYT transfer, antalya taksi, lara transfer, konyaaltı transfer, kaleiçi transfer, antalya otel transfer, antalya ulaşım, antalya şoför hizmeti" />
-        <link rel="canonical" href="https://www.gatetransfer.com/antalya-transfer" />
-        
-        {/* Open Graph */}
-        <meta property="og:title" content="Antalya Transfer Hizmeti | Havalimanı ve Otel Transferi" />
-        <meta property="og:description" content="Antalya'da profesyonel transfer hizmeti. Havalimanı, otel ve şehir içi güvenli ulaşım. Hemen rezervasyon yapın!" />
-        <meta property="og:url" content="https://gatetransfer.com/antalya-transfer" />
-        <meta property="og:type" content="website" />
-        <meta property="og:locale" content="tr_TR" />
-        <meta property="og:site_name" content="GATE Transfer" />
-        
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Antalya Transfer Hizmeti | GATE Transfer" />
-        <meta name="twitter:description" content="Antalya havalimanı ve otel transfer hizmeti. Güvenli, konforlu, uygun fiyatlı." />
-        
-        {/* Local Business Schema */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
+      <UnifiedSEO
+        title="Antalya Transfer | Havalimanı VIP Ulaşım"
+        description="Antalya havalimanı transfer hizmeti. AYT'den tüm otellere güvenli ulaşım. 7/24 rezervasyon, uygun fiyat."
+        keywords="antalya transfer, antalya havalimanı transfer, AYT transfer, antalya taksi, lara transfer, konyaaltı transfer, kaleiçi transfer, antalya otel transfer, antalya ulaşım, antalya şoför hizmeti"
+        canonicalUrl="https://www.gatetransfer.com/antalya-transfer"
+        ogTitle="Antalya Transfer Hizmeti | Havalimanı ve Otel Transferi"
+        ogDescription="Antalya'da profesyonel transfer hizmeti. Havalimanı, otel ve şehir içi güvenli ulaşım. Hemen rezervasyon yapın!"
+        ogImage="/images/antalya-transfer.jpg"
+        ogImageAlt="Antalya Transfer Hizmeti"
+        ogUrl="https://gatetransfer.com/antalya-transfer"
+        ogType="website"
+        pageType="city"
+        location="Antalya"
+        language="tr"
+        alternateLanguages={['tr', 'en', 'de', 'ru']}
+        hasSchema={true}
+        schemaData={{
+          localBusiness: {
             "@type": "LocalBusiness",
             "name": "GATE Transfer - Antalya Transfer Hizmeti",
             "description": "Antalya havalimanı, otel ve şehir içi transfer hizmeti. Güvenli, konforlu ve profesyonel ulaşım çözümleri.",
@@ -208,13 +203,8 @@ const AntalyaTransfer = () => {
               "https://www.facebook.com/gatetransfer",
               "https://www.instagram.com/gatetransfer_antalya"
             ]
-          })}
-        </script>
-        
-        {/* Service Schema */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
+          },
+          service: {
             "@type": "Service",
             "name": "Antalya Transfer Hizmeti",
             "serviceType": "Transportation Service",
@@ -239,9 +229,9 @@ const AntalyaTransfer = () => {
                 "priceCurrency": "EUR"
               }
             }
-          })}
-        </script>
-      </Helmet>
+          }
+        }}
+      />
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white py-8 md:py-12 overflow-hidden">
