@@ -44,6 +44,17 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.gatetransfer.com/antalya-transfer</loc>
+    <lastmod>2025-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.gatetransfer.com/images/cities/antalya-transfer.jpg</image:loc>
+      <image:title>Antalya Transfer - GATE Transfer</image:title>
+      <image:caption>Antalya Havalimanından Antalya transfer hizmeti</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://www.gatetransfer.com/kemer-transfer</loc>
     <lastmod>2025-08-03</lastmod>
     <changefreq>monthly</changefreq>

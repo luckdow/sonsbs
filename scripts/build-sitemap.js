@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 const mockDataSource = {
   async getCities() {
     return [
+      { slug: 'antalya-transfer', name: 'Antalya', lastmod: '2025-08-03', priority: '0.9' },
       { slug: 'kemer-transfer', name: 'Kemer', lastmod: '2025-08-03' },
       { slug: 'side-transfer', name: 'Side', lastmod: '2025-08-03' },
       { slug: 'belek-transfer', name: 'Belek', lastmod: '2025-08-03' },
