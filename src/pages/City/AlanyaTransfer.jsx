@@ -103,7 +103,7 @@ const AlanyaTransfer = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Alanya Transfer Hizmeti | Alanya Tarihi Yerler Transferi" />
         <meta property="og:description" content="Alanya bölgesine uzun mesafe transfer hizmeti. Alanya Kalesi, plajlar ve tarihi yerler arası güvenli ulaşım. Hemen rezervasyon yapın!" />
-        <meta property="og:url" content="https://gatetransfer.com/alanya-transfer" />
+        <meta property="og:url" content="https://www.gatetransfer.com/alanya-transfer" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
         <meta property="og:site_name" content="GATE Transfer" />
@@ -120,7 +120,7 @@ const AlanyaTransfer = () => {
             "@type": "LocalBusiness",
             "name": "GATE Transfer - Alanya Transfer Hizmeti",
             "description": "Alanya bölgesi havalimanı, tarihi yerler ve plaj tesisleri transfer hizmeti. Uzun mesafe güvenli ulaşım çözümleri.",
-            "url": "https://gatetransfer.com/alanya-transfer",
+            "url": "https://www.gatetransfer.com/alanya-transfer",
             "telephone": "+905325742682",
             "email": "info@sbstravel.net",
             "address": {

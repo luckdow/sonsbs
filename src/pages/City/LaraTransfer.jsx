@@ -104,7 +104,7 @@ const LaraTransfer = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Lara Transfer Hizmeti | Lara Otel ve Havalimanı Transferi" />
         <meta property="og:description" content="Lara bölgesine profesyonel transfer hizmeti. Havalimanı, otel ve şehir içi güvenli ulaşım. Hemen rezervasyon yapın!" />
-        <meta property="og:url" content="https://gatetransfer.com/lara-transfer" />
+        <meta property="og:url" content="https://www.gatetransfer.com/lara-transfer" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
         <meta property="og:site_name" content="GATE Transfer" />
@@ -121,7 +121,7 @@ const LaraTransfer = () => {
             "@type": "LocalBusiness",
             "name": "GATE Transfer - Lara Transfer Hizmeti",
             "description": "Lara bölgesi otel ve havalimanı transfer hizmeti. Güvenli, konforlu ve profesyonel ulaşım çözümleri.",
-            "url": "https://gatetransfer.com/lara-transfer",
+            "url": "https://www.gatetransfer.com/lara-transfer",
             "telephone": "+905325742682",
             "email": "info@sbstravel.net",
             "address": {

@@ -143,7 +143,7 @@ const KemerTransfer = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Kemer Transfer Hizmeti | Kemer Otel ve Havalimanı Transferi" />
         <meta property="og:description" content="Kemer bölgesine profesyonel transfer hizmeti. Havalimanı, otel ve doğa turları arası güvenli ulaşım. Hemen rezervasyon yapın!" />
-        <meta property="og:url" content="https://gatetransfer.com/kemer-transfer" />
+        <meta property="og:url" content="https://www.gatetransfer.com/kemer-transfer" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
         <meta property="og:site_name" content="GATE Transfer" />
@@ -160,7 +160,7 @@ const KemerTransfer = () => {
             "@type": "LocalBusiness",
             "name": "GATE Transfer - Kemer Transfer Hizmeti",
             "description": "Kemer bölgesi otel, havalimanı ve doğa turları transfer hizmeti. Güvenli, konforlu ve profesyonel ulaşım çözümleri.",
-            "url": "https://gatetransfer.com/kemer-transfer",
+            "url": "https://www.gatetransfer.com/kemer-transfer",
             "telephone": "+905325742682",
             "email": "info@sbstravel.net",
             "address": {

@@ -103,7 +103,7 @@ const SerikTransfer = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Serik Transfer Hizmeti | Serik Belek Golf Resort Transferi" />
         <meta property="og:description" content="Serik bölgesine hızlı transfer hizmeti. Golf resort, havalimanı ve antik kentler arası güvenli ulaşım. Hemen rezervasyon yapın!" />
-        <meta property="og:url" content="https://gatetransfer.com/serik-transfer" />
+        <meta property="og:url" content="https://www.gatetransfer.com/serik-transfer" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
         <meta property="og:site_name" content="GATE Transfer" />
@@ -120,7 +120,7 @@ const SerikTransfer = () => {
             "@type": "LocalBusiness",
             "name": "GATE Transfer - Serik Transfer Hizmeti",
             "description": "Serik bölgesi golf resort, havalimanı ve antik kentler arası transfer hizmeti. Golf turizmi için özel VIP ulaşım çözümleri.",
-            "url": "https://gatetransfer.com/serik-transfer",
+            "url": "https://www.gatetransfer.com/serik-transfer",
             "telephone": "+905325742682",
             "email": "info@sbstravel.net",
             "address": {

@@ -103,7 +103,7 @@ const KalkanTransfer = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Kalkan Transfer Hizmeti | Kalkan Lüks Otel ve Havalimanı Transferi" />
         <meta property="og:description" content="Kalkan bölgesine premium transfer hizmeti. Havalimanı, lüks otel ve plaj transferi. Hemen rezervasyon yapın!" />
-        <meta property="og:url" content="https://gatetransfer.com/kalkan-transfer" />
+        <meta property="og:url" content="https://www.gatetransfer.com/kalkan-transfer" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
         <meta property="og:site_name" content="GATE Transfer" />
@@ -120,7 +120,7 @@ const KalkanTransfer = () => {
             "@type": "LocalBusiness",
             "name": "GATE Transfer - Kalkan Transfer Hizmeti",
             "description": "Kalkan bölgesi lüks otel, havalimanı ve plaj transfer hizmeti. Premium araçlarla güvenli ve konforlu ulaşım çözümleri.",
-            "url": "https://gatetransfer.com/kalkan-transfer",
+            "url": "https://www.gatetransfer.com/kalkan-transfer",
             "telephone": "+905325742682",
             "email": "info@sbstravel.net",
             "address": {

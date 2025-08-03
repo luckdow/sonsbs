@@ -77,7 +77,7 @@ const BlogPostPage = () => {
         {/* Open Graph */}
         <meta property="og:title" content={blog.title} />
         <meta property="og:description" content={blog.excerpt} />
-        <meta property="og:image" content={`https://gatetransfer.com${blog.image}`} />
+        <meta property="og:image" content={`https://www.gatetransfer.com${blog.image}`} />
         <meta property="og:url" content={`https://gatetransfer.com/blog/${blog.slug}`} />
         <meta property="og:type" content="article" />
         

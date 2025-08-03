@@ -143,7 +143,7 @@ const SideTransfer = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Side Transfer Hizmeti | Side Antik Kent Transferi" />
         <meta property="og:description" content="Side bölgesine antik kent turizm transfer hizmeti. Side tarihi yerler ve beach resort'lar arası güvenli ulaşım. Hemen rezervasyon yapın!" />
-        <meta property="og:url" content="https://gatetransfer.com/side-transfer" />
+        <meta property="og:url" content="https://www.gatetransfer.com/side-transfer" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
         <meta property="og:site_name" content="GATE Transfer" />
@@ -160,7 +160,7 @@ const SideTransfer = () => {
             "@type": "LocalBusiness",
             "name": "GATE Transfer - Side Transfer Hizmeti",
             "description": "Side bölgesi antik kent, havalimanı ve beach resort transfer hizmeti. Kültür turizmi için özel profesyonel ulaşım çözümleri.",
-            "url": "https://gatetransfer.com/side-transfer",
+            "url": "https://www.gatetransfer.com/side-transfer",
             "telephone": "+905325742682",
             "email": "info@sbstravel.net",
             "address": {

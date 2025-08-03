@@ -103,7 +103,7 @@ const ManavgotTransfer = () => {
         {/* Open Graph */}
         <meta property="og:title" content="Manavgat Transfer Hizmeti | Manavgat Otel ve Havalimanı Transferi" />
         <meta property="og:description" content="Manavgat bölgesine hızlı transfer hizmeti. Havalimanı, otel ve turistik yerler arası güvenli ulaşım. Hemen rezervasyon yapın!" />
-        <meta property="og:url" content="https://gatetransfer.com/manavgat-transfer" />
+        <meta property="og:url" content="https://www.gatetransfer.com/manavgat-transfer" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
         <meta property="og:site_name" content="GATE Transfer" />
@@ -120,7 +120,7 @@ const ManavgotTransfer = () => {
             "@type": "LocalBusiness",
             "name": "GATE Transfer - Manavgat Transfer Hizmeti",
             "description": "Manavgat bölgesi otel, havalimanı ve turistik yerler arası transfer hizmeti. Hızlı, güvenli ve uygun fiyatlı ulaşım çözümleri.",
-            "url": "https://gatetransfer.com/manavgat-transfer",
+            "url": "https://www.gatetransfer.com/manavgat-transfer",
             "telephone": "+905325742682",
             "email": "info@sbstravel.net",
             "address": {
