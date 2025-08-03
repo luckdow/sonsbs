@@ -8,24 +8,7 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
-    historyApiFallback: {
-      // Serve different content for bots vs users
-      rewrites: [
-        // Bot detection - serve static SEO content
-        {
-          from: /^\/(?!app\/|assets\/|images\/|js\/|css\/).*/,
-          to: function(context) {
-            const userAgent = context.req.headers['user-agent'] || '';
-            const isBot = /bot|crawler|spider|crawling|googlebot|bingbot|slurp|yandex|baidu|facebookexternalhit|twitterbot|linkedinbot|pinterest|whatsapp/i.test(userAgent);
-            
-            if (isBot) {
-              return '/dist/index.html'; // Serve SEO content to bots
-            }
-            return '/index.html'; // Serve React app to users
-          }
-        }
-      ]
-    },
+    historyApiFallback: true,
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
       'Cross-Origin-Embedder-Policy': 'unsafe-none'

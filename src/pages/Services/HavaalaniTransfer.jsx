@@ -1,19 +1,26 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import ServicePageLayout from './components/ServicePageLayout';
 import { servicesData } from '../../data/servicesData.jsx';
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Euro, Star, ArrowRight, Car, Users, Shield } from 'lucide-react';
-import { generateServiceSchema } from '../../utils/seoUtils';
+import { SEOHead, StructuredData, generateServiceSchema, generateServiceMetaTags } from '../../seo/index.js';
 
 const HavaalaniTransfer = () => {
   const serviceData = servicesData['havaalani-transfer'];
   
-  // Generate Service schema for this specific service
+  // Yeni SEO Meta Tags
+  const seoMetaTags = generateServiceMetaTags('Antalya Havalimanı Transfer', {
+    description: 'Antalya havalimanından tüm bölgelere güvenli, konforlu ve ekonomik transfer hizmeti. 7/24 destek, profesyonel şoförler, ücretsiz iptal.',
+    price: '€20',
+    features: ['7/24 Hizmet', 'Profesyonel Şoförler', 'Modern Araçlar', 'Ücretsiz İptal']
+  });
+  
+  // Service schema oluştur
   const serviceSchema = generateServiceSchema(
     'Antalya Havalimanı Transfer',
     'Antalya havalimanından otellere güvenli, konforlu ve ekonomik transfer hizmeti. 7/24 hizmet, profesyonel şoförler.',
-    'https://gatetransfer.com/hizmetler/havaalani-transfer'
+    'https://www.gatetransfer.com/hizmetler/havaalani-transfer',
+    '€20'
   );
 
   // Popular destinations with pricing
@@ -93,40 +100,57 @@ const HavaalaniTransfer = () => {
   ];
 
   return (
-    <ServicePageLayout 
-      {...serviceData}
-      seoContent={
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Antalya Havalimanı Transfer Hizmeti</h2>
-          <p className="mb-4">
-            <strong>Antalya Havalimanı Transfer</strong> hizmetimiz ile Antalya Havalimanı'ndan tüm otel bölgelerine 
-            7/24 güvenli ve konforlu ulaşım sağlıyoruz. 12 yıllık deneyimimiz ve %99 müşteri memnuniyet oranımızla 
-            Antalya'nın en güvenilir transfer firmasıyız.
-          </p>
-          
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 mt-8">Antalya Havalimanı Transfer Güzergahları</h3>
-          <p className="mb-4">
-            Antalya Havalimanı'ndan Lara, Kundu, Kemer, Belek, Side, Alanya, Kaş, Kalkan ve tüm turistik 
-            bölgelere transfer hizmeti veriyoruz. VIP araçlarımızla Meet & Greet hizmeti ile havalimanında 
-            karşılıyor, bagajlarınızı taşıyarak size özel transfer deneyimi sunuyoruz.
-          </p>
-          
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 mt-8">Havalimanı Transfer Fiyatları 2024</h3>
-          <p className="mb-4">
-            Antalya Havalimanı transfer fiyatlarımız €15-80 arasında değişmektedir. Havalimanı-Lara €15-25, 
-            Havalimanı-Kemer €25-40, Havalimanı-Side €30-50, Havalimanı-Alanya €50-80 fiyat aralığındadır. 
-            Grup transferlerinde ve gidiş-dönüş rezervasyonlarda özel indirimler uygulanır.
-          </p>
-          
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 mt-8">Online Rezervasyon Avantajları</h3>
-          <p className="mb-4">
-            Online rezervasyon sistemimizle %15 erken rezervasyon indirimi kazanın. Ücretsiz iptal, 
-            güvenli ödeme, 7/24 müşteri destek hattımız +90 532 574 26 82 ile sizlere hizmet veriyoruz. 
-            TURSAB üyesi güvencesiyle kaliteli hizmet garantisi sunuyoruz.
-          </p>
-        </div>
-      }
-    >
+    <>
+      {/* SEO Meta Tags */}
+      <SEOHead 
+        pageData={{
+          titleData: 'Antalya Havalimanı Transfer',
+          descriptionData: 'Antalya Havalimanı Transfer',
+          keywordsData: 'antalya havalimanı transfer',
+          url: '/hizmetler/havaalani-transfer',
+          image: '/images/services/havaalani-transfer.jpg',
+          pageType: 'service'
+        }}
+        includeHrefLang={true}
+      />
+      
+      {/* Schema.org Structured Data */}
+      <StructuredData schema={serviceSchema} id="service-schema" />
+      
+      <ServicePageLayout 
+        {...serviceData}
+        seoContent={
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Antalya Havalimanı Transfer Hizmeti</h2>
+            <p className="mb-4">
+              <strong>Antalya Havalimanı Transfer</strong> hizmetimiz ile Antalya Havalimanı'ndan tüm otel bölgelerine 
+              7/24 güvenli ve konforlu ulaşım sağlıyoruz. 12 yıllık deneyimimiz ve %99 müşteri memnuniyet oranımızla 
+              Antalya'nın en güvenilir transfer firmasıyız.
+            </p>
+            
+            <h3 className="text-xl font-semibold text-gray-900 mb-4 mt-8">Antalya Havalimanı Transfer Güzergahları</h3>
+            <p className="mb-4">
+              Antalya Havalimanı'ndan Lara, Kundu, Kemer, Belek, Side, Alanya, Kaş, Kalkan ve tüm turistik 
+              bölgelere transfer hizmeti veriyoruz. VIP araçlarımızla Meet & Greet hizmeti ile havalimanında 
+              karşılıyor, bagajlarınızı taşıyarak size özel transfer deneyimi sunuyoruz.
+            </p>
+            
+            <h3 className="text-xl font-semibold text-gray-900 mb-4 mt-8">Havalimanı Transfer Fiyatları 2024</h3>
+            <p className="mb-4">
+              Antalya Havalimanı transfer fiyatlarımız €15-80 arasında değişmektedir. Havalimanı-Lara €15-25, 
+              Havalimanı-Kemer €25-40, Havalimanı-Side €30-50, Havalimanı-Alanya €50-80 fiyat aralığındadır. 
+              Grup transferlerinde ve gidiş-dönüş rezervasyonlarda özel indirimler uygulanır.
+            </p>
+            
+            <h3 className="text-xl font-semibold text-gray-900 mb-4 mt-8">Online Rezervasyon Avantajları</h3>
+            <p className="mb-4">
+              Online rezervasyon sistemimizle %15 erken rezervasyon indirimi kazanın. Ücretsiz iptal, 
+              güvenli ödeme, 7/24 müşteri destek hattımız +90 532 574 26 82 ile sizlere hizmet veriyoruz. 
+              TURSAB üyesi güvencesiyle kaliteli hizmet garantisi sunuyoruz.
+            </p>
+          </div>
+        }
+      >
       {/* Destinations & Pricing */}
       <section className="py-12 md:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -271,14 +295,8 @@ const HavaalaniTransfer = () => {
           </div>
         </div>
       </section>
-      
-      {/* Service Schema JSON-LD */}
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(serviceSchema)}
-        </script>
-      </Helmet>
-    </ServicePageLayout>
+      </ServicePageLayout>
+    </>
   );
 };
 

@@ -1,9 +1,14 @@
 import React, { lazy, Suspense } from 'react';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import LoadingScreen from '../../components/UI/LoadingScreen';
-import SEOComponent from '../../components/Homepage/sections/SEOComponent';
 import NewsletterSignup from '../../components/Newsletter/NewsletterSignup_NEW';
-import { generateLocalBusinessSchema, generateBreadcrumbSchema } from '../../utils/seoUtils';
+import { 
+  SEOHead, 
+  StructuredData, 
+  generateOrganizationSchema, 
+  generateBreadcrumbSchema,
+  generateMetaTags 
+} from '../../seo/index.js';
 
 // Import critical above-the-fold component immediately
 import HeroSection from '../../components/Homepage/sections/HeroSection';
@@ -51,48 +56,42 @@ const SectionLoader = () => (
 );
 
 const HomePage = () => {
-  const localBusinessSchema = generateLocalBusinessSchema();
+  // Ana sayfa için SEO meta tags
+  const homePageMetaTags = generateMetaTags({
+    title: 'SBS Turkey Transfer | Antalya VIP Havalimanı Transfer Hizmeti',
+    description: 'Antalya havalimanı transfer hizmeti. TURSAB onaylı güvenli ulaşım, konforlu araçlar, 7/24 profesyonel şoför hizmeti. Kemer, Side, Belek, Alanya transferi. Hemen rezervasyon yapın!',
+    keywords: 'antalya transfer, havalimanı transfer, antalya airport transfer, gate transfer, vip transfer',
+    url: '/',
+    image: '/images/gate-transfer-homepage.jpg',
+    type: 'website',
+    pageType: 'home'
+  });
+
+  const organizationSchema = generateOrganizationSchema();
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Ana Sayfa', url: 'https://gatetransfer.com' }
+    { name: 'Ana Sayfa', url: 'https://www.gatetransfer.com/' }
   ]);
 
   return (
     <HelmetProvider>
       <div className="min-h-screen">
-        {/* SEO Meta Tags - Critical */}
-        <SEOComponent language="tr" page="homepage" />
+        {/* Yeni SEO Sistemi */}
+        <SEOHead 
+          pageData={{
+            title: homePageMetaTags.title,
+            description: homePageMetaTags.description,
+            keywords: homePageMetaTags.keywords,
+            url: '/',
+            image: '/images/gate-transfer-homepage.jpg',
+            type: 'website'
+          }}
+          includeHrefLang={true}
+        />
         
-        {/* Enhanced Schema.org JSON-LD */}
-        <Helmet>
-          {/* Primary SEO Tags */}
-          <title>SBS Turkey Transfer | Antalya VIP Havalimanı Transfer Hizmeti</title>
-          <meta name="description" content="Antalya havalimanı transfer hizmeti. TURSAB onaylı güvenli ulaşım, konforlu araçlar, 7/24 profesyonel şoför hizmeti. Kemer, Side, Belek, Alanya transferi. Hemen rezervasyon yapın!" />
-          <link rel="canonical" href="https://www.gatetransfer.com/" />
-          
-          <script type="application/ld+json">
-            {JSON.stringify(localBusinessSchema)}
-          </script>
-          <script type="application/ld+json">
-            {JSON.stringify(breadcrumbSchema)}
-          </script>
-          
-          {/* Additional SEO enhancements */}
-          <meta property="og:title" content="SBS Turkey Transfer | Antalya VIP Transfer" />
-          <meta property="og:description" content="Antalya'nın en güvenilir transfer hizmeti. TURSAB onaylı, 7/24 hizmet." />
-          <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://www.gatetransfer.com/" />
-          <meta property="og:image" content="https://www.gatetransfer.com/images/sbs-transfer-og.jpg" />
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="geo.region" content="TR-07" />
-          <meta name="geo.placename" content="Antalya" />
-          <meta name="ICBM" content="36.8841, 30.7056" />
-          
-          {/* Hreflang for multilingual SEO */}
-          <link rel="alternate" hrefLang="tr" href="https://gatetransfer.com" />
-          <link rel="alternate" hrefLang="en" href="https://gatetransfer.com/en" />
-          <link rel="alternate" hrefLang="x-default" href="https://gatetransfer.com" />
-        </Helmet>
-
+        {/* Schema.org Structured Data */}
+        <StructuredData schema={organizationSchema} id="organization-schema" />
+        <StructuredData schema={breadcrumbSchema} id="breadcrumb-schema" />
+        
         {/* Hero Section - Above the fold */}
         <HeroSection />
 

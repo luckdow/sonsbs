@@ -3,9 +3,40 @@ import ServicePageLayout from './components/ServicePageLayout';
 import { servicesData } from '../../data/servicesData.jsx';
 import { Link } from 'react-router-dom';
 import { Crown, Car, Star, ArrowRight, Wine, Shield, Users, Clock } from 'lucide-react';
+import { 
+  SEOHead, 
+  StructuredData, 
+  generateServiceSchema,
+  generateBreadcrumbSchema,
+  generateServiceMetaTags 
+} from '../../seo/index.js';
 
 const VipTransfer = () => {
   const serviceData = servicesData['vip-transfer'];
+
+  // SEO Meta Tags
+  const vipTransferMetaTags = generateServiceMetaTags('VIP Transfer', {
+    description: 'Antalya VIP transfer hizmeti. Mercedes S-Class, Maybach ve lüks araçlarla havalimanı transferi. Özel şoför, fast-track hizmet, premium konfor. 7/24 rezervasyon.',
+    price: '€80-200',
+    features: ['Mercedes S-Class', 'VIP Terminal', 'Özel Şoför', 'Fast Track', 'Premium Konfor']
+  });
+
+  // Schema.org Structured Data
+  const vipTransferSchema = generateServiceSchema({
+    serviceName: 'VIP Transfer Hizmeti',
+    serviceType: 'VipTransfer',
+    description: vipTransferMetaTags.description,
+    provider: 'SBS Turkey Transfer',
+    areaServed: 'Antalya',
+    price: '€80-200',
+    features: ['Mercedes lüks araçlar', 'VIP terminal hizmeti', 'Profesyonel şoför', 'Fast-track geçiş', '7/24 hizmet']
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Ana Sayfa', url: 'https://www.gatetransfer.com/' },
+    { name: 'Hizmetlerimiz', url: 'https://www.gatetransfer.com/hizmetlerimiz' },
+    { name: 'VIP Transfer', url: 'https://www.gatetransfer.com/vip-transfer' }
+  ]);
 
   // VIP Vehicle Fleet
   const vipFleet = [
@@ -153,7 +184,25 @@ const VipTransfer = () => {
   ];
 
   return (
-    <ServicePageLayout 
+    <div>
+      {/* SEO Head */}
+      <SEOHead 
+        pageData={{
+          title: vipTransferMetaTags.title,
+          description: vipTransferMetaTags.description,
+          keywords: vipTransferMetaTags.keywords,
+          url: '/vip-transfer',
+          image: '/images/vip-transfer.jpg',
+          type: 'service'
+        }}
+        includeHrefLang={true}
+      />
+      
+      {/* Schema.org Structured Data */}
+      <StructuredData schema={vipTransferSchema} id="vip-transfer-schema" />
+      <StructuredData schema={breadcrumbSchema} id="breadcrumb-schema" />
+
+      <ServicePageLayout 
       {...serviceData}
       pricing={updatedPricing}
       faq={updatedFaq}
@@ -346,6 +395,7 @@ const VipTransfer = () => {
         </div>
       </section>
     </ServicePageLayout>
+    </div>
   );
 };
 

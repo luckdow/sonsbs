@@ -3,9 +3,40 @@ import ServicePageLayout from './components/ServicePageLayout';
 import { servicesData } from '../../data/servicesData.jsx';
 import { Link } from 'react-router-dom';
 import { Users, Bus, Calculator, ArrowRight, Shield, Clock, MapPin, Star } from 'lucide-react';
+import { 
+  SEOHead, 
+  StructuredData, 
+  generateServiceSchema,
+  generateBreadcrumbSchema,
+  generateServiceMetaTags 
+} from '../../seo/index.js';
 
 const GrupTransfer = () => {
   const serviceData = servicesData['grup-transfer'];
+
+  // SEO Meta Tags
+  const grupTransferMetaTags = generateServiceMetaTags('Grup Transfer', {
+    description: 'Antalya grup transfer hizmeti. 6-50 kişilik gruplar için Mercedes Sprinter, Vito ve otobüsler. Havalimanı transferi, günlük turlar, etkinlik ulaşımı. Uygun fiyat, güvenli hizmet.',
+    price: '€90-300',
+    features: ['Mercedes Sprinter', 'Grup İndirimi', 'Büyük Bagaj Alanı', 'Klimali Araçlar', 'Profesyonel Şoför']
+  });
+
+  // Schema.org Structured Data
+  const grupTransferSchema = generateServiceSchema({
+    serviceName: 'Grup Transfer Hizmeti',
+    serviceType: 'GrupTransfer',
+    description: grupTransferMetaTags.description,
+    provider: 'SBS Turkey Transfer',
+    areaServed: 'Antalya',
+    price: '€90-300',
+    features: ['6-50 kişi kapasiteli araçlar', 'Mercedes marka araç filosu', 'Grup indirimleri', 'Bagaj dahil', '7/24 hizmet']
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Ana Sayfa', url: 'https://www.gatetransfer.com/' },
+    { name: 'Hizmetlerimiz', url: 'https://www.gatetransfer.com/hizmetlerimiz' },
+    { name: 'Grup Transfer', url: 'https://www.gatetransfer.com/grup-transfer' }
+  ]);
 
   // Group Vehicle Fleet
   const groupFleet = [
@@ -171,7 +202,25 @@ const GrupTransfer = () => {
   ];
 
   return (
-    <ServicePageLayout 
+    <div>
+      {/* SEO Head */}
+      <SEOHead 
+        pageData={{
+          title: grupTransferMetaTags.title,
+          description: grupTransferMetaTags.description,
+          keywords: grupTransferMetaTags.keywords,
+          url: '/grup-transfer',
+          image: '/images/grup-transfer.jpg',
+          type: 'service'
+        }}
+        includeHrefLang={true}
+      />
+      
+      {/* Schema.org Structured Data */}
+      <StructuredData schema={grupTransferSchema} id="grup-transfer-schema" />
+      <StructuredData schema={breadcrumbSchema} id="breadcrumb-schema" />
+
+      <ServicePageLayout 
       {...serviceData}
       pricing={updatedPricing}
       faq={updatedFaq}
@@ -413,6 +462,7 @@ const GrupTransfer = () => {
         </div>
       </section>
     </ServicePageLayout>
+    </div>
   );
 };
 

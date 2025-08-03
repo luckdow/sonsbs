@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import UnifiedSEO from '../../components/SEO/UnifiedSEO';
+import { SEOHead } from '../../seo/components/SEOHead.jsx';
 import { 
   MapPin,
   Clock,
@@ -24,6 +24,37 @@ import {
 
 const AntalyaTransfer = () => {
   const [openFaq, setOpenFaq] = React.useState(0);
+
+  // SEO PageData
+  const pageData = {
+    type: 'city',
+    title: 'Antalya Transfer | Havalimanı VIP Ulaşım Hizmeti',
+    description: 'Antalya havalimanı transfer hizmeti. AYT\'den tüm otellere güvenli ulaşım. 7/24 rezervasyon, uygun fiyat, profesyonel şoförler.',
+    keywords: ['antalya transfer', 'antalya havalimanı transfer', 'AYT transfer', 'lara transfer', 'konyaaltı transfer', 'antalya taksi'],
+    url: '/antalya-transfer'
+  };
+
+  const structuredData = {
+    "@type": "LocalBusiness",
+    "name": "SBS Turkey Transfer - Antalya Transfer Hizmeti",
+    "description": "Antalya havalimanı, otel ve şehir içi transfer hizmeti. Güvenli, konforlu ve profesyonel ulaşım çözümleri.",
+    "url": "https://www.gatetransfer.com/antalya-transfer",
+    "telephone": "+905325742682",
+    "email": "sbstravelinfo@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Antalya",
+      "addressRegion": "Antalya",
+      "addressCountry": "TR"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "36.8969",
+      "longitude": "30.7133"
+    },
+    "areaServed": "Antalya",
+    "serviceType": "Transfer Hizmeti"
+  };
 
   const popularDestinations = [
     { 
@@ -143,95 +174,11 @@ const AntalyaTransfer = () => {
 
   return (
     <>
-      <UnifiedSEO
-        title="Antalya Transfer | Havalimanı VIP Ulaşım"
-        description="Antalya havalimanı transfer hizmeti. AYT'den tüm otellere güvenli ulaşım. 7/24 rezervasyon, uygun fiyat."
-        keywords="antalya transfer, antalya havalimanı transfer, AYT transfer, antalya taksi, lara transfer, konyaaltı transfer, kaleiçi transfer, antalya otel transfer, antalya ulaşım, antalya şoför hizmeti"
-        canonicalUrl="https://www.gatetransfer.com/antalya-transfer"
-        ogTitle="Antalya Transfer Hizmeti | Havalimanı ve Otel Transferi"
-        ogDescription="Antalya'da profesyonel transfer hizmeti. Havalimanı, otel ve şehir içi güvenli ulaşım. Hemen rezervasyon yapın!"
-        ogImage="/images/antalya-transfer.jpg"
-        ogImageAlt="Antalya Transfer Hizmeti"
-        ogUrl="https://gatetransfer.com/antalya-transfer"
-        ogType="website"
-        pageType="city"
-        location="Antalya"
-        language="tr"
-        alternateLanguages={['tr', 'en', 'de', 'ru']}
-        hasSchema={true}
-        schemaData={{
-          localBusiness: {
-            "@type": "LocalBusiness",
-            "name": "GATE Transfer - Antalya Transfer Hizmeti",
-            "description": "Antalya havalimanı, otel ve şehir içi transfer hizmeti. Güvenli, konforlu ve profesyonel ulaşım çözümleri.",
-            "url": "https://gatetransfer.com/antalya-transfer",
-            "telephone": "+905325742682",
-            "email": "info@sbstravel.net",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",
-              "addressLocality": "Aksu",
-              "addressRegion": "Antalya",
-              "postalCode": "07112",
-              "addressCountry": "TR"
-            },
-            "geo": {
-              "@type": "GeoCoordinates",
-              "latitude": "36.8969",
-              "longitude": "30.7133"
-            },
-            "openingHours": "Mo-Su 00:00-23:59",
-            "priceRange": "€20-€200",
-            "currenciesAccepted": "EUR,TRY",
-            "paymentAccepted": "Cash, Credit Card, Bank Transfer",
-            "areaServed": {
-              "@type": "GeoCircle",
-              "geoMidpoint": {
-                "@type": "GeoCoordinates",
-                "latitude": "36.8969",  
-                "longitude": "30.7133"
-              },
-              "geoRadius": "100000"
-            },
-            "serviceType": "Transfer Service",
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "4.9",
-              "reviewCount": "2847"
-            },
-            "sameAs": [
-              "https://www.facebook.com/gatetransfer",
-              "https://www.instagram.com/gatetransfer_antalya"
-            ]
-          },
-          service: {
-            "@type": "Service",
-            "name": "Antalya Transfer Hizmeti",
-            "serviceType": "Transportation Service",
-            "provider": {
-              "@type": "LocalBusiness",
-              "name": "GATE Transfer"
-            },
-            "areaServed": {
-              "@type": "City",
-              "name": "Antalya",
-              "addressCountry": "TR"
-            },
-            "description": "Antalya havalimanı, otel ve şehir içi profesyonel transfer hizmeti",
-            "offers": {
-              "@type": "Offer",
-              "price": "20",
-              "priceCurrency": "EUR",
-              "priceSpecification": {
-                "@type": "PriceSpecification",
-                "minPrice": "20",
-                "maxPrice": "200",
-                "priceCurrency": "EUR"
-              }
-            }
-          }
-        }}
-      />
+      <SEOHead pageData={pageData}>
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      </SEOHead>
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white py-8 md:py-12 overflow-hidden">

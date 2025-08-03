@@ -1,13 +1,8 @@
 # GATE Transfer - Robots.txt
-# Optimize edilmiş ve güncellenmiş versiyon - 2 Ağustos 2025
-
-# Tercih edilen domain bilgisi
-Host: https://www.gatetransfer.com
+# Optimize edilmiş ve güncellenmiş versiyon - 3 Ağustos 2025
 
 # Sitemap bilgileri
 Sitemap: https://www.gatetransfer.com/sitemap.xml
-Sitemap: https://www.gatetransfer.com/sitemap-index.xml
-Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
 
 # Tüm botlar için varsayılan kurallar
 User-agent: *
@@ -25,13 +20,20 @@ Disallow: /temp/
 Disallow: /tmp/
 Disallow: /*.json$
 Disallow: /*.config.*$
-Disallow: /*?*
-Disallow: /*?
 
-# Özel botlar için kurallar
+# Search Engine spesifik kurallar
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# AI Botlar için özel kurallar
 User-agent: GPTBot
 Allow: /blog/
-Allow: /hizmetlerimiz/
+Allow: /hizmetler/
 Allow: /iletisim
 Allow: /hakkimizda
 Disallow: /
@@ -39,14 +41,9 @@ Disallow: /
 User-agent: AdsBot-Google
 Allow: /
 
-# Crawl gecikmesi (saniye cinsinden)
-Crawl-delay: 1
-
 # Disallow legacy hash routing URLs
-Disallow: /*#!*
-
-# Disallow AJAX crawling URLs
-Disallow: /*_escaped_fragment_*
+Disallow: /*#*
+Disallow: /*?*
 
 # Disallow legacy 404 URLs
 Disallow: /readme.html

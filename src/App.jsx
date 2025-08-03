@@ -5,6 +5,9 @@ import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
 import { AppProvider } from './context/AppContext'
 
+// SEO Components
+import { StructuredData, generateOrganizationSchema, generateWebsiteSchema } from './seo/index.js'
+
 // Performance Components
 import MobileOptimizer from './components/UI/MobileOptimizer'
 
@@ -109,9 +112,17 @@ import ScrollToTop from './components/ScrollToTop'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 
 function App() {
+  // Global SEO Schemas
+  const organizationSchema = generateOrganizationSchema();
+  const websiteSchema = generateWebsiteSchema();
+
   return (
     <ErrorBoundary>
       <HelmetProvider>
+        {/* Global SEO Schemas */}
+        <StructuredData schema={organizationSchema} id="organization-schema" />
+        <StructuredData schema={websiteSchema} id="website-schema" />
+        
         <AuthProvider>
           <AppProvider>
             <BrowserRouter

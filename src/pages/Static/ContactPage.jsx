@@ -10,8 +10,32 @@ import {
   Globe
 } from 'lucide-react';
 import StaticPageLayout from './components/StaticPageLayout';
+import { 
+  SEOHead, 
+  StructuredData, 
+  generateOrganizationSchema,
+  generateBreadcrumbSchema,
+  generateMetaTags 
+} from '../../seo/index.js';
 
 const ContactPage = () => {
+  // SEO Meta Tags
+  const contactMetaTags = generateMetaTags({
+    title: 'İletişim | SBS Turkey Transfer - Antalya Havalimanı Transfer İletişim',
+    description: 'SBS Turkey Transfer ile iletişime geçin. Antalya havalimanı transfer rezervasyonu için +90 532 574 26 82 arayın. 7/24 canlı destek, ücretsiz danışmanlık ve hızlı rezervasyon.',
+    keywords: 'Antalya transfer iletişim, havalimanı transfer telefon, transfer rezervasyon, SBS Turkey Transfer iletişim, Antalya airport transfer contact',
+    url: '/iletisim',
+    image: '/images/contact-page.jpg',
+    type: 'website'
+  });
+
+  // Schema.org Structured Data
+  const organizationSchema = generateOrganizationSchema();
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Ana Sayfa', url: 'https://www.gatetransfer.com/' },
+    { name: 'İletişim', url: 'https://www.gatetransfer.com/iletisim' }
+  ]);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -100,7 +124,25 @@ const ContactPage = () => {
   ];
 
   return (
-    <StaticPageLayout
+    <div>
+      {/* SEO Head */}
+      <SEOHead 
+        pageData={{
+          title: contactMetaTags.title,
+          description: contactMetaTags.description,
+          keywords: contactMetaTags.keywords,
+          url: '/iletisim',
+          image: '/images/contact-page.jpg',
+          type: 'website'
+        }}
+        includeHrefLang={true}
+      />
+      
+      {/* Schema.org Structured Data */}
+      <StructuredData schema={organizationSchema} id="organization-schema" />
+      <StructuredData schema={breadcrumbSchema} id="breadcrumb-schema" />
+
+      <StaticPageLayout
       title="İletişim | GATE Transfer - Antalya Havalimanı Transfer İletişim Bilgileri"
       description="GATE Transfer ile iletişime geçin. Antalya havalimanı transfer rezervasyonu ve bilgi almak için +90 532 574 26 82 numaramızı arayın veya sbstravelinfo@gmail.com adresine e-posta gönderin."
       keywords="GATE Transfer iletişim, Antalya transfer iletişim, havalimanı transfer telefon, transfer rezervasyon iletişim, Antalya transfer telefon numarası, transfer hizmeti iletişim, GATE Transfer adres, Antalya airport transfer contact"
@@ -372,6 +414,7 @@ const ContactPage = () => {
         </div>
       </section>
     </StaticPageLayout>
+    </div>
   );
 };
 

@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import UnifiedSEO from '../../components/SEO/UnifiedSEO';
 import Layout from '../../components/Layout/Layout';
+import { 
+  SEOHead, 
+  StructuredData, 
+  generateCityMetaTags, 
+  generateCityTransferSchema,
+  generateFAQSchema 
+} from '../../seo/index.js';
 
 // Diğer bileşenler ve içerikler
 
@@ -62,22 +68,60 @@ const CityTransferPage = () => {
       }
     ]
   };
+
+  // SEO Meta Tags
+  const cityMetaTags = generateCityMetaTags(cityName, {
+    distance: cityData.distance,
+    duration: cityData.duration,
+    price: cityData.price,
+    description: cityData.description,
+    image: cityData.image
+  });
+
+  // City Transfer Schema
+  const cityTransferSchema = generateCityTransferSchema(
+    cityData.name,
+    cityData.distance,
+    cityData.duration,
+    cityData.price
+  );
+
+  // FAQ Schema
+  const faqItems = [
+    {
+      question: `Antalya Havalimanı'ndan ${cityData.name}'a transfer ne kadar sürer?`,
+      answer: `Antalya Havalimanı'ndan ${cityData.name} bölgesine transfer süresi yaklaşık ${cityData.duration}dır. Trafik durumuna göre bu süre değişebilir.`
+    },
+    {
+      question: `${cityData.name} transfer fiyatı ne kadar?`,
+      answer: `${cityData.name} transfer fiyatımız ${cityData.price} başlangıç fiyatı ile hizmet vermekteyiz. Araç tipine ve rezervasyon tarihine göre fiyatlar değişebilir.`
+    },
+    {
+      question: `${cityData.name} transfer rezervasyonu nasıl yapılır?`,
+      answer: `${cityData.name} transfer rezervasyonu için web sitemizden online rezervasyon yapabilir veya +90 532 574 26 82 numaralı telefondan bizimle iletişime geçebilirsiniz.`
+    }
+  ];
+  const faqSchema = generateFAQSchema(faqItems);
   
   return (
     <>
-      <UnifiedSEO 
-        title={cityData.title}
-        description={cityData.description}
-        keywords={`${cityData.name} transfer, antalya ${cityData.name} transfer, ${cityData.name} havaalanı transfer, ${cityData.name} havalimanı ulaşım`}
-        pageType="city"
-        location={cityData.name}
-        ogImage={cityData.image}
-        ogImageAlt={`${cityData.name} Transfer Hizmeti`}
-        schemaData={faqData}
-        hasSchema={true}
-        language="tr"
-        alternateLanguages={['tr', 'en']} // Bu şehir sayfasının hangi dillerde mevcut olduğunu belirtir
+      {/* SEO Meta Tags */}
+      <SEOHead 
+        pageData={{
+          titleData: cityData.name,
+          descriptionData: cityData.name,
+          keywordsData: cityData.name.toLowerCase(),
+          url: `/${cityName}`,
+          image: cityData.image,
+          pageType: 'city',
+          description: cityData.description
+        }}
+        includeHrefLang={true}
       />
+      
+      {/* Schema.org Structured Data */}
+      <StructuredData schema={cityTransferSchema} id="city-transfer-schema" />
+      <StructuredData schema={faqSchema} id="faq-schema" />
       
       <Layout>
         {/* Sayfa içeriği buraya gelecek */}

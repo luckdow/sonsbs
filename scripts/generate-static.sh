@@ -1,91 +1,53 @@
 #!/bin/bash
 
-# Advanced Static Site Generation Script
-echo "🚀 Starting FULL static page generation with content injection..."
+# Modern Static Site Generation Script for Vercel
+echo "🚀 Modern SEO sistemi ile static generation başlıyor..."
 
-# Ana sayfalar
-PAGES=(
-  "/"
-  "/rezervasyon" 
-  "/hakkimizda"
-  "/iletisim"
-  "/hizmetlerimiz"
-  "/kemer-transfer"
-  "/side-transfer"
-  "/belek-transfer"
-  "/alanya-transfer"
-  "/antalya-transfer"
-  "/kas-transfer"
-  "/kalkan-transfer"
-  "/lara-transfer"
-  "/manavgat-transfer"
-  "/serik-transfer"
-)
+# Build klasörü kontrolü
+if [ ! -d "dist" ]; then
+  echo "❌ dist klasörü bulunamadı. Build henüz çalışmamış."
+  exit 1
+fi
 
-# Her sayfa için özel SEO içerik oluştur
-inject_seo_content() {
-  local page=$1
-  local file_path=$2
-  
-  case $page in
-    "/kemer-transfer")
-      sed -i 's/<title>.*<\/title>/<title>Kemer Transfer - Antalya Havalimanı Kemer Transfer Hizmeti | SBS Turkey<\/title>/' "$file_path"
-      sed -i 's/<meta name="description" content="[^"]*"/<meta name="description" content="Kemer transfer hizmeti. Antalya havalimanından Kemer'e güvenli ve konforlu transfer. 7\/24 profesyonel şoför hizmeti. Hemen rezervasyon yapın!"/' "$file_path"
-      sed -i 's/<h1>[^<]*<\/h1>/<h1>Kemer Transfer - Antalya Havalimanı Transfer Hizmeti<\/h1>/' "$file_path"
-      ;;
-    "/side-transfer")
-      sed -i 's/<title>.*<\/title>/<title>Side Transfer - Antalya Havalimanı Side Transfer Hizmeti | SBS Turkey<\/title>/' "$file_path"
-      sed -i 's/<meta name="description" content="[^"]*"/<meta name="description" content="Side transfer hizmeti. Antalya havalimanından Side'\''ye güvenli transfer. Antik Side turu ve otel transferi. 7\/24 hizmet!"/' "$file_path"
-      sed -i 's/<h1>[^<]*<\/h1>/<h1>Side Transfer - Antalya Havalimanı Transfer Hizmeti<\/h1>/' "$file_path"
-      ;;
-    "/belek-transfer")
-      sed -i 's/<title>.*<\/title>/<title>Belek Transfer - Antalya Havalimanı Belek Golf Transfer | SBS Turkey<\/title>/' "$file_path"
-      sed -i 's/<meta name="description" content="[^"]*"/<meta name="description" content="Belek transfer hizmeti. Golf otelleri ve lüks tatil köyleri transferi. Antalya havalimanından Belek'\''e VIP transfer hizmeti."/' "$file_path"
-      sed -i 's/<h1>[^<]*<\/h1>/<h1>Belek Transfer - Golf Otelleri Transfer Hizmeti<\/h1>/' "$file_path"
-      ;;
-    "/alanya-transfer")
-      sed -i 's/<title>.*<\/title>/<title>Alanya Transfer - Antalya Havalimanı Alanya Transfer | SBS Turkey<\/title>/' "$file_path"
-      sed -i 's/<meta name="description" content="[^"]*"/<meta name="description" content="Alanya transfer hizmeti. Antalya havalimanından Alanya'\''ya konforlu transfer. Kleopatra plajı ve Alanya kalesi turu dahil!"/' "$file_path"
-      sed -i 's/<h1>[^<]*<\/h1>/<h1>Alanya Transfer - Antalya Havalimanı Transfer<\/h1>/' "$file_path"
-      ;;
-    "/antalya-transfer")
-      sed -i 's/<title>.*<\/title>/<title>Antalya Transfer - Antalya Havalimanı Şehir Merkezi Transfer | SBS Turkey<\/title>/' "$file_path"
-      sed -i 's/<meta name="description" content="[^"]*"/<meta name="description" content="Antalya şehir merkezi transfer hizmeti. Havalimanından Kaleiçi, Lara, Konyaaltı transfer. 7\/24 güvenli ulaşım!"/' "$file_path"
-      sed -i 's/<h1>[^<]*<\/h1>/<h1>Antalya Transfer - Şehir Merkezi Transfer Hizmeti<\/h1>/' "$file_path"
-      ;;
-    *)
-      echo "📝 Using default SEO content for $page"
-      ;;
-  esac
-}
+echo "✅ Build klasörü mevcut."
 
-# Her sayfa için static HTML oluştur
-for page in "${PAGES[@]}"; do
-  echo "📄 Generating optimized page: $page"
-  
-  # Create directory if needed
-  if [ "$page" != "/" ]; then
-    mkdir -p "dist$(dirname "$page")"
-    if [ "$(basename "$page")" != "index.html" ]; then
-      mkdir -p "dist$page"
-    fi
-  fi
-  
-  # Copy and optimize index.html for each route
-  if [ "$page" = "/" ]; then
-    echo "✅ Homepage already optimized"
-  else
-    # Copy to directory structure
-    cp dist/index.html "dist$page/index.html" 2>/dev/null || true
-    inject_seo_content "$page" "dist$page/index.html"
-    
-    # Copy as direct file too
-    if [ "$(basename "$page")" != "index.html" ]; then
-      cp dist/index.html "dist$page.html" 2>/dev/null || true
-      inject_seo_content "$page" "dist$page.html"
-    fi
-  fi
-done
+# Sitemap oluştur
+echo "📄 Sitemap oluşturuluyor..."
+if node scripts/build-sitemap.js; then
+  echo "✅ Sitemap başarıyla oluşturuldu"
+else
+  echo "⚠️ Sitemap oluşturulamadı, devam ediliyor..."
+fi
 
-echo "✅ Static generation completed!"
-echo "📊 Generated $(find dist -name "*.html" | wc -l) HTML files"
+# robots.txt varsa public'ten dist'e kopyala
+if [ -f "public/robots.txt" ]; then
+  cp public/robots.txt dist/
+  echo "✅ robots.txt kopyalandı"
+fi
+
+# sitemap.xml varsa public'ten dist'e kopyala  
+if [ -f "public/sitemap.xml" ]; then
+  cp public/sitemap.xml dist/
+  echo "✅ sitemap.xml kopyalandı"
+fi
+
+# manifest.json ve PWA dosyalarını kopyala
+if [ -f "public/manifest.json" ]; then
+  cp public/manifest.json dist/
+  echo "✅ PWA manifest kopyalandı"
+fi
+
+# .well-known klasörünü kopyala (domain verification için)
+if [ -d "public/.well-known" ]; then
+  cp -r public/.well-known dist/
+  echo "✅ .well-known klasörü kopyalandı"
+fi
+
+echo ""
+echo "✅ Modern SEO sistemi ile static generation tamamlandı!"
+echo "📊 React Helmet ile dinamik meta tag yönetimi aktif"
+echo "🤖 Bot-friendly fallback content hazır"  
+echo "🔧 Structured data entegrasyonu aktif"
+echo "🌐 Vercel deployment için hazır"
+echo "📄 Sitemap ve robots.txt deployment'a dahil"
+echo ""

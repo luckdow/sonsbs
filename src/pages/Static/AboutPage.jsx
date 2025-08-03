@@ -14,8 +14,32 @@ import {
   Star
 } from 'lucide-react';
 import StaticPageLayout from './components/StaticPageLayout';
+import { 
+  SEOHead, 
+  StructuredData, 
+  generateOrganizationSchema,
+  generateBreadcrumbSchema,
+  generateMetaTags 
+} from '../../seo/index.js';
 
 const AboutPage = () => {
+  // SEO Meta Tags
+  const aboutMetaTags = generateMetaTags({
+    title: 'Hakkımızda | SBS Turkey Transfer - Antalya Transfer Hizmeti',
+    description: '2011\'den beri Antalya\'da güvenli transfer hizmeti. TURSAB lisanslı, %99 memnuniyet oranı, 50.000+ mutlu müşteri. Mercedes araçlar, profesyonel şoförler, 7/24 hizmet.',
+    keywords: 'SBS Turkey Transfer hakkında, Antalya transfer şirketi, güvenli transfer, TURSAB lisanslı transfer, Antalya havalimanı transfer hizmeti',
+    url: '/hakkimizda',
+    image: '/images/about-us.jpg',
+    type: 'website'
+  });
+
+  // Schema.org Structured Data
+  const organizationSchema = generateOrganizationSchema();
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Ana Sayfa', url: 'https://www.gatetransfer.com/' },
+    { name: 'Hakkımızda', url: 'https://www.gatetransfer.com/hakkimizda' }
+  ]);
+
   const stats = [
     { number: "2011", label: "Kuruluş Yılı" },
     { number: "50000+", label: "Mutlu Müşteri" },
@@ -74,7 +98,25 @@ const AboutPage = () => {
   ];
 
   return (
-    <StaticPageLayout
+    <div>
+      {/* SEO Head */}
+      <SEOHead 
+        pageData={{
+          title: aboutMetaTags.title,
+          description: aboutMetaTags.description,
+          keywords: aboutMetaTags.keywords,
+          url: '/hakkimizda',
+          image: '/images/about-us.jpg',
+          type: 'website'
+        }}
+        includeHrefLang={true}
+      />
+      
+      {/* Schema.org Structured Data */}
+      <StructuredData schema={organizationSchema} id="organization-schema" />
+      <StructuredData schema={breadcrumbSchema} id="breadcrumb-schema" />
+
+      <StaticPageLayout
       title="Hakkımızda | GATE Transfer - Antalya Havalimanı Transfer Hizmeti"
       description="GATE Transfer, SBS Turkey Turizm bünyesinde 2011'den beri Antalya havalimanı transfer hizmetinde güvenilir, konforlu ve uygun fiyatlı çözümler sunmaktadır."
       keywords="GATE Transfer hakkında, Antalya transfer firması, SBS Turkey Turizm, havalimanı transfer şirketi, güvenilir transfer, Antalya transfer deneyim, transfer hizmeti kalite, Antalya airport transfer company"
@@ -340,6 +382,7 @@ const AboutPage = () => {
         </div>
       </section>
     </StaticPageLayout>
+    </div>
   );
 };
 
