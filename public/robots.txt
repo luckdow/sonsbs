@@ -8,29 +8,39 @@ Sitemap: https://www.gatetransfer.com/sitemap.xml
 User-agent: *
 Allow: /
 
-# Yönetim ve özel alanların erişim engelleri
+# Önemli dosyalar ve dizinlere izin
+Allow: /images/
+Allow: /favicon.ico
+Allow: /robots.txt
+Allow: /sitemap*.xml
+Allow: /manifest.json
+Allow: /firebase-messaging-sw.js
+
+# Yönetim ve teknik alanların erişim engelleri
 Disallow: /admin/
 Disallow: /api/
-Disallow: /private/
 Disallow: /_next/
 Disallow: /node_modules/
 Disallow: /src/
 Disallow: /dist/
-Disallow: /temp/
-Disallow: /tmp/
-Disallow: /*.json$
-Disallow: /*.config.*$
 
-# Search Engine spesifik kurallar
+# Legacy URL'leri engelle
+Disallow: /*#*
+Disallow: /readme.html
+Disallow: /lander/
+Disallow: /online-reservation/
+
+# Google Bot
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 1
 
+# Bing Bot
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 1
 
-# AI Botlar için özel kurallar
+# AI Botlar için sınırlı erişim
 User-agent: GPTBot
 Allow: /blog/
 Allow: /hizmetler/
@@ -38,72 +48,5 @@ Allow: /iletisim
 Allow: /hakkimizda
 Disallow: /
 
-User-agent: AdsBot-Google
-Allow: /
-
-# Disallow legacy hash routing URLs
-Disallow: /*#*
-Disallow: /*?*
-
-# Disallow legacy 404 URLs
-Disallow: /readme.html
-Disallow: /lander
-Disallow: /online-reservation/
-
-# Explicitly allow important files and directories
-Allow: /images/
-Allow: /favicon.ico
-Allow: /robots.txt
-Allow: /sitemap*.xml
-Allow: /manifest.json
-Allow: /firebase-messaging-sw.js
-Allow: /sw-enhanced.js
-
-# Allow important pages
-Allow: /hakkimizda
-Allow: /iletisim
-Allow: /hizmetlerimiz
-Allow: /*-transfer
-Allow: /blog/
-
-# Specific search engine directives
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Slurp
-Allow: /
-Crawl-delay: 1
-
-User-agent: YandexBot
-Allow: /
-Crawl-delay: 2
-
-User-agent: DuckDuckBot
-Allow: /
-Crawl-delay: 1
-
-# Social media crawlers
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-# Archive bots - Explicitly allow
-User-agent: archive.org_bot
-Allow: /
-
-User-agent: ia_archiver
-Allow: /
-
-# Sitemap locations
-Sitemap: https://www.gatetransfer.com/sitemap.xml
-Sitemap: https://www.gatetransfer.com/sitemap-index.xml
-Sitemap: https://www.gatetransfer.com/sitemap-multilingual.xml
-
-# Host directive for preferred domain
+# Host directive
 Host: www.gatetransfer.com
