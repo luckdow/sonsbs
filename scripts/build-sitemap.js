@@ -59,7 +59,38 @@ const mockDataSource = {
         excerpt: 'Havalimanı transferinde nelere dikkat etmeli',
         publishDate: '2025-07-25',
         modifiedDate: '2025-08-02'
+      },
+      {
+        slug: 'antalya-transfer-rehberi',
+        title: 'Antalya Transfer Rehberi 2025',
+        excerpt: 'Antalya transfer hizmetleri hakkında detaylı rehber',
+        publishDate: '2025-07-20',
+        modifiedDate: '2025-08-03'
+      },
+      {
+        slug: 'havaalani-transfer-ipuclari',
+        title: 'Havalimanı Transfer İpuçları',
+        excerpt: 'Güvenli ve ekonomik havalimanı transferi için öneriler',
+        publishDate: '2025-07-15',
+        modifiedDate: '2025-08-01'
       }
+    ];
+  },
+
+  async getStaticPages() {
+    return [
+      { url: '/', name: 'Ana Sayfa', priority: 1.0, changefreq: 'weekly', lastmod: '2025-08-03' },
+      { url: '/rezervasyon', name: 'Rezervasyon', priority: 0.9, changefreq: 'weekly', lastmod: '2025-08-03' },
+      { url: '/iletisim', name: 'İletişim', priority: 0.8, changefreq: 'monthly', lastmod: '2025-08-03' },
+      { url: '/hakkimizda', name: 'Hakkımızda', priority: 0.7, changefreq: 'monthly', lastmod: '2025-08-03' },
+      { url: '/hizmetler', name: 'Hizmetler', priority: 0.8, changefreq: 'weekly', lastmod: '2025-08-03' },
+      { url: '/blog', name: 'Blog', priority: 0.7, changefreq: 'weekly', lastmod: '2025-08-03' },
+      { url: '/gizlilik-politikasi', name: 'Gizlilik Politikası', priority: 0.3, changefreq: 'yearly', lastmod: '2025-08-03' },
+      { url: '/kullanim-kosullari', name: 'Kullanım Koşulları', priority: 0.3, changefreq: 'yearly', lastmod: '2025-08-03' },
+      { url: '/cerez-politikasi', name: 'Çerez Politikası', priority: 0.3, changefreq: 'yearly', lastmod: '2025-08-03' },
+      { url: '/iptal-iade', name: 'İptal ve İade', priority: 0.5, changefreq: 'monthly', lastmod: '2025-08-03' },
+      { url: '/sikca-sorulan-sorular', name: 'SSS', priority: 0.6, changefreq: 'monthly', lastmod: '2025-08-03' },
+      { url: '/kvkk', name: 'KVKK', priority: 0.3, changefreq: 'yearly', lastmod: '2025-08-03' }
     ];
   }
 };

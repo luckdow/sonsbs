@@ -114,10 +114,11 @@ export const buildCompleteSitemap = async (dataSource) => {
     const cities = await dataSource.getCities();
     const services = await dataSource.getServices();
     const blogPosts = await dataSource.getBlogPosts();
+    const staticPages = dataSource.getStaticPages ? await dataSource.getStaticPages() : [];
     
     // Sitemap entries oluştur
     const allPages = [
-      ...generateStaticSitemapEntries(),
+      ...(staticPages.length > 0 ? staticPages : generateStaticSitemapEntries()),
       ...generateCitySitemapEntries(cities),
       ...generateServiceSitemapEntries(services),
       ...generateBlogSitemapEntries(blogPosts)
