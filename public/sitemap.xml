@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://www.gatetransfer.com/</loc>
-    <lastmod>2025-08-03</lastmod>
+    <lastmod>2025-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
   </url>
@@ -75,9 +75,9 @@
   </url>
   <url>
     <loc>https://www.gatetransfer.com/antalya-transfer</loc>
-    <lastmod>2025-08-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2025-08-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
     <image:image>
       <image:loc>https://www.gatetransfer.com/images/cities/antalya-transfer.jpg</image:loc>
       <image:title>Antalya Transfer - GATE Transfer</image:title>
