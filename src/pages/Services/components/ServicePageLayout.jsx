@@ -2,6 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, Calendar, ArrowRight, CheckCircle, Star, Shield, Clock, Users, Car, Award } from 'lucide-react';
+import { APP_CONFIG } from '../../../config/constants.js';
 
 const ServicePageLayout = ({ 
   title, 
@@ -20,8 +21,8 @@ const ServicePageLayout = ({
   seoContent = null
 }) => {
   const siteUrl = "https://www.gatetransfer.com";
-  const companyPhone = "+90 532 574 26 82";
-  const companyEmail = "info@sbstravel.net";
+  const companyPhone = APP_CONFIG.supportPhone;
+  const companyEmail = APP_CONFIG.supportEmail;
 
   return (
     <>

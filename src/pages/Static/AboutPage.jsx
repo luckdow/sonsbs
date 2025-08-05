@@ -21,6 +21,7 @@ import {
   generateBreadcrumbSchema,
   generateMetaTags 
 } from '../../seo/index.js';
+import { APP_CONFIG } from '../../config/constants.js';
 
 const AboutPage = () => {
   // SEO Meta Tags
@@ -172,10 +173,10 @@ const AboutPage = () => {
                   <div>
                     <p className="font-semibold text-gray-900 mb-1">7/24 İletişim Hattı</p>
                     <a 
-                      href="tel:+905325742682" 
+                      href={`tel:${APP_CONFIG.supportPhoneRaw}`} 
                       className="text-blue-600 hover:text-blue-800 transition-colors text-sm md:text-base"
                     >
-                      +90 532 574 26 82
+                      {APP_CONFIG.supportPhone}
                     </a>
                   </div>
                 </div>
@@ -186,16 +187,16 @@ const AboutPage = () => {
                     <p className="font-semibold text-gray-900 mb-1">E-posta Adreslerimiz</p>
                     <div className="space-y-1">
                       <a 
-                        href="mailto:sbstravelinfo@gmail.com" 
+                        href={`mailto:${APP_CONFIG.supportEmail}`} 
                         className="block text-blue-600 hover:text-blue-800 transition-colors text-sm md:text-base"
                       >
-                        sbstravelinfo@gmail.com
+                        {APP_CONFIG.supportEmail}
                       </a>
                       <a 
-                        href="mailto:sbstravelinfo@gmail.com" 
+                        href={`mailto:${APP_CONFIG.supportEmail}`} 
                         className="block text-blue-600 hover:text-blue-800 transition-colors text-sm md:text-base"
                       >
-                        sbstravelinfo@gmail.com
+                        {APP_CONFIG.supportEmail}
                       </a>
                     </div>
                   </div>

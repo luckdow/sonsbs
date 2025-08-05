@@ -161,8 +161,8 @@ const SideTransfer = () => {
             "name": "GATE Transfer - Side Transfer Hizmeti",
             "description": "Side bölgesi antik kent, havalimanı ve beach resort transfer hizmeti. Kültür turizmi için özel profesyonel ulaşım çözümleri.",
             "url": "https://www.gatetransfer.com/side-transfer",
-            "telephone": "+905325742682",
-            "email": "info@sbstravel.net",
+            "telephone": "+90 532 574 26 82",
+            "email": "sbstravelinfo@gmail.com",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",

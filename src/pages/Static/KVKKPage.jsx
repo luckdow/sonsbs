@@ -373,8 +373,8 @@ const KVKKPage = () => {
                   <Mail className="w-5 h-5 mr-3" />
                   <div>
                     <p className="font-semibold">E-posta</p>
-                    <a href="mailto:kvkk@sbstravel.net" className="text-blue-100 hover:text-white">
-                      kvkk@sbstravel.net
+                    <a href="mailto:sbstravelinfo@gmail.com" className="text-blue-100 hover:text-white">
+                      sbstravelinfo@gmail.com
                     </a>
                   </div>
                 </div>

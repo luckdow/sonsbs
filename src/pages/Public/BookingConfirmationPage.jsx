@@ -922,7 +922,7 @@ const BookingConfirmationPage = () => {
               <Mail className="w-5 h-5 text-green-600" />
               <div>
                 <p className="text-sm font-medium text-gray-900">E-posta</p>
-                <p className="text-sm text-gray-600">info@sonstransfer.com</p>
+                <p className="text-sm text-gray-600">sbstravelinfo@gmail.com</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">

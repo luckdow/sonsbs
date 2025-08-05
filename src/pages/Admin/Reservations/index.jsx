@@ -416,7 +416,7 @@ const ReservationIndex = () => {
             name: 'SBS TURKEY TURİZM SANAYİ VE TİCARET LİMİTED ŞİRKETİ',
             address: 'GÜZELYURT MAH. SERİK CAD. NO: 138 /2 AKSU/ ANTALYA',
             phone: '+90 532 574 26 82',
-            email: 'sbstravel@gmail.com',
+            email: 'sbstravelinfo@gmail.com',
             website: 'www.gatetransfer.com'
           };
           

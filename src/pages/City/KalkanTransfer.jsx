@@ -121,8 +121,8 @@ const KalkanTransfer = () => {
             "name": "GATE Transfer - Kalkan Transfer Hizmeti",
             "description": "Kalkan bölgesi lüks otel, havalimanı ve plaj transfer hizmeti. Premium araçlarla güvenli ve konforlu ulaşım çözümleri.",
             "url": "https://www.gatetransfer.com/kalkan-transfer",
-            "telephone": "+905325742682",
-            "email": "info@sbstravel.net",
+            "telephone": "+90 532 574 26 82",
+            "email": "sbstravelinfo@gmail.com",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",

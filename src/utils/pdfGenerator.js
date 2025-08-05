@@ -17,7 +17,7 @@ export const generateReservationPDF = async (reservationData, companyInfo, qrCod
     pdf.setFont('helvetica', 'normal');
     pdf.text(companyInfo?.address || 'Transfer Hizmeti', 20, 35);
     pdf.text(`Tel: ${companyInfo?.phone || '+90 555 123 45 67'}`, 20, 42);
-    pdf.text(`E-mail: ${companyInfo?.email || 'info@sbstransfer.com'}`, 20, 49);
+    pdf.text(`E-mail: ${companyInfo?.email || 'sbstravelinfo@gmail.com'}`, 20, 49);
     
     // Başlık çizgisi
     pdf.setLineWidth(1);

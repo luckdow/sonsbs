@@ -11,8 +11,8 @@ export const SEO_CONFIG = {
   company: {
     name: 'SBS Turkey Turizm Sanayi ve Ticaret Limited Şirketi',
     alternateName: ['SBS Turkey Transfer', 'SBS Transfer', 'Gate Transfer'],
-    phone: '+905325742682',
-    email: 'sbstravel@gmail.com',
+    phone: '+90 532 574 26 82',
+    email: 'sbstravelinfo@gmail.com',
     address: {
       streetAddress: 'Güzelyurt Mahallesi Serik Caddesi No: 138/2',
       addressLocality: 'Aksu',

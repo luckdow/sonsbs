@@ -145,15 +145,6 @@
   </head>
   <body>
     <div id="root">
-      <!-- Loading Screen -->
-      <div id="loading-screen">
-        <div>
-          <h2 style="font-size: 2rem; margin-bottom: 1rem;">SBS Turkey Transfer</h2>
-          <p style="font-size: 1.1rem; margin-bottom: 2rem;">Yükleniyor...</p>
-          <div class="spinner"></div>
-        </div>
-      </div>
-      
       <!-- SEO Fallback Content (Bot'lar için) -->
       <noscript>
         <main style="padding: 20px; max-width: 1200px; margin: 0 auto; font-family: Arial, sans-serif;">
@@ -187,19 +178,7 @@
     <!-- React App -->
     <script type="module" src="/src/main.jsx"></script>
     
-    <!-- Loading screen removal script -->
-    <script>
-      // Loading screen'i React yüklendikten sonra kaldır
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          const loadingScreen = document.getElementById('loading-screen');
-          if (loadingScreen) {
-            loadingScreen.style.opacity = '0';
-            loadingScreen.style.transition = 'opacity 0.5s ease';
-            setTimeout(() => loadingScreen.remove(), 500);
-          }
-        }, 1000);
-      });
-    </script>
+    <!-- Cache busting script -->
+    <script src="/cache-bust.js"></script>
   </body>
 </html>

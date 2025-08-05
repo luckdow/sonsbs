@@ -367,7 +367,7 @@ const RefundCancellationPage = () => {
                   İletişime Geçin
                 </h3>
                 <p className="text-gray-600">
-                  +90 532 574 26 82 numaralı telefonu arayın veya info@sbstravel.net 
+                  +90 532 574 26 82 numaralı telefonu arayın veya sbstravelinfo@gmail.com 
                   adresine e-posta gönderin. Rezervasyon numaranızı hazır bulundurun.
                 </p>
               </div>
@@ -492,7 +492,7 @@ const RefundCancellationPage = () => {
                 +90 532 574 26 82
               </a>
               <a
-                href="mailto:info@sbstravel.net"
+                href="mailto:sbstravelinfo@gmail.com"
                 className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors inline-flex items-center justify-center gap-2"
               >
                 <Mail className="w-4 h-4" />

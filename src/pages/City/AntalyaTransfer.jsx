@@ -39,7 +39,7 @@ const AntalyaTransfer = () => {
     "name": "SBS Turkey Transfer - Antalya Transfer Hizmeti",
     "description": "Antalya havalimanı, otel ve şehir içi transfer hizmeti. Güvenli, konforlu ve profesyonel ulaşım çözümleri.",
     "url": "https://www.gatetransfer.com/antalya-transfer",
-    "telephone": "+905325742682",
+    "telephone": "+90 532 574 26 82",
     "email": "sbstravelinfo@gmail.com",
     "address": {
       "@type": "PostalAddress",

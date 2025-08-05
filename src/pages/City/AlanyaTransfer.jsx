@@ -121,8 +121,8 @@ const AlanyaTransfer = () => {
             "name": "GATE Transfer - Alanya Transfer Hizmeti",
             "description": "Alanya bölgesi havalimanı, tarihi yerler ve plaj tesisleri transfer hizmeti. Uzun mesafe güvenli ulaşım çözümleri.",
             "url": "https://www.gatetransfer.com/alanya-transfer",
-            "telephone": "+905325742682",
-            "email": "info@sbstravel.net",
+            "telephone": "+90 532 574 26 82",
+            "email": "sbstravelinfo@gmail.com",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",

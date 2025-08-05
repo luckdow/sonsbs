@@ -141,7 +141,7 @@ export const initializeSettings = async () => {
       const demoSettings = {
         general: {
           companyName: 'SBS Transfer',
-          companyEmail: 'info@sbstransfer.com',
+          companyEmail: 'sbstravelinfo@gmail.com',
           companyPhone: '+90 555 123 45 67',
           companyAddress: 'İstanbul, Türkiye',
           companyDescription: 'Premium transfer hizmetleri',

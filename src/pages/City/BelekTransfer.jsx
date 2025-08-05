@@ -161,8 +161,8 @@ const BelekTransfer = () => {
             "name": "GATE Transfer - Belek Transfer Hizmeti",
             "description": "Belek bölgesi golf resort, havalimanı ve antik kentler transfer hizmeti. Golf turizmi için özel profesyonel ulaşım çözümleri.",
             "url": "https://www.gatetransfer.com/belek-transfer",
-            "telephone": "+905325742682",
-            "email": "info@sbstravel.net",
+            "telephone": "+90 532 574 26 82",
+            "email": "sbstravelinfo@gmail.com",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",

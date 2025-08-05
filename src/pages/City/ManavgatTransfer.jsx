@@ -121,8 +121,8 @@ const ManavgotTransfer = () => {
             "name": "GATE Transfer - Manavgat Transfer Hizmeti",
             "description": "Manavgat bölgesi otel, havalimanı ve turistik yerler arası transfer hizmeti. Hızlı, güvenli ve uygun fiyatlı ulaşım çözümleri.",
             "url": "https://www.gatetransfer.com/manavgat-transfer",
-            "telephone": "+905325742682",
-            "email": "info@sbstravel.net",
+            "telephone": "+90 532 574 26 82",
+            "email": "sbstravelinfo@gmail.com",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",

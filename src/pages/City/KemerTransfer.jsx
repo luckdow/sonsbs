@@ -161,8 +161,8 @@ const KemerTransfer = () => {
             "name": "GATE Transfer - Kemer Transfer Hizmeti",
             "description": "Kemer bölgesi otel, havalimanı ve doğa turları transfer hizmeti. Güvenli, konforlu ve profesyonel ulaşım çözümleri.",
             "url": "https://www.gatetransfer.com/kemer-transfer",
-            "telephone": "+905325742682",
-            "email": "info@sbstravel.net",
+            "telephone": "+90 532 574 26 82",
+            "email": "sbstravelinfo@gmail.com",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",

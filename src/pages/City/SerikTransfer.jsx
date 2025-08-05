@@ -121,8 +121,8 @@ const SerikTransfer = () => {
             "name": "GATE Transfer - Serik Transfer Hizmeti",
             "description": "Serik bölgesi golf resort, havalimanı ve antik kentler arası transfer hizmeti. Golf turizmi için özel VIP ulaşım çözümleri.",
             "url": "https://www.gatetransfer.com/serik-transfer",
-            "telephone": "+905325742682",
-            "email": "info@sbstravel.net",
+            "telephone": "+90 532 574 26 82",
+            "email": "sbstravelinfo@gmail.com",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Güzelyurt Mahallesi Serik Caddesi No: 138/2",

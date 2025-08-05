@@ -323,7 +323,7 @@ export const sendBookingConfirmationEmail = async (bookingData, qrCodeUrl) => {
       // Şirket bilgileri
       companyName: 'Gate Transfer',
       companyPhone: '+90 532 574 26 82',
-      companyEmail: 'sbstravel@gmail.com',
+      companyEmail: 'sbstravelinfo@gmail.com',
       companyWebsite: 'www.gatetransfer.com'
     };
 
@@ -343,7 +343,7 @@ export const sendBookingConfirmationEmail = async (bookingData, qrCodeUrl) => {
         to_email: bookingData.customerEmail,
         to_name: bookingData.customerName,
         from_name: 'Gate Transfer',
-        reply_to: 'sbstravel@gmail.com',
+        reply_to: 'sbstravelinfo@gmail.com',
         subject: `Rezervasyon Onayi - ${bookingData.reservationId}`,
         message: `Rezervasyon Onayi
 
@@ -422,7 +422,7 @@ export const sendDriverAssignmentEmail = async (emailData) => {
       to_name: emailData.customerName,
       to_email: emailData.customerEmail,
       from_name: settings.general?.companyName || 'Gate Transfer',
-      reply_to: settings.general?.companyEmail || 'sbstravel@gmail.com',
+      reply_to: settings.general?.companyEmail || 'sbstravelinfo@gmail.com',
       subject: `Sofor Atama Bilgisi - ${emailData.reservationId}`,
       message: `Sofor Atama Bilgisi
 

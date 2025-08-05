@@ -11,6 +11,9 @@ import { StructuredData, generateOrganizationSchema, generateWebsiteSchema } fro
 // Performance Components
 import MobileOptimizer from './components/UI/MobileOptimizer'
 
+// Cache Busting Hook
+import { useCacheBusting } from './hooks/useCacheBusting'
+
 // Layout Components (keep these as direct imports since they're used on all pages)
 import Layout from './components/Layout/Layout'
 import AdminLayout from './components/Layout/AdminLayout'
@@ -112,6 +115,9 @@ import ScrollToTop from './components/ScrollToTop'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 
 function App() {
+  // Cache Busting Hook - Otomatik cache temizleme
+  useCacheBusting();
+  
   // Global SEO Schemas
   const organizationSchema = generateOrganizationSchema();
   const websiteSchema = generateWebsiteSchema();
