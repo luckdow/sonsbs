@@ -80,11 +80,25 @@ const FinancialReports = () => {
 
       filteredReservations.forEach(reservation => {
         const price = reservation.totalPrice || 0;
-        totalRevenue += price;
-
+        
+        // Ödeme metoduna göre gelir hesaplama
         if (reservation.paymentMethod === 'cash') {
-          cashTransactions += price;
+          // Nakit ödeme: Sadece tahsil edilmişse gelir sayılır
+          if (reservation.commissionPaid === true) {
+            if (reservation.assignedDriver !== 'manual') {
+              const commission = price * 0.15;
+              totalRevenue += commission;
+              cashTransactions += commission;
+            } else if (reservation.manualDriverInfo?.price) {
+              const manualDriverCommission = price - reservation.manualDriverInfo.price;
+              totalRevenue += manualDriverCommission;
+              cashTransactions += manualDriverCommission;
+            }
+          }
+          // Henüz tahsil edilmemiş nakit ödemeler gelir sayılmaz
         } else {
+          // Kart/Havale ödeme: Otomatik gelir (zaten kasada)
+          totalRevenue += price;
           cardTransactions += price;
         }
 

@@ -130,20 +130,47 @@ const FinancialDashboard_NEW = () => {
     reservations.forEach(reservation => {
       if (reservation.status === 'completed' && reservation.totalPrice) {
         const amount = parseFloat(reservation.totalPrice) || 0;
-        totalRevenue += amount;
-
-        // Ödeme metoduna göre dağılım
+        
+        // Ödeme metoduna göre gelir hesaplama
         if (reservation.paymentMethod === 'cash') {
-          cashPayments += amount;
+          // Nakit ödeme: Henüz gelir sayılmaz, sadece alacak
+          // totalRevenue'ya eklenmez çünkü henüz tahsil edilmemiş
+          
+          // Sadece tahsil edilmişse gelir sayılır
+          if (reservation.commissionPaid === true) {
+            if (reservation.assignedDriver !== 'manual') {
+              const commission = amount * 0.15;
+              totalRevenue += commission;
+              cashPayments += commission;
+            } else if (reservation.manualDriverInfo?.price) {
+              const manualDriverCommission = amount - reservation.manualDriverInfo.price;
+              totalRevenue += manualDriverCommission;
+              cashPayments += manualDriverCommission;
+            }
+          }
         } else if (reservation.paymentMethod === 'credit_card' || reservation.paymentMethod === 'card') {
+          // Kart ödeme: Otomatik gelir (zaten kasada)
+          totalRevenue += amount;
           cardPayments += amount;
         } else if (reservation.paymentMethod === 'bank_transfer') {
+          // Banka havalesi: Otomatik gelir (zaten kasada)
+          totalRevenue += amount;
           bankTransferPayments += amount;
         }
 
-        // Günlük gelir
+        // Günlük gelir (sadece gerçek gelirler)
         if (reservation.completedAt && reservation.completedAt.toDate() >= todayStart) {
-          todayRevenue += amount;
+          if (reservation.paymentMethod === 'cash' && reservation.commissionPaid === true) {
+            if (reservation.assignedDriver !== 'manual') {
+              const commission = amount * 0.15;
+              todayRevenue += commission;
+            } else if (reservation.manualDriverInfo?.price) {
+              const manualDriverCommission = amount - reservation.manualDriverInfo.price;
+              todayRevenue += manualDriverCommission;
+            }
+          } else if (reservation.paymentMethod !== 'cash') {
+            todayRevenue += amount;
+          }
         }
       }
     });

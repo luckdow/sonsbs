@@ -42,34 +42,15 @@ export const sendWhatsAppMessage = (phoneNumber, message) => {
         console.log('✅ WhatsApp penceresi açıldı');
         return true;
       } else {
-        console.log('⚠️ Popup engellendi, direct link ile deneniyor...');
+        console.log('⚠️ Popup engellendi, direct link ile açılıyor...');
         
-        // Popup engellenirse kullanıcıya seçenek sun
-        const userChoice = confirm(
-          'WhatsApp otomatik açılamadı.\n\n' +
-          'TAMAM = WhatsApp Web\'de aç\n' +
-          'İPTAL = Link\'i kopyala'
-        );
-        
-        if (userChoice) {
-          // WhatsApp Web'de aç
-          window.location.href = whatsappUrl;
-          return true;
-        } else {
-          // Link'i kopyala
-          navigator.clipboard.writeText(whatsappUrl).then(() => {
-            alert('WhatsApp linki kopyalandı! Manuel olarak WhatsApp\'ta paylaşabilirsiniz.');
-          }).catch(() => {
-            // Clipboard API desteklenmiyorsa
-            prompt('WhatsApp linki (Ctrl+C ile kopyalayın):', whatsappUrl);
-          });
-          return false;
-        }
+        // Popup engellenirse doğrudan yönlendir
+        window.location.href = whatsappUrl;
+        return true;
       }
     }
   } catch (error) {
     console.error('❌ WhatsApp gönderim hatası:', error);
-    alert('WhatsApp gönderiminde hata oluştu. Lütfen manuel olarak şoföre mesaj gönderin.');
     return false;
   }
 };

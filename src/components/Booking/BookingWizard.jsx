@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, MapPin, User, CreditCard } from 'lucide-react';
+import logger from '../../utils/logger';
 
 // Import steps
 import RouteStep from './steps/RouteStep';
@@ -40,7 +41,7 @@ const BookingWizard = () => {
     },
     
     // Payment data
-    paymentMethod: 'credit_card',
+    paymentMethod: '', // Kullanıcı kendi seçsin
     creditCardInfo: null,
     
     // Terms
@@ -68,9 +69,9 @@ const BookingWizard = () => {
         // localStorage'ı temizle
         localStorage.removeItem('quickBookingData');
         
-        console.log('Hızlı rezervasyon verileri yüklendi:', parsedData);
+        logger.log('Hızlı rezervasyon verileri yüklendi:', parsedData);
       } catch (error) {
-        console.error('Hızlı rezervasyon verileri yüklenirken hata:', error);
+        logger.error('Hızlı rezervasyon verileri yüklenirken hata:', error);
       }
     }
   }, []);
@@ -126,7 +127,7 @@ const BookingWizard = () => {
         }
       });
     } catch (error) {
-      console.error('Error preparing reservation:', error);
+      logger.error('Error preparing reservation:', error);
       alert('Rezervasyon hazırlanırken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setIsLoading(false);

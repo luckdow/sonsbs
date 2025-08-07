@@ -4,6 +4,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { QRCodeModal } from '../../../components/QR/QRCodeUtils';
 import { sendManualDriverWhatsApp } from '../../../utils/whatsappService';
+import toast from 'react-hot-toast';
 
 const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }) => {
   const [selectedDriver, setSelectedDriver] = useState('');
@@ -137,16 +138,16 @@ const DriverAssignModal = ({ reservation, drivers, vehicles, onClose, onAssign }
           const whatsappSuccess = sendManualDriverWhatsApp(reservation, manualDriver);
           
           if (whatsappSuccess) {
-            alert(`✅ Şoför atandı!\n\n📱 WhatsApp mesajı ${manualDriver.name} adlı şoföre gönderildi.\n\nEğer WhatsApp açılmadıysa, popup engelleyicisini kontrol edin.`);
+            toast.success(`Şoför atandı! WhatsApp mesajı ${manualDriver.name} adlı şoföre gönderildi.`);
           } else {
-            alert(`✅ Şoför atandı!\n\n⚠️ WhatsApp mesajı gönderilemedi.\nLütfen manuel olarak ${manualDriver.phone} numarasına mesaj gönderin.`);
+            toast.warning(`Şoför atandı. WhatsApp mesajı gönderilemedi. Manuel olarak ${manualDriver.phone} numarasına mesaj gönderin.`);
           }
         } catch (whatsappError) {
-          alert(`✅ Şoför atandı!\n\n❌ WhatsApp gönderiminde hata oluştu.\nLütfen manuel olarak ${manualDriver.phone} numarasına mesaj gönderin.`);
+          toast.error(`Şoför atandı. WhatsApp gönderiminde hata oluştu. Manuel olarak ${manualDriver.phone} numarasına mesaj gönderin.`);
         }
       }
     } catch (error) {
-      alert('Şoför atama sırasında bir hata oluştu');
+      toast.error('Şoför atama sırasında bir hata oluştu');
     } finally {
       setLoading(false);
     }

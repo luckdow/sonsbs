@@ -16,7 +16,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true, // Enable source maps for debugging and lighthouse
+    sourcemap: false, // Production'da source map'leri kapat
     minify: 'terser',
     cssCodeSplit: true,
     rollupOptions: {

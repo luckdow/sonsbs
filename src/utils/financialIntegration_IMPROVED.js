@@ -360,14 +360,17 @@ export const updateCompanyFinancials = async (reservationId, reservationData, dr
     // Şirket finansal kayıtlarına ekle
     await addDoc(collection(db, 'company_financials'), companyFinancialRecord);
 
-    // Gelir-Gider yönetimi için financial_transactions koleksiyonuna gelir kaydı ekle
-    // REZERVASYON TAMAMLANDIĞINDA: Tüm para gelir olarak girilmeli
-    const reservationNumber = reservationData.reservationNumber || reservationData.reservationId || reservationId;
-    const incomeTransactionRecord = {
-      type: 'credit', // Gelir
-      amount: totalPrice, // Tüm para gelir olarak girmeli (sadece komisyon değil)
-      description: `Rezervasyon Geliri - ${reservationNumber}`,
-      category: 'Rezervasyon Geliri',
+    // Gelir-Gider yönetimi için SADECE KREDİ KARTI/HAVALE'de gelir kaydı yap
+    // Nakit ödemeler için gelir kaydı tahsilat yapıldığında yapılacak
+    let incomeTransactionRecord = null;
+    
+    if (paymentMethod !== 'cash') {
+      const reservationNumber = reservationData.reservationNumber || reservationData.reservationId || reservationId;
+      incomeTransactionRecord = {
+        type: 'credit', // Gelir
+        amount: totalPrice, // Kart/Havale: tüm tutar
+        description: `Rezervasyon Geliri - ${reservationNumber}`,
+        category: 'Rezervasyon Geliri',
       source: 'reservation_completion',
       reservationId: reservationId,
       reservationNumber: reservationNumber,
@@ -380,8 +383,9 @@ export const updateCompanyFinancials = async (reservationId, reservationData, dr
       date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
     };
 
-    // Gelir kaydını financial_transactions koleksiyonuna ekle
+    // Sadece kart/havale ödemelerde gelir kaydını financial_transactions koleksiyonuna ekle
     await addDoc(collection(db, 'financial_transactions'), incomeTransactionRecord);
+    }
 
     // Gider kaydı değişkenini tanımla
     let expenseTransactionRecord = null;

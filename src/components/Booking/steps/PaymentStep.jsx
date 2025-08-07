@@ -20,6 +20,7 @@ import {
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import smsService from '../../../services/smsService';
+import logger from '../../../utils/logger';
 
 const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoading }) => {
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -75,13 +76,13 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
         }
         setLoading(false);
       }, (error) => {
-        console.error('Error fetching payment settings:', error);
+        logger.error('Error fetching payment settings:', error);
         setLoading(false);
       });
 
       return () => unsubscribe();
     } catch (error) {
-      console.error('Error setting up payment settings listener:', error);
+      logger.error('Error setting up payment settings listener:', error);
       setLoading(false);
     }
   };
@@ -183,12 +184,12 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
         const smsResult = await smsService.sendPaymentConfirmation(smsData);
         
         if (smsResult.success) {
-          console.log('✅ Ödeme onay SMS\'i gönderildi:', smsResult);
+          logger.log('✅ Ödeme onay SMS\'i gönderildi:', smsResult);
         } else {
-          console.log('⚠️ Ödeme onay SMS\'i gönderilemedi:', smsResult.message);
+          logger.log('⚠️ Ödeme onay SMS\'i gönderilemedi:', smsResult.message);
         }
       } catch (smsError) {
-        console.error('❌ SMS gönderme hatası:', smsError);
+        logger.error('❌ SMS gönderme hatası:', smsError);
       }
       
       onComplete();
@@ -598,6 +599,18 @@ const PaymentStep = ({ bookingData, updateBookingData, onComplete, onBack, isLoa
           </p>
         </div>
       </div>
+
+      {/* Payment Selection Warning */}
+      {!paymentMethod && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 text-amber-600" />
+            <p className="text-sm text-amber-700 font-medium">
+              Devam etmek için bir ödeme yöntemi seçiniz
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Buttons */}
       <div className="flex flex-col sm:flex-row justify-between gap-3 pt-3">

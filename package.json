@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "vite",
     "dev:seo": "concurrently \"npm run dev\" \"node server-proxy.js\"",
-    "build": "vite build",
+    "build": "NODE_ENV=production vite build",
     "build:debug": "vite build --mode development",
     "build:sourcemap": "GENERATE_SOURCEMAP=true vite build",
-    "build:production": "bash scripts/build-with-cache-bust.sh",
+    "build:production": "NODE_ENV=production bash scripts/build-with-cache-bust.sh",
     "build:prerender": "npm run build && node scripts/static-html-generator.js",
     "build:ssg": "npm run build && npm run prerender",
     "build:static": "npm run build && bash scripts/generate-static.sh",

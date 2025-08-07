@@ -116,13 +116,21 @@ export const updateDriverFinancials = async (reservationId, reservationData) => 
       totalCardEarnings: (paymentMethod === 'card' || paymentMethod === 'credit_card') ? (driverData.totalCardEarnings || 0) + driverEarning : (driverData.totalCardEarnings || 0)
     });
 
-    // Ayrıca finansal işlem kaydı oluştur (raporlama için)
-    await addDoc(collection(db, 'financial_transactions'), {
-      ...transaction,
-      driverId: driverId,
-      createdAt: new Date(),
-      processedBy: 'system_auto'
-    });
+    // Gelir-Gider yönetimi için SADECE KREDİ KARTI/HAVALE'de gelir kaydı yap
+    // Nakit ödemeler için gelir kaydı tahsilat yapıldığında yapılacak
+    if (paymentMethod !== 'cash') {
+      await addDoc(collection(db, 'financial_transactions'), {
+        type: 'income',
+        category: 'Rezervasyon Geliri',
+        amount: totalPrice,
+        description: `Rezervasyon Geliri - ${reservationId}`,
+        reservationId: reservationId,
+        paymentMethod: paymentMethod,
+        driverId: driverId,
+        createdAt: new Date(),
+        processedBy: 'system_auto'
+      });
+    }
 
     console.log(`Şoför ${driverId} cari hesabı güncellendi:`, {
       oldBalance: currentBalance,

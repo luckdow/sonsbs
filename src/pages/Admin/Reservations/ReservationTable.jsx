@@ -117,16 +117,40 @@ const ReservationTable = ({
   };
 
   const getPaymentMethodDisplay = (paymentMethod) => {
+    // PaymentMethod obje ise string'e dönüştür
+    let methodValue = paymentMethod;
+    
+    if (typeof paymentMethod === 'object' && paymentMethod !== null) {
+      // Eğer obje ise, muhtemel property'leri kontrol et
+      methodValue = paymentMethod.method || 
+                   paymentMethod.type || 
+                   paymentMethod.value || 
+                   paymentMethod.label || 
+                   paymentMethod.name || 
+                   paymentMethod.paymentMethod ||
+                   Object.values(paymentMethod)[0] || // İlk değeri al
+                   'cash';
+    }
+    
     const paymentMethods = {
       'credit_card': { label: 'Kredi Kartı', icon: '💳', color: 'text-blue-600 bg-blue-50' },
       'card': { label: 'Kredi Kartı', icon: '💳', color: 'text-blue-600 bg-blue-50' },
+      'Kredi Kartı': { label: 'Kredi Kartı', icon: '💳', color: 'text-blue-600 bg-blue-50' },
       'bank_transfer': { label: 'Havale', icon: '🏦', color: 'text-green-600 bg-green-50' },
       'transfer': { label: 'Havale', icon: '🏦', color: 'text-green-600 bg-green-50' },
+      'Havale': { label: 'Havale', icon: '🏦', color: 'text-green-600 bg-green-50' },
       'cash': { label: 'Nakit', icon: '💵', color: 'text-yellow-600 bg-yellow-50' },
+      'Nakit': { label: 'Nakit', icon: '💵', color: 'text-yellow-600 bg-yellow-50' },
       'eft': { label: 'EFT', icon: '📱', color: 'text-purple-600 bg-purple-50' }
     };
     
-    const method = paymentMethods[paymentMethod] || paymentMethods['cash'];
+    // PaymentMethod değerini kontrol et ve varsayılan olarak 'cash' döndür
+    const method = paymentMethods[methodValue];
+    
+    if (!method) {
+      return paymentMethods['cash'];
+    }
+    
     return method;
   };
 
@@ -550,23 +574,23 @@ const ReservationTable = ({
                               <h4 className="font-medium text-gray-900 text-sm">Ödeme</h4>
                             </div>
                             <div className="space-y-2">
-                              <div className="flex items-start gap-2">
-                                <CreditCard className="w-3 h-3 text-gray-500 mt-0.5 flex-shrink-0" />
-                                <div className="min-w-0">
-                                  <p className="text-xs font-medium text-gray-700">Yöntem</p>
-                                  <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentMethodDisplay(reservation.paymentMethod).color}`}>
-                                    <span className="mr-1">{getPaymentMethodDisplay(reservation.paymentMethod).icon}</span>
-                                    {getPaymentMethodDisplay(reservation.paymentMethod).label}
+                                <div className="flex items-start gap-2">
+                                  <CreditCard className="w-3 h-3 text-gray-500 mt-0.5 flex-shrink-0" />
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-medium text-gray-700">Yöntem</p>
+                                    <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentMethodDisplay(reservation.paymentMethod).color}`}>
+                                      <span className="mr-1">{getPaymentMethodDisplay(reservation.paymentMethod).icon}</span>
+                                      {getPaymentMethodDisplay(reservation.paymentMethod).label}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
                               
                               <div className="flex items-start gap-2">
                                 <DollarSign className="w-3 h-3 text-gray-500 mt-0.5 flex-shrink-0" />
                                 <div className="min-w-0">
                                   <p className="text-xs font-medium text-gray-700">Tutar</p>
                                   <p className="text-base text-gray-900 font-bold">
-                                    €{reservation.totalPrice}
+                                    €{reservation.totalPrice || reservation.selectedVehicle?.totalPrice || 0}
                                   </p>
                                 </div>
                               </div>

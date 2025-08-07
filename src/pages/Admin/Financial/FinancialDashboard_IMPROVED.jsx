@@ -13,7 +13,10 @@ import {
   RefreshCw,
   AlertCircle,
   CheckCircle,
-  Euro
+  Clock,
+  AlertTriangle,
+  Euro,
+  Clock
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
@@ -64,51 +67,73 @@ const FinancialDashboard_IMPROVED = () => {
     return () => unsubscribe();
   }, []);
 
-  // Gerçek zamanlı istatistikleri hesapla
+  // Gerçek zamanlı istatistikleri hesapla - YENİ MANTIK
   const calculateRealTimeStats = (reservationData) => {
-    let totalRevenue = 0;
-    let cashPayments = 0;
-    let cardPayments = 0;
-    let systemDriversDebt = 0;
-    let pendingDriverPayments = 0;
+    // 1. Gelir-Gider işlemlerinden gerçek geliri hesapla
+    let realRevenue = 0;
+    let realExpenses = 0;
+    let cashCollections = 0; // Şoförden tahsilatlar
+    let cardRevenue = 0; // Kart gelir
+    
+    // transactions varsa ve array ise işle
+    if (transactions && Array.isArray(transactions)) {
+      transactions.forEach(transaction => {
+        if (transaction.type === 'credit') {
+          // Gelir: Kart/Havale rezervasyonları + Şoför tahsilatları
+          realRevenue += transaction.amount || 0;
+          
+          if (transaction.category === 'Şoförden Tahsilat') {
+            cashCollections += transaction.amount || 0;
+          } else if (transaction.category === 'Rezervasyon Geliri') {
+            cardRevenue += transaction.amount || 0;
+          }
+        } else if (transaction.type === 'debit') {
+          // Gider: Şoför ödemeleri, operasyonel giderler vs.
+          realExpenses += transaction.amount || 0;
+        }
+      });
+    }
+
+    // 2. Bekleyen alacakları ve borçları hesapla (rezervasyonlardan)
+    let pendingCashReceivables = 0; // Şoförlerden tahsil edilecek
+    let pendingDriverPayments = 0; // Şoförlere ödenecek
 
     reservationData.forEach(reservation => {
       if (reservation.status === 'completed' && reservation.totalPrice) {
-        totalRevenue += reservation.totalPrice;
         
         if (reservation.paymentMethod === 'cash') {
-          cashPayments += reservation.totalPrice;
-          
-          // Nakit ödeme: Şoför komisyon borçlu
+          // Nakit ödeme: Bekleyen alacak (henüz tahsil edilmemiş)
           if (reservation.assignedDriver !== 'manual') {
-            const commission = reservation.totalPrice * 0.15; // %15 komisyon
-            systemDriversDebt += commission;
+            // Sistem şoförü: %15 komisyon alacağı
+            const commission = reservation.totalPrice * 0.15;
+            pendingCashReceivables += commission;
+          } else if (reservation.manualDriverInfo?.price) {
+            // Manuel şoför: (toplam - hak ediş) alacağı
+            const manualDriverCommission = reservation.totalPrice - reservation.manualDriverInfo.price;
+            pendingCashReceivables += manualDriverCommission;
           }
         } else {
-          cardPayments += reservation.totalPrice;
-          
-          // Kart ödeme: Şoföre ödenecek
+          // Kart/Havale ödeme: Şoföre borç
           if (reservation.assignedDriver !== 'manual') {
-            const commission = reservation.totalPrice * 0.15;
-            const driverEarning = reservation.totalPrice - commission;
+            // Sistem şoförü: %85 (komisyon düştükten kalan) borcu
+            const driverEarning = reservation.totalPrice * 0.85;
             pendingDriverPayments += driverEarning;
           } else if (reservation.manualDriverInfo?.price) {
+            // Manuel şoför: Hak ediş borcu
             pendingDriverPayments += reservation.manualDriverInfo.price;
           }
         }
       }
     });
 
-    const netProfit = cardPayments + systemDriversDebt - pendingDriverPayments;
-
     setRealTimeStats({
-      totalRevenue,
-      totalExpenses: pendingDriverPayments,
-      cashPayments,
-      cardPayments,
-      systemDriversDebt,
-      pendingDriverPayments,
-      netProfit
+      totalRevenue: realRevenue, // Sadece gerçek tahsil edilmiş gelir
+      totalExpenses: realExpenses,
+      cashPayments: cashCollections, // Şoförden tahsilatlar
+      cardPayments: cardRevenue, // Kart gelirleri
+      systemDriversDebt: pendingCashReceivables, // Bekleyen nakit tahsilatlar
+      pendingDriverPayments, // Bekleyen şoför ödemeleri
+      netProfit: realRevenue - realExpenses
     });
   };
 
@@ -291,27 +316,27 @@ const FinancialDashboard_IMPROVED = () => {
           </div>
         </motion.div>
 
-        {/* Nakit Akış */}
+        {/* Bekleyen Alacaklar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 rounded-xl text-white"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-xl text-white"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 text-sm font-medium">Nakit Akış</p>
+              <p className="text-orange-100 text-sm font-medium">Bekleyen Alacaklar</p>
               <p className="text-2xl font-bold">
-                {formatCurrency(companyStatus?.cashFlow || 0)}
+                {formatCurrency(realTimeStats.systemDriversDebt || 0)}
               </p>
               <div className="flex items-center gap-1 mt-1">
-                <Banknote className="w-4 h-4" />
-                <span className="text-xs text-purple-100">
-                  Aktif bakiye
+                <Clock className="w-4 h-4" />
+                <span className="text-xs text-orange-100">
+                  Şoförlerden tahsil edilecek
                 </span>
               </div>
             </div>
-            <Euro className="w-8 h-8 text-purple-200" />
+            <AlertTriangle className="w-8 h-8 text-orange-200" />
           </div>
         </motion.div>
       </div>
@@ -433,6 +458,27 @@ const FinancialDashboard_IMPROVED = () => {
                 <div className="text-right">
                   <p className="font-bold text-green-700">
                     {formatCurrency(companyStatus?.totalDriverCollections || 0)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Bekleyen Alacaklar - YENİ */}
+              <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-orange-600" />
+                  <div>
+                    <p className="font-medium text-gray-800">Bekleyen Alacaklar</p>
+                    <p className="text-sm text-gray-600">
+                      Nakit ödemelerden henüz tahsil edilmeyen komisyonlar
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-orange-700">
+                    {formatCurrency(realTimeStats?.systemDriversDebt || 0)}
+                  </p>
+                  <p className="text-xs text-orange-600">
+                    Tahsil edilmeli
                   </p>
                 </div>
               </div>

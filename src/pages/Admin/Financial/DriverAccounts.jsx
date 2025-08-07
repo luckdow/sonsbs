@@ -485,15 +485,23 @@ const DriverAccounts = () => {
         lastTransactionDate: new Date()
       });
 
-      // Finansal işlem kaydı oluştur
-      await addDoc(collection(db, 'financial_transactions'), {
-        ...transaction,
-        driverId: selectedDriver.id,
-        driverType: 'regular',
-        driverName: `${selectedDriver.firstName} ${selectedDriver.lastName}`,
-        createdAt: new Date(),
-        processedBy: 'admin_manual'
-      });
+      // Gelir-Gider yönetimi için doğru finansal işlem kaydı oluştur
+      if (paymentType === 'collection') {
+        // Şoförden tahsilat yapıldıysa gelir kaydı
+        await addDoc(collection(db, 'financial_transactions'), {
+          type: 'credit', // Gelir
+          amount: amount,
+          description: `Şoförden Tahsilat - ${selectedDriver.firstName} ${selectedDriver.lastName}`,
+          category: 'Şoförden Tahsilat',
+          driverId: selectedDriver.id,
+          driverType: 'regular',
+          driverName: `${selectedDriver.firstName} ${selectedDriver.lastName}`,
+          createdAt: new Date(),
+          processedBy: 'admin_manual',
+          date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+        });
+      }
+      // NOT: Şoföre ödeme yapıldığında gider kaydı ayrı bir yerde yapılıyor
       
       // Şirket finansal kaydını güncelle
       try {

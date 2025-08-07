@@ -289,13 +289,18 @@ export const recordDriverCollection = async (driverId, driverType, driverName, a
 
     await setDoc(doc(db, 'company_accounts', 'main_account'), updatedCompanyData, { merge: true });
 
-    // Finansal işlem kaydı oluştur
+    // Gelir-Gider yönetimi için financial_transactions koleksiyonuna kayıt ekle
     await addDoc(collection(db, 'financial_transactions'), {
-      ...transaction,
-      transactionType: 'income',
-      category: 'driver_collections',
+      type: 'credit', // Gelir
+      amount: amount,
+      description: `Şoförden Tahsilat - ${driverName}`,
+      category: 'Şoförden Tahsilat',
+      driverId: driverId,
+      driverType: driverType,
+      driverName: driverName,
       createdAt: new Date(),
-      processedBy: 'admin_manual'
+      processedBy: 'admin_manual',
+      date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
     });
 
     return {
